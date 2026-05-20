@@ -1,0 +1,10 @@
+# Superpowers runtime state
+.superpowers/brainstorm/*/state/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs soltos
+*.log
+*.log.err
