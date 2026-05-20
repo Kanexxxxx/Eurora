@@ -3,14 +3,10 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import FloatingHearts from "@/components/effects/FloatingHearts";
-import FakeNotifications from "@/components/conversion/FakeNotifications";
-import LiveCounter from "@/components/conversion/LiveCounter";
 
 const CHANNELS = [
-  { id: "wpp", label: "WhatsApp", emoji: "💬", popular: true },
-  { id: "sms", label: "SMS", emoji: "📱" },
-  { id: "email", label: "E-mail", emoji: "✉️" },
-  { id: "insta", label: "Instagram DM", emoji: "📸", soon: true },
+  { id: "email", label: "E-mail", emoji: "✉️", popular: true },
+  { id: "wpp", label: "WhatsApp", emoji: "💬", note: "Link pré-formatado" },
 ];
 
 const TEMPLATES = [
@@ -31,15 +27,6 @@ const TEMPLATES = [
     preview:
       "Eu errei. E não vou ficar listando explicações — só quero que você saiba que aprendi. E que ninguém vai amar você do jeito que eu te amo. Me dá uma chance?",
     tag: "Reconciliação",
-  },
-  {
-    id: "ex",
-    title: "Mensagem pra ex",
-    emoji: "💔",
-    desc: "Quando faz sentido tentar uma última vez",
-    preview:
-      "Talvez seja tarde. Talvez não seja o momento. Mas se em algum lugar dentro de você ainda existe um 'e se?', responde essa mensagem. Eu te espero.",
-    tag: "Use com cuidado",
   },
   {
     id: "distancia",
@@ -68,17 +55,28 @@ const TEMPLATES = [
       "Existem amores que ensinam, existem amores que curam. E aí tem o seu, que faz as duas coisas em silêncio, todo dia, sem você nem perceber. Obrigado por existir.",
     tag: "Faz chorar",
   },
+  {
+    id: "ex",
+    title: "Mensagem pra ex",
+    emoji: "💔",
+    desc: "Quando faz sentido tentar uma última vez",
+    preview:
+      "Talvez seja tarde. Talvez não seja o momento. Mas se em algum lugar dentro de você ainda existe um 'e se?', responde essa mensagem. Eu te espero.",
+    tag: "Use com cuidado",
+  },
 ];
 
 export default function MensagemClient() {
   const [step, setStep] = useState(1);
-  const [channel, setChannel] = useState("wpp");
+  const [channel, setChannel] = useState("email");
   const [templateId, setTemplateId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [recipient, setRecipient] = useState("");
   const [date, setDate] = useState("2026-06-12");
   const [time, setTime] = useState("06:00");
-  const [scheduled, setScheduled] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [scheduledId, setScheduledId] = useState<string | null>(null);
 
   const template = TEMPLATES.find((t) => t.id === templateId);
 
@@ -91,20 +89,41 @@ export default function MensagemClient() {
     }
   };
 
-  const handleSchedule = () => {
-    setScheduled(true);
+  const handleSchedule = async () => {
+    if (!recipient || !message) return;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const send_at = new Date(`${date}T${time}:00`).toISOString();
+      const res = await fetch("/api/mensagem/agendar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ channel, recipient, message, send_at }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao agendar.");
+      setScheduledId(data.id);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Erro inesperado.");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const whatsappLink =
+    recipient && channel === "wpp"
+      ? `https://wa.me/${recipient.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`
+      : null;
 
   return (
     <main className="relative min-h-screen overflow-hidden">
       <FloatingHearts count={8} />
-      <FakeNotifications />
 
-      {/* Hero */}
       <section className="relative px-4 pt-12 pb-8">
         <div className="max-w-4xl mx-auto text-center">
           <p className="pill pill-live mb-6 mx-auto">
-            <span className="live-dot" /> 9.836 mensagens agendadas
+            <span className="live-dot" /> Mensagem programada
           </p>
           <h1 className="font-heading text-4xl sm:text-6xl font-bold text-white mb-5 tracking-tight leading-tight">
             Escreva hoje. Envie no segundo{" "}
@@ -114,39 +133,14 @@ export default function MensagemClient() {
           <p className="text-white/65 text-lg max-w-2xl mx-auto">
             Programe agora pra disparar automaticamente no Dia dos Namorados —
             via{" "}
-            <span className="text-white font-medium">
-              WhatsApp, SMS ou e-mail
-            </span>
-            . Templates por IA. Resultado garantido.
+            <span className="text-white font-medium">e-mail ou WhatsApp</span>.
           </p>
         </div>
       </section>
 
       <section className="relative px-4 py-8">
         <div className="max-w-5xl mx-auto">
-          {/* Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-            <LiveCounter
-              label="Agendadas pra 12/06"
-              base={9836}
-              step={2}
-              intervalMs={6000}
-            />
-            <LiveCounter
-              label="Reconciliações concluídas"
-              base={1247}
-              step={1}
-              intervalMs={7200}
-            />
-            <LiveCounter
-              label="Pedidos aceitos"
-              base={3412}
-              step={1}
-              intervalMs={8200}
-            />
-          </div>
-
-          {/* Steps indicator */}
+          {/* Steps */}
           <div className="flex items-center justify-center gap-3 mb-12">
             {[1, 2, 3].map((s) => (
               <div key={s} className="flex items-center gap-3">
@@ -161,9 +155,7 @@ export default function MensagemClient() {
                 </div>
                 {s < 3 && (
                   <div
-                    className={`w-12 h-px ${
-                      step > s ? "bg-rose-400" : "bg-white/10"
-                    }`}
+                    className={`w-12 h-px ${step > s ? "bg-rose-400" : "bg-white/10"}`}
                   />
                 )}
               </div>
@@ -181,11 +173,10 @@ export default function MensagemClient() {
               >
                 <h2 className="font-heading text-3xl sm:text-4xl text-white text-center mb-3 tracking-tight">
                   Escolha o tom da sua{" "}
-                  <span className="text-gradient-ember">mensagem mágica</span>
+                  <span className="text-gradient-ember">mensagem</span>
                 </h2>
                 <p className="text-white/55 text-center mb-10 text-sm">
-                  Cada template foi testado em milhares de casais. Você pode
-                  editar tudo no próximo passo.
+                  Você pode editar tudo no próximo passo.
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -259,22 +250,17 @@ export default function MensagemClient() {
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     rows={8}
+                    maxLength={2000}
                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-rose-400/40 focus:ring-2 focus:ring-rose-400/20 text-sm leading-relaxed font-heading"
                     placeholder="Escreva direto do coração…"
                   />
-                  <div className="flex items-center justify-between mt-2 text-xs">
-                    <p className="text-white/40">{message.length} caracteres</p>
-                    <button className="text-rose-300 hover:text-rose-200 inline-flex items-center gap-1">
-                      ✨ Melhorar com IA Romântica
-                    </button>
-                  </div>
+                  <p className="text-white/40 text-xs mt-2 text-right">
+                    {message.length}/2000
+                  </p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 justify-between mt-6">
-                  <button
-                    onClick={() => setStep(1)}
-                    className="btn-ghost-glow"
-                  >
+                  <button onClick={() => setStep(1)} className="btn-ghost-glow">
                     ← Trocar template
                   </button>
                   <button
@@ -289,7 +275,7 @@ export default function MensagemClient() {
             )}
 
             {/* STEP 3 — Schedule */}
-            {step === 3 && !scheduled && (
+            {step === 3 && !scheduledId && (
               <motion.div
                 key="step3"
                 initial={{ opacity: 0, y: 20 }}
@@ -298,10 +284,11 @@ export default function MensagemClient() {
                 className="max-w-3xl mx-auto"
               >
                 <h2 className="font-heading text-3xl sm:text-4xl text-white text-center mb-3 tracking-tight">
-                  Quando ela <span className="text-gradient-ember">vai cair</span>?
+                  Quando ela{" "}
+                  <span className="text-gradient-ember">vai receber</span>?
                 </h2>
                 <p className="text-white/55 text-center mb-10 text-sm">
-                  Escolha o segundo exato. Vamos disparar com precisão cirúrgica.
+                  Escolha o canal, o destinatário e o horário exato.
                 </p>
 
                 <div className="card-premium p-6 space-y-6">
@@ -310,28 +297,27 @@ export default function MensagemClient() {
                     <label className="block text-white/70 text-xs uppercase tracking-wider mb-3">
                       Por onde enviar
                     </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                       {CHANNELS.map((c) => (
                         <button
                           key={c.id}
-                          onClick={() => !c.soon && setChannel(c.id)}
-                          disabled={c.soon}
+                          onClick={() => setChannel(c.id)}
                           className={`relative px-4 py-3 rounded-2xl border text-sm transition-all ${
                             channel === c.id
                               ? "border-rose-400/60 bg-rose-500/10 text-white shadow-[0_0_20px_rgba(255,45,106,0.2)]"
                               : "border-white/10 bg-white/5 text-white/60 hover:border-white/20"
-                          } ${c.soon ? "opacity-40 cursor-not-allowed" : ""}`}
+                          }`}
                         >
                           <span className="text-xl mr-2">{c.emoji}</span>
                           {c.label}
                           {c.popular && (
                             <span className="absolute -top-2 -right-2 text-[9px] bg-rose-500 text-white px-1.5 py-0.5 rounded-full">
-                              POP
+                              RECOMENDADO
                             </span>
                           )}
-                          {c.soon && (
-                            <span className="block text-[10px] mt-1">
-                              em breve
+                          {c.note && (
+                            <span className="block text-[10px] text-white/40 mt-1">
+                              {c.note}
                             </span>
                           )}
                         </button>
@@ -342,7 +328,7 @@ export default function MensagemClient() {
                   {/* Recipient */}
                   <div>
                     <label className="block text-white/70 text-xs uppercase tracking-wider mb-2">
-                      Pra quem
+                      {channel === "email" ? "E-mail dela" : "WhatsApp (com DDD)"}
                     </label>
                     <input
                       value={recipient}
@@ -350,10 +336,16 @@ export default function MensagemClient() {
                       placeholder={
                         channel === "email"
                           ? "ela@email.com"
-                          : "+55 (11) 99999-9999"
+                          : "+55 11 99999-9999"
                       }
+                      type={channel === "email" ? "email" : "tel"}
                       className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-rose-400/40"
                     />
+                    {channel === "wpp" && (
+                      <p className="text-white/40 text-xs mt-2">
+                        Você receberá um link wa.me pré-formatado para enviar no horário escolhido.
+                      </p>
+                    )}
                   </div>
 
                   {/* Date / Time */}
@@ -386,37 +378,40 @@ export default function MensagemClient() {
                     <span className="text-2xl">⚡</span>
                     <div>
                       <p className="text-amber-200 text-sm font-semibold mb-1">
-                        Dica de timing perfeito
+                        Timing perfeito
                       </p>
                       <p className="text-white/65 text-xs leading-relaxed">
-                        Mensagens disparadas às <strong>06h00</strong> do Dia
-                        dos Namorados têm 3.4x mais reações emocionais. Quando
-                        ela acorda, você já está lá.
+                        Mensagens às <strong>06h00</strong> do Dia dos
+                        Namorados têm 3x mais reações emocionais — ela acorda e
+                        você já está lá.
                       </p>
                     </div>
                   </div>
                 </div>
 
+                {error && (
+                  <p className="text-red-400 text-sm text-center mt-4">
+                    {error}
+                  </p>
+                )}
+
                 <div className="flex flex-col sm:flex-row gap-3 justify-between mt-6">
-                  <button
-                    onClick={() => setStep(2)}
-                    className="btn-ghost-glow"
-                  >
+                  <button onClick={() => setStep(2)} className="btn-ghost-glow">
                     ← Voltar
                   </button>
                   <button
                     onClick={handleSchedule}
-                    disabled={!recipient}
+                    disabled={!recipient || loading}
                     className="btn-premium disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    Agendar mensagem · R$ 12 →
+                    {loading ? "Agendando…" : "Agendar mensagem →"}
                   </button>
                 </div>
               </motion.div>
             )}
 
-            {/* Scheduled success */}
-            {scheduled && (
+            {/* Success */}
+            {scheduledId && (
               <motion.div
                 key="success"
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -432,17 +427,33 @@ export default function MensagemClient() {
                   ✓
                 </motion.div>
                 <h2 className="font-heading text-4xl sm:text-5xl text-white mb-4 tracking-tight">
-                  Mensagem <span className="text-gradient-ember">armada</span>
+                  Mensagem{" "}
+                  <span className="text-gradient-ember">agendada!</span>
                 </h2>
                 <p className="text-white/65 mb-8 leading-relaxed">
                   No dia <strong className="text-white">{date}</strong> às{" "}
-                  <strong className="text-white">{time}</strong> ela vai
-                  receber sua surpresa via{" "}
-                  <strong className="text-rose-300">
-                    {CHANNELS.find((c) => c.id === channel)?.label}
-                  </strong>
-                  . Pode confiar.
+                  <strong className="text-white">{time}</strong>
+                  {channel === "email" ? (
+                    <>
+                      {" "}
+                      enviamos um e-mail para{" "}
+                      <strong className="text-rose-300">{recipient}</strong>.
+                    </>
+                  ) : (
+                    <> você recebe um lembrete com o link do WhatsApp.</>
+                  )}
                 </p>
+
+                {whatsappLink && (
+                  <a
+                    href={whatsappLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-premium inline-flex items-center gap-2 mb-8"
+                  >
+                    💬 Enviar agora pelo WhatsApp
+                  </a>
+                )}
 
                 <div className="card-premium p-6 text-left mb-8">
                   <p className="text-white/40 text-xs uppercase tracking-wider mb-3">
@@ -455,10 +466,11 @@ export default function MensagemClient() {
 
                 <button
                   onClick={() => {
-                    setScheduled(false);
+                    setScheduledId(null);
                     setStep(1);
                     setTemplateId(null);
                     setMessage("");
+                    setRecipient("");
                   }}
                   className="btn-ghost-glow"
                 >

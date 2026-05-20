@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { createServerClient } from "@/lib/supabase/server";
-import type { Couple } from "@/lib/types";
+import { prisma } from "@/lib/prisma";
 import LovePage from "./LovePage";
 
 interface Props {
@@ -10,47 +9,52 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("couples")
-    .select("person1, person2, message")
-    .eq("slug", slug)
-    .eq("paid", true)
-    .single();
+  const couple = await prisma.couple.findFirst({
+    where: { slug, paid: true },
+    select: { person1: true, person2: true, message: true },
+  });
 
-  if (!data) return { title: "Página não encontrada | EURORA LOVE" };
+  if (!couple) return { title: "Página não encontrada | EURORA LOVE" };
 
-  const title = `${data.person1} & ${data.person2} | EURORA LOVE`;
-  const description = data.message.slice(0, 160);
+  const title = `${couple.person1} & ${couple.person2} | EURORA LOVE`;
+  const description = couple.message.slice(0, 160);
 
   return {
     title,
     description,
-    openGraph: {
-      title,
-      description,
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-    },
+    openGraph: { title, description, type: "website" },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 
 export default async function SlugPage({ params }: Props) {
   const { slug } = await params;
-  const supabase = createServerClient();
 
-  const { data: couple } = await supabase
-    .from("couples")
-    .select("*")
-    .eq("slug", slug)
-    .eq("paid", true)
-    .single();
+  const couple = await prisma.couple.findFirst({
+    where: { slug, paid: true },
+  });
 
   if (!couple) notFound();
 
-  return <LovePage couple={couple as Couple} />;
+  return (
+    <LovePage
+      couple={{
+        id: couple.id,
+        slug: couple.slug,
+        person1: couple.person1,
+        person2: couple.person2,
+        message: couple.message,
+        music_url: couple.music_url,
+        relationship_date: couple.relationship_date,
+        theme: couple.theme.replace("_", "-") as import("@/lib/types").Theme,
+        plan: couple.plan as import("@/lib/types").Plan,
+        paid: couple.paid,
+        payment_id: couple.payment_id,
+        photo_urls: couple.photo_urls,
+        qr_code_url: couple.qr_code_url,
+        created_at: couple.created_at.toISOString(),
+        updated_at: couple.updated_at.toISOString(),
+      }}
+    />
+  );
 }

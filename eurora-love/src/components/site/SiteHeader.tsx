@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { isLovePage } from "@/lib/utils/isLovePage";
 
 const NAV = [
   { href: "/criar", label: "Página do Amor", emoji: "💌" },
@@ -18,18 +19,7 @@ export default function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
-  // Hide header on the public slug pages (they are the "love page" experience)
-  const isLovePage =
-    pathname &&
-    !pathname.startsWith("/criar") &&
-    !pathname.startsWith("/checkout") &&
-    !pathname.startsWith("/sucesso") &&
-    !pathname.startsWith("/presentes") &&
-    !pathname.startsWith("/mensagem") &&
-    !pathname.startsWith("/quiz") &&
-    !pathname.startsWith("/ia") &&
-    pathname !== "/" &&
-    pathname.length > 1;
+  const lovePage = isLovePage(pathname);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
@@ -38,7 +28,7 @@ export default function SiteHeader() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  if (isLovePage) return null;
+  if (lovePage) return null;
 
   return (
     <>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
 const schema = z.object({
@@ -12,7 +12,10 @@ const RATE_LIMIT = new Map<string, { count: number; ts: number }>();
 function checkRL(ip: string): boolean {
   const now = Date.now();
   const e = RATE_LIMIT.get(ip);
-  if (!e || now - e.ts > 60_000) { RATE_LIMIT.set(ip, { count: 1, ts: now }); return true; }
+  if (!e || now - e.ts > 60_000) {
+    RATE_LIMIT.set(ip, { count: 1, ts: now });
+    return true;
+  }
   if (e.count >= 3) return false;
   e.count++;
   return true;
@@ -20,26 +23,27 @@ function checkRL(ip: string): boolean {
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for") ?? "unknown";
-  if (!checkRL(ip)) return NextResponse.json({ error: "Muitas tentativas" }, { status: 429 });
+  if (!checkRL(ip))
+    return NextResponse.json({ error: "Muitas tentativas" }, { status: 429 });
 
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
+  if (!parsed.success)
+    return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
   const { page_id } = parsed.data;
-  const supabase = createServerClient();
 
-  const { data: couple } = await supabase
-    .from("couples")
-    .select("id, paid, slug, plan")
-    .eq("id", page_id)
-    .single();
+  const couple = await prisma.couple.findUnique({
+    where: { id: page_id },
+    select: { id: true, paid: true, plan: true },
+  });
 
-  if (!couple) return NextResponse.json({ error: "Página não encontrada" }, { status: 404 });
-  if (couple.paid) return NextResponse.json({ error: "Já pago" }, { status: 409 });
+  if (!couple)
+    return NextResponse.json({ error: "Página não encontrada" }, { status: 404 });
+  if (couple.paid)
+    return NextResponse.json({ error: "Já pago" }, { status: 409 });
 
   const plan = couple.plan as "basic" | "premium";
-
   const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN!;
   const notificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/pagamento/webhook`;
 
@@ -63,15 +67,21 @@ export async function POST(req: NextRequest) {
   if (!mpRes.ok) {
     const err = await mpRes.json().catch(() => ({}));
     console.error("MP error", err);
-    return NextResponse.json({ error: "Erro ao gerar PIX. Tente novamente." }, { status: 502 });
+    return NextResponse.json(
+      { error: "Erro ao gerar PIX. Tente novamente." },
+      { status: 502 }
+    );
   }
 
   const mpData = await mpRes.json();
   const pixInfo = mpData.point_of_interaction?.transaction_data;
+  if (!pixInfo)
+    return NextResponse.json({ error: "PIX não disponível" }, { status: 502 });
 
-  if (!pixInfo) return NextResponse.json({ error: "PIX não disponível" }, { status: 502 });
-
-  await supabase.from("couples").update({ payment_id: String(mpData.id) }).eq("id", page_id);
+  await prisma.couple.update({
+    where: { id: page_id },
+    data: { payment_id: String(mpData.id) },
+  });
 
   return NextResponse.json({
     pix_qr_code: pixInfo.qr_code_base64,

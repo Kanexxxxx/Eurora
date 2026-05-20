@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { createServerClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const alt = "EURORA LOVE";
@@ -8,14 +8,11 @@ export const contentType = "image/png";
 
 export default async function OgImage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const supabase = createServerClient();
 
-  const { data } = await supabase
-    .from("couples")
-    .select("person1, person2, message")
-    .eq("slug", slug)
-    .eq("paid", true)
-    .single();
+  const data = await prisma.couple.findFirst({
+    where: { slug, paid: true },
+    select: { person1: true, person2: true, message: true },
+  });
 
   const names = data ? `${data.person1} & ${data.person2}` : "EURORA LOVE";
   const preview = data

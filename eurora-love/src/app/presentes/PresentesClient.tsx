@@ -3,8 +3,6 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import FloatingHearts from "@/components/effects/FloatingHearts";
-import FakeNotifications from "@/components/conversion/FakeNotifications";
-import LiveCounter from "@/components/conversion/LiveCounter";
 
 type Step = "intro" | "quiz" | "loading" | "result";
 
@@ -51,142 +49,193 @@ const QUIZ = [
   },
 ];
 
-const CATEGORIES = [
-  {
-    title: "Presentes que fazem mulheres chorarem",
-    emoji: "😭",
-    desc: "Os campeões absolutos de reações emocionantes.",
-    items: 12,
-    color: "from-rose-500/30 to-rose-700/10",
-  },
-  {
-    title: "Top que viralizaram no TikTok",
-    emoji: "📱",
-    desc: "Selecionados de vídeos com +1M de views.",
-    items: 18,
-    color: "from-fuchsia-500/30 to-purple-700/10",
-  },
-  {
-    title: "Presentes pra salvar relacionamento",
-    emoji: "💍",
-    desc: "Quando o objetivo é reconciliar de verdade.",
-    items: 9,
-    color: "from-amber-500/30 to-orange-700/10",
-  },
-  {
-    title: "Combinam com a personalidade dela",
-    emoji: "🔮",
-    desc: "IA cruzou seu quiz com a base de produtos.",
-    items: 24,
-    color: "from-pink-400/30 to-rose-600/10",
-  },
-  {
-    title: "Até R$ 50 — pequenos & poderosos",
-    emoji: "🤍",
-    desc: "Mais barato que jantar fora. Mais impacto.",
-    items: 15,
-    color: "from-emerald-500/30 to-teal-700/10",
-  },
-  {
-    title: "Premium — até R$ 300",
-    emoji: "👑",
-    desc: "Pra quando você quer impressionar de verdade.",
-    items: 11,
-    color: "from-violet-500/30 to-indigo-700/10",
-  },
-];
-
-const FAKE_PRODUCTS = [
+// Produtos reais com links de afiliados (Shopee, Amazon, Mercado Livre)
+const PRODUCTS = [
   {
     name: "Pulseira Personalizada com Coordenadas",
     price: "R$ 47,90",
     source: "Shopee",
     emoji: "💫",
     tag: "TikTok #1",
-    img: "linear-gradient(135deg, #f9d6dc 0%, #ff2d6a 100%)",
+    color: "from-rose-400 to-rose-600",
+    url: "https://shopee.com.br/search?keyword=pulseira+coordenadas+personalizada",
+    budget: ["50", "100"],
+    objetivo: ["emocionar", "surpreender"],
   },
   {
     name: "Buquê Eterno de Rosas Encantadas",
     price: "R$ 89,90",
-    source: "Amazon",
+    source: "Mercado Livre",
     emoji: "🌹",
     tag: "Faz chorar",
-    img: "linear-gradient(135deg, #ffb1c9 0%, #d6195a 100%)",
+    color: "from-pink-400 to-rose-600",
+    url: "https://www.mercadolivre.com.br/busca?q=buque+rosas+eternas+encantadas",
+    budget: ["100", "300"],
+    objetivo: ["emocionar", "surpreender", "reconciliar"],
   },
   {
-    name: "Caixa Surpresa com Mensagem Secreta",
+    name: "Caixa Surpresa Personalizada com Fotos",
     price: "R$ 64,90",
-    source: "TikTok Shop",
+    source: "Shopee",
     emoji: "🎁",
     tag: "Viral",
-    img: "linear-gradient(135deg, #f6c986 0%, #ff6a3d 100%)",
+    color: "from-amber-400 to-orange-500",
+    url: "https://shopee.com.br/search?keyword=caixa+surpresa+fotos+personalizada",
+    budget: ["50", "100"],
+    objetivo: ["viralizar", "surpreender"],
   },
   {
     name: "Diário do Casal com Capa Personalizada",
     price: "R$ 119,00",
-    source: "Mercado Livre",
+    source: "Shopee",
     emoji: "📔",
-    tag: "Premium",
-    img: "linear-gradient(135deg, #d6195a 0%, #2a0f2a 100%)",
+    tag: "Sentimental",
+    color: "from-violet-500 to-purple-700",
+    url: "https://shopee.com.br/search?keyword=diario+casal+personalizado",
+    budget: ["100", "300"],
+    objetivo: ["emocionar", "surpreender"],
   },
   {
-    name: "Set Spa Aromaterapia 'Nossa Noite'",
+    name: "Kit Spa Aromaterapia Romântico",
     price: "R$ 154,90",
     source: "Amazon",
     emoji: "🕯️",
     tag: "Romântico",
-    img: "linear-gradient(135deg, #f4b8a4 0%, #d49457 100%)",
+    color: "from-amber-300 to-rose-400",
+    url: "https://www.amazon.com.br/s?k=kit+spa+romantico+vela+aromaterapia",
+    budget: ["100", "300"],
+    objetivo: ["emocionar", "reconciliar"],
   },
   {
-    name: "Necessaire de Couro Bordado a Mão",
+    name: "Anel Ajustável Coração de Zircônia",
+    price: "R$ 39,90",
+    source: "Shopee",
+    emoji: "💍",
+    tag: "Clássico",
+    color: "from-rose-300 to-pink-500",
+    url: "https://shopee.com.br/search?keyword=anel+coracao+zirconia+ajustavel",
+    budget: ["50", "100"],
+    objetivo: ["emocionar", "surpreender"],
+  },
+  {
+    name: "Quadro Personalizado Mapa Estelar",
     price: "R$ 89,00",
     source: "Shopee",
-    emoji: "💼",
+    emoji: "⭐",
     tag: "Único",
-    img: "linear-gradient(135deg, #ff2d6a 0%, #f6c986 100%)",
+    color: "from-indigo-500 to-purple-600",
+    url: "https://shopee.com.br/search?keyword=quadro+mapa+estelar+personalizado",
+    budget: ["50", "100", "300"],
+    objetivo: ["surpreender", "emocionar"],
+  },
+  {
+    name: "Perfume La Vie Est Belle Lancôme",
+    price: "R$ 299,00",
+    source: "Amazon",
+    emoji: "🌸",
+    tag: "Premium",
+    color: "from-pink-400 to-fuchsia-600",
+    url: "https://www.amazon.com.br/s?k=la+vie+est+belle+lancome",
+    budget: ["300", "999"],
+    objetivo: ["emocionar", "surpreender"],
+  },
+  {
+    name: "Joia de Pele — Colar Personalizado",
+    price: "R$ 79,90",
+    source: "Shopee",
+    emoji: "📿",
+    tag: "Tendência",
+    color: "from-amber-400 to-yellow-600",
+    url: "https://shopee.com.br/search?keyword=colar+personalizado+nome+inicial",
+    budget: ["50", "100"],
+    objetivo: ["viralizar", "surpreender"],
+  },
+  {
+    name: "Jantar a Dois — Experiência Gastronômica",
+    price: "R$ 250,00",
+    source: "GetNinjas",
+    emoji: "🍷",
+    tag: "Experiência",
+    color: "from-red-700 to-rose-900",
+    url: "https://www.getninjas.com.br/para/jantar-romantico",
+    budget: ["300", "999"],
+    objetivo: ["emocionar", "reconciliar"],
+  },
+  {
+    name: "Airpods Pro (2ª Geração) Apple",
+    price: "R$ 1.599,00",
+    source: "Amazon",
+    emoji: "🎧",
+    tag: "Tech love",
+    color: "from-gray-400 to-gray-600",
+    url: "https://www.amazon.com.br/s?k=airpods+pro+apple",
+    budget: ["999"],
+    objetivo: ["surpreender", "viralizar"],
+  },
+  {
+    name: "Vela Perfumada Artesanal 'Nossa Noite'",
+    price: "R$ 49,90",
+    source: "Shopee",
+    emoji: "🕯️",
+    tag: "Aconchego",
+    color: "from-orange-300 to-amber-500",
+    url: "https://shopee.com.br/search?keyword=vela+perfumada+artesanal+romantica",
+    budget: ["50", "100"],
+    objetivo: ["emocionar", "reconciliar"],
   },
 ];
 
 export default function PresentesClient() {
   const [step, setStep] = useState<Step>("intro");
   const [qIndex, setQIndex] = useState(0);
-  const [, setAnswers] = useState<Record<string, string>>({});
-  const [unlocked, setUnlocked] = useState(false);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
 
   const progress = useMemo(
     () => Math.round(((qIndex + 1) / QUIZ.length) * 100),
     [qIndex]
   );
 
+  const filteredProducts = useMemo(() => {
+    if (!answers.budget) return PRODUCTS.slice(0, 6);
+    return PRODUCTS.filter(
+      (p) =>
+        p.budget.includes(answers.budget) &&
+        (!answers.objetivo || p.objetivo.includes(answers.objetivo))
+    ).slice(0, 6);
+  }, [answers]);
+
   const handleAnswer = (qid: string, value: string) => {
-    setAnswers((a) => ({ ...a, [qid]: value }));
+    const updated = { ...answers, [qid]: value };
+    setAnswers(updated);
     if (qIndex < QUIZ.length - 1) {
       setQIndex((i) => i + 1);
     } else {
       setStep("loading");
-      setTimeout(() => setStep("result"), 2800);
+      setTimeout(() => setStep("result"), 2200);
     }
   };
 
   return (
     <main className="relative min-h-screen overflow-hidden">
       <FloatingHearts count={10} />
-      <FakeNotifications />
 
       {/* Hero */}
       <section className="relative px-4 pt-12 pb-8">
         <div className="max-w-4xl mx-auto text-center">
           <p className="pill pill-live mb-6 mx-auto">
-            <span className="live-dot" /> 412 desbloqueios hoje
+            <span className="live-dot" /> Curadoria personalizada
           </p>
           <h1 className="font-heading text-4xl sm:text-6xl font-bold text-white mb-5 tracking-tight leading-tight">
             Nossa IA encontra o{" "}
-            <span className="text-gradient-fire">presente perfeito</span> pra ela.
+            <span className="text-gradient-fire">presente perfeito</span> pra
+            ela.
           </h1>
           <p className="text-white/65 text-lg max-w-2xl mx-auto">
-            Selecionado em tempo real do{" "}
-            <span className="text-white font-medium">TikTok Shop, Shopee, Amazon e Mercado Livre</span>.
-            Sem genérico. Sem mil-folhas. Só o que faz sentido pra ela.
+            Curadoria real com links diretos para{" "}
+            <span className="text-white font-medium">
+              Shopee, Amazon e Mercado Livre
+            </span>
+            . Sem genérico. Só o que faz sentido pra ela.
           </p>
         </div>
       </section>
@@ -200,75 +249,26 @@ export default function PresentesClient() {
             exit={{ opacity: 0, y: -20 }}
             className="relative px-4 py-12"
           >
-            <div className="max-w-6xl mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-                <LiveCounter
-                  label="Desbloqueios hoje"
-                  base={412}
-                  step={1}
-                  intervalMs={5800}
-                />
-                <LiveCounter
-                  label="Casais felizes essa semana"
-                  base={2418}
-                  step={2}
-                  intervalMs={6500}
-                />
-                <LiveCounter
-                  label="Match rate da IA"
-                  base={94}
-                  step={0}
-                  intervalMs={9000}
-                  suffix="%"
-                  pulsing={false}
-                />
-              </div>
-
-              {/* Categories preview */}
-              <h2 className="font-heading text-3xl sm:text-4xl text-white text-center mb-3 tracking-tight">
-                <span className="text-gradient-ember">6 categorias secretas</span>
+            <div className="max-w-4xl mx-auto text-center">
+              <h2 className="font-heading text-3xl sm:text-4xl text-white mb-3 tracking-tight">
+                <span className="text-gradient-ember">
+                  Responda 4 perguntas
+                </span>
               </h2>
-              <p className="text-white/55 text-center mb-10 text-sm">
-                Curadoria atualizada todos os dias por uma IA romântica.
+              <p className="text-white/55 mb-10 text-sm">
+                Nossa curadoria filtra os melhores produtos com base no perfil
+                dela.
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
-                {CATEGORIES.map((c, i) => (
-                  <motion.div
-                    key={c.title}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.08 }}
-                    className="card-premium p-6 relative overflow-hidden"
-                  >
-                    <div className={`absolute -top-12 -right-12 w-40 h-40 bg-gradient-to-br ${c.color} rounded-full blur-2xl opacity-60`} />
-                    <div className="relative">
-                      <div className="flex items-start justify-between mb-3">
-                        <span className="text-4xl">{c.emoji}</span>
-                        <span className="pill pill-gold text-[10px]">
-                          🔒 {c.items} itens
-                        </span>
-                      </div>
-                      <h3 className="font-heading text-xl text-white mb-2 leading-tight">
-                        {c.title}
-                      </h3>
-                      <p className="text-white/55 text-sm">{c.desc}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-
-              <div className="text-center">
-                <button
-                  onClick={() => setStep("quiz")}
-                  className="btn-premium inline-flex items-center gap-2 text-lg"
-                >
-                  Começar curadoria personalizada →
-                </button>
-                <p className="text-white/45 text-xs mt-3">
-                  Leva 30 segundos · Grátis fazer o quiz
-                </p>
-              </div>
+              <button
+                onClick={() => setStep("quiz")}
+                className="btn-premium inline-flex items-center gap-2 text-lg"
+              >
+                Começar curadoria personalizada →
+              </button>
+              <p className="text-white/45 text-xs mt-3">
+                Leva 30 segundos · Totalmente grátis
+              </p>
             </div>
           </motion.section>
         )}
@@ -282,7 +282,6 @@ export default function PresentesClient() {
             className="relative px-4 py-16"
           >
             <div className="max-w-2xl mx-auto">
-              {/* Progress */}
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-white/60 text-sm">
@@ -361,19 +360,13 @@ export default function PresentesClient() {
                 ♥
               </span>
             </div>
-
             <div className="mt-8 text-center max-w-sm">
               <h3 className="font-heading text-2xl text-white mb-2">
-                Analisando 8.412 produtos…
+                Filtrando presentes…
               </h3>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 }}
-                className="text-white/55 text-sm"
-              >
-                Cruzando o que ela ama com presentes que viralizaram
-              </motion.p>
+              <p className="text-white/55 text-sm">
+                Cruzando o perfil dela com nossa curadoria
+              </p>
             </div>
           </motion.section>
         )}
@@ -389,140 +382,67 @@ export default function PresentesClient() {
             <div className="max-w-5xl mx-auto">
               <div className="text-center mb-10">
                 <p className="pill pill-gold mb-5 mx-auto">
-                  ✨ Match perfeito encontrado
+                  ✨ Curadoria personalizada
                 </p>
                 <h2 className="font-heading text-4xl sm:text-5xl text-white mb-3 tracking-tight">
-                  Encontramos{" "}
-                  <span className="text-gradient-fire">12 presentes</span>{" "}
-                  perfeitos pra ela
+                  {filteredProducts.length} presentes perfeitos pra ela
                 </h2>
                 <p className="text-white/65">
-                  Cada um selecionado especialmente baseado nas suas respostas.
+                  Clique em qualquer produto para abrir direto na loja.
                 </p>
               </div>
 
-              {/* Locked grid */}
-              <div className="relative">
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-                  {FAKE_PRODUCTS.map((p, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.06 }}
-                      className="card-premium overflow-hidden relative"
-                    >
-                      <div
-                        className={`aspect-square ${
-                          !unlocked ? "blurred-preview" : ""
-                        } flex items-center justify-center text-7xl`}
-                        style={{ background: p.img }}
-                      >
-                        {p.emoji}
-                      </div>
-                      <div className={`p-4 ${!unlocked ? "blurred-preview-sm" : ""}`}>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="pill pill-live text-[9px]">
-                            {p.tag}
-                          </span>
-                          <span className="text-white/40 text-[10px] uppercase">
-                            {p.source}
-                          </span>
-                        </div>
-                        <p className="text-white text-sm font-medium leading-tight mb-1">
-                          {p.name}
-                        </p>
-                        <p className="text-rose-300 font-bold text-base">
-                          {p.price}
-                        </p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-
-                {/* Paywall overlay */}
-                {!unlocked && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5 }}
-                    className="absolute inset-0 flex items-center justify-center"
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
+                {filteredProducts.map((p, i) => (
+                  <motion.a
+                    key={i}
+                    href={p.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.06 }}
+                    className="card-premium overflow-hidden group block"
                   >
-                    <div className="glass-premium rounded-3xl p-8 max-w-md w-full mx-4 text-center">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-rose-500 to-amber-400 mx-auto mb-5 flex items-center justify-center text-3xl shadow-[0_0_40px_rgba(255,45,106,0.5)]">
-                        🔒
-                      </div>
-                      <h3 className="font-heading text-3xl text-white mb-2">
-                        Desbloqueie os 12 presentes
-                      </h3>
-                      <p className="text-white/65 text-sm mb-6 leading-relaxed">
-                        Acesso vitalício aos presentes personalizados,
-                        atualizados toda semana. <br />
-                        <span className="text-amber-300">
-                          + Bônus: lista &ldquo;TikTok Viral&rdquo; deste mês
+                    <div
+                      className={`aspect-square bg-gradient-to-br ${p.color} flex items-center justify-center text-6xl group-hover:scale-105 transition-transform duration-500`}
+                    >
+                      {p.emoji}
+                    </div>
+                    <div className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="pill pill-live text-[9px]">
+                          {p.tag}
                         </span>
+                        <span className="text-white/40 text-[10px] uppercase">
+                          {p.source}
+                        </span>
+                      </div>
+                      <p className="text-white text-sm font-medium leading-tight mb-1">
+                        {p.name}
                       </p>
-
-                      <div className="flex items-baseline justify-center gap-3 mb-5">
-                        <span className="text-white/40 line-through text-lg">
-                          R$ 29,90
-                        </span>
-                        <span className="font-heading text-5xl font-bold text-gradient-fire leading-none">
-                          R$ 8
-                        </span>
-                      </div>
-
-                      <button
-                        onClick={() => setUnlocked(true)}
-                        className="btn-premium w-full text-lg mb-3"
-                      >
-                        Desbloquear por R$ 8 →
-                      </button>
-
-                      <p className="text-white/45 text-xs">
-                        🔥 412 desbloqueios hoje · Garantia de 7 dias
+                      <p className="text-rose-300 font-bold text-base">
+                        {p.price}
+                      </p>
+                      <p className="text-white/40 text-xs mt-2 group-hover:text-rose-300 transition-colors">
+                        Ver na loja →
                       </p>
                     </div>
-                  </motion.div>
-                )}
+                  </motion.a>
+                ))}
               </div>
 
-              {unlocked && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-center mt-8"
+              <div className="text-center">
+                <button
+                  onClick={() => {
+                    setStep("intro");
+                    setQIndex(0);
+                    setAnswers({});
+                  }}
+                  className="btn-ghost-glow"
                 >
-                  <p className="text-emerald-400 text-sm mb-4">
-                    ✓ Lista desbloqueada · Salva no seu e-mail
-                  </p>
-                  <button className="btn-ghost-glow">
-                    Compartilhar minha curadoria
-                  </button>
-                </motion.div>
-              )}
-
-              {/* Social proof under products */}
-              <div className="mt-12 glass rounded-3xl p-6 flex flex-col sm:flex-row items-center gap-4 justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex -space-x-2">
-                    {["💕", "💖", "💗"].map((e, i) => (
-                      <span
-                        key={i}
-                        className="w-9 h-9 rounded-full bg-gradient-to-br from-rose-500 to-amber-400 flex items-center justify-center text-sm ring-2 ring-background"
-                      >
-                        {e}
-                      </span>
-                    ))}
-                  </div>
-                  <p className="text-white/65 text-sm">
-                    <span className="text-white font-semibold">2.847</span>{" "}
-                    casais usaram essa curadoria essa semana
-                  </p>
-                </div>
-                <p className="text-amber-300 text-sm font-medium">
-                  ★ ★ ★ ★ ★ 4.92 / 5
-                </p>
+                  Refazer o quiz
+                </button>
               </div>
             </div>
           </motion.section>

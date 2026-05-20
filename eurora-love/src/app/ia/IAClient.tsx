@@ -4,8 +4,6 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import FloatingHearts from "@/components/effects/FloatingHearts";
-import FakeNotifications from "@/components/conversion/FakeNotifications";
-import LiveCounter from "@/components/conversion/LiveCounter";
 
 type ToolId = "carta" | "poema" | "musica" | "presente" | "bio" | "convite";
 
@@ -14,122 +12,125 @@ const TOOLS: {
   title: string;
   emoji: string;
   desc: string;
-  prompt: string;
-  fields: { name: string; label: string; placeholder: string; type?: "text" | "textarea" }[];
-  example: string;
   badge: string;
+  fields: { name: string; label: string; placeholder: string; type?: "text" | "textarea" }[];
 }[] = [
   {
     id: "carta",
     title: "Carta Romântica",
     emoji: "💌",
-    desc: "Aquela carta de papel manuscrito que faz chorar — gerada em segundos.",
-    prompt: "Escreva uma carta romântica intensa e sincera",
+    desc: "Aquela carta que faz chorar — gerada em segundos com IA.",
     badge: "Mais usado",
     fields: [
       { name: "para", label: "Pra quem é a carta", placeholder: "Maria, minha namorada" },
       { name: "lembranca", label: "Uma lembrança especial de vocês", placeholder: "Aquele dia que choveu na praia…", type: "textarea" },
       { name: "tom", label: "Tom da carta", placeholder: "Profundo e emocionante" },
     ],
-    example:
-      "Maria,\n\nNão dá pra começar essa carta sem te dizer o óbvio que esquecemos de falar todos os dias: você é a coisa mais bonita que já me aconteceu.\n\nLembra daquele dia que choveu na praia e a gente correu rindo até o quiosque? Eu sei que parecia só uma corrida. Pra mim, foi o segundo exato em que entendi que queria isso pra vida toda — você, eu, e a chuva.\n\nObrigado por ser a paz nos meus piores dias e a festa nos melhores.\n\nTeu, pra sempre.",
   },
   {
     id: "poema",
     title: "Poema Personalizado",
     emoji: "🌹",
     desc: "Verso livre ou rimado. Você escolhe o estilo.",
-    prompt: "Crie um poema romântico",
     badge: "Viral",
     fields: [
       { name: "nome", label: "Nome dele/dela", placeholder: "Pedro" },
       { name: "sentimento", label: "O que você sente", placeholder: "Paz, calor de lar, vontade de eternidade", type: "textarea" },
     ],
-    example:
-      "Pedro,\nteu nome cabe na minha boca\ncomo café de manhã —\ndoce, quente, necessário.\n\nNão é amor de fogo\nque queima e acaba.\nÉ brasa: silenciosa,\nsem pressa de virar incêndio,\nporque já entendeu\nque vai durar a vida toda.",
   },
   {
     id: "musica",
     title: "Letra de Música",
     emoji: "🎵",
     desc: "Uma música autoral pra dedicar — pop, samba, sertanejo, MPB.",
-    prompt: "Componha uma letra de música romântica",
     badge: "Spotify-ready",
     fields: [
       { name: "estilo", label: "Estilo musical", placeholder: "Sertanejo romântico" },
       { name: "historia", label: "História de vocês em 2 frases", placeholder: "Nos conhecemos em uma festa…", type: "textarea" },
     ],
-    example:
-      "(Verso 1)\nFoi numa festa qualquer, dia de semana\nVocê chegou de vestido, eu mudei de plano\n\n(Refrão)\nE eu não sabia ainda\nque ali nascia tudo\nque ia mudar minha vida\nem 4 minutos surdos\n\n(Verso 2)\nPedi seu nome, anotei na servieta\nGuardei aquela noite, dobrei na carteira…",
   },
   {
     id: "presente",
     title: "Texto pra Presente",
     emoji: "🎁",
     desc: "Aquele cartãozinho que vai junto com o presente — sem clichê.",
-    prompt: "Escreva um texto romântico curto pra acompanhar um presente",
     badge: "Pronto pra cartão",
     fields: [
       { name: "presente", label: "O presente", placeholder: "Uma pulseira gravada" },
       { name: "momento", label: "Pra qual momento", placeholder: "Dia dos Namorados" },
     ],
-    example:
-      "Uma pulseira pequena\npra um amor enorme.\n\nQue ela te lembre,\ntodos os dias,\nque tem alguém aqui\nque escolhe você\ndo nascer do sol\nao último segundo\nde cada noite.\n\nFeliz Dia dos Namorados.",
   },
   {
     id: "bio",
     title: "Bio de Casal",
     emoji: "💕",
     desc: "Pra colocar no Instagram do casal — direta, divertida, fofa.",
-    prompt: "Crie uma bio criativa pra um perfil de casal",
     badge: "Compartilhável",
     fields: [
       { name: "data", label: "Desde quando", placeholder: "12/06/2022" },
       { name: "vibe", label: "Vibe do casal", placeholder: "Engraçado e viajante" },
     ],
-    example:
-      "📍 Casal desde 12.06.22\n☁️ Brigamos sobre filme. Fazemos as pazes com sorvete.\n✈️ Já fomos pra 7 cidades de mãos dadas.\n💍 Cap. 1 de muitos.\n\n— ele & ela",
   },
   {
     id: "convite",
     title: "Convite Romântico",
     emoji: "💎",
     desc: "Convite pra jantar, pedido, encontro surpresa. Elegante e marcante.",
-    prompt: "Crie um convite romântico elegante",
     badge: "Premium",
     fields: [
       { name: "ocasiao", label: "Tipo de convite", placeholder: "Jantar surpresa em casa" },
       { name: "local", label: "Onde", placeholder: "Nosso apê, hoje 20h" },
     ],
-    example:
-      "Você está oficialmente convidada\npara o jantar de uma vida toda.\n\nLocal: nosso apê.\nHora: 20h.\nDress code: aquele vestido que eu não consigo parar de olhar.\n\nNão preciso que confirme presença.\nSó que apareça.\n\nCom amor,\nEu.",
   },
 ];
+
+const FREE_GENERATIONS = 1;
 
 export default function IAClient() {
   const [activeId, setActiveId] = useState<ToolId>("carta");
   const [inputs, setInputs] = useState<Record<string, string>>({});
   const [generating, setGenerating] = useState(false);
   const [output, setOutput] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [generationsUsed, setGenerationsUsed] = useState(0);
 
   const active = TOOLS.find((t) => t.id === activeId)!;
-  const FREE_GENERATIONS = 1;
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (generationsUsed >= FREE_GENERATIONS) {
       setShowPaywall(true);
       return;
     }
+
+    const hasContent = active.fields.some((f) => inputs[f.name]?.trim());
+    if (!hasContent) {
+      setError("Preencha pelo menos um campo antes de gerar.");
+      return;
+    }
+
     setGenerating(true);
     setOutput(null);
-    setTimeout(() => {
-      setOutput(active.example);
-      setGenerating(false);
+    setError(null);
+
+    try {
+      const res = await fetch("/api/ia/gerar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tipo: activeId, campos: inputs }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao gerar.");
+
+      setOutput(data.texto);
       setGenerationsUsed((n) => n + 1);
-    }, 2200);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Erro inesperado.");
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const handleCopy = () => {
@@ -143,17 +144,17 @@ export default function IAClient() {
     setActiveId(id);
     setOutput(null);
     setInputs({});
+    setError(null);
   };
 
   return (
     <main className="relative min-h-screen overflow-hidden">
       <FloatingHearts count={8} />
-      <FakeNotifications />
 
       <section className="relative px-4 pt-12 pb-6">
         <div className="max-w-4xl mx-auto text-center">
           <p className="pill pill-live mb-6 mx-auto">
-            <span className="live-dot" /> 8.412 textos gerados nas últimas 24h
+            <span className="live-dot" /> IA Romântica com Claude
           </p>
           <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4 tracking-tight leading-tight">
             A <span className="text-gradient-fire">IA Romântica</span> mais
@@ -170,24 +171,17 @@ export default function IAClient() {
 
       <section className="relative px-4 py-6">
         <div className="max-w-6xl mx-auto">
-          {/* Stats - mobile: 1 col, sm: 3 cols */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10">
-            <LiveCounter label="Cartas escritas hoje" base={1284} step={1} intervalMs={5500} />
-            <LiveCounter label="Poemas gerados" base={3018} step={2} intervalMs={6200} />
-            <LiveCounter label="Casais usando agora" base={412} step={1} intervalMs={4800} />
-          </div>
-
-          {/* Mobile: horizontal tool tabs | Desktop: sidebar */}
+          {/* Mobile tabs */}
           <div className="mb-6 lg:hidden">
             <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
               {TOOLS.map((t) => (
                 <button
                   key={t.id}
                   onClick={() => switchTool(t.id)}
-                  className={`flex-shrink-0 px-4 py-2.5 rounded-2xl text-sm font-medium flex items-center gap-2 transition-all ${
+                  className={`flex-shrink-0 px-4 py-2.5 rounded-2xl text-sm font-medium flex items-center gap-2 transition-all border ${
                     activeId === t.id
                       ? "glass-premium border-rose-400/40 text-white"
-                      : "bg-white/[0.03] border border-white/8 text-white/60"
+                      : "bg-white/[0.03] border-white/10 text-white/60"
                   }`}
                 >
                   <span>{t.emoji}</span>
@@ -198,7 +192,7 @@ export default function IAClient() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
-            {/* Tools sidebar — desktop only */}
+            {/* Sidebar */}
             <div className="hidden lg:block space-y-2 lg:sticky lg:top-24 lg:self-start">
               <p className="text-white/40 text-xs uppercase tracking-wider mb-3 px-2">
                 Geradores
@@ -207,29 +201,42 @@ export default function IAClient() {
                 <button
                   key={t.id}
                   onClick={() => switchTool(t.id)}
-                  className={`w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 transition-all ${
+                  className={`w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 transition-all border ${
                     activeId === t.id
                       ? "glass-premium border-rose-400/40"
-                      : "bg-white/[0.02] border border-white/5 hover:bg-white/5"
+                      : "bg-white/[0.02] border-white/5 hover:bg-white/5"
                   }`}
                 >
-                  <span className={`text-2xl ${activeId === t.id ? "scale-110" : "opacity-70"} transition-transform`}>
+                  <span
+                    className={`text-2xl ${activeId === t.id ? "scale-110" : "opacity-70"} transition-transform`}
+                  >
                     {t.emoji}
                   </span>
                   <span className="flex-1">
-                    <span className="block text-white text-sm font-medium leading-tight">{t.title}</span>
-                    <span className="block text-white/45 text-[11px] mt-0.5">{t.badge}</span>
+                    <span className="block text-white text-sm font-medium leading-tight">
+                      {t.title}
+                    </span>
+                    <span className="block text-white/45 text-[11px] mt-0.5">
+                      {t.badge}
+                    </span>
                   </span>
-                  {activeId === t.id && <span className="text-rose-300 text-xs">▸</span>}
+                  {activeId === t.id && (
+                    <span className="text-rose-300 text-xs">▸</span>
+                  )}
                 </button>
               ))}
 
               <div className="rounded-2xl p-4 bg-amber-500/5 border border-amber-500/20 mt-4">
-                <p className="text-amber-200 text-xs font-semibold mb-1">💎 Premium ilimitado</p>
+                <p className="text-amber-200 text-xs font-semibold mb-1">
+                  💎 Premium ilimitado
+                </p>
                 <p className="text-white/55 text-[11px] leading-relaxed">
                   R$ 19 por todos os geradores, pra sempre.
                 </p>
-                <Link href="/criar?plan=premium" className="inline-block mt-3 text-rose-300 text-xs font-semibold hover:text-rose-200">
+                <Link
+                  href="/criar?plan=premium"
+                  className="inline-block mt-3 text-rose-300 text-xs font-semibold hover:text-rose-200"
+                >
                   Desbloquear premium →
                 </Link>
               </div>
@@ -244,7 +251,9 @@ export default function IAClient() {
                   </h2>
                   <p className="text-white/60 text-sm mt-1">{active.desc}</p>
                 </div>
-                <span className="pill pill-gold text-[10px] flex-shrink-0 ml-3">IA-GEN</span>
+                <span className="pill pill-gold text-[10px] flex-shrink-0 ml-3">
+                  IA-GEN
+                </span>
               </div>
 
               <div className="space-y-4 mb-6">
@@ -256,7 +265,9 @@ export default function IAClient() {
                     {field.type === "textarea" ? (
                       <textarea
                         value={inputs[field.name] || ""}
-                        onChange={(e) => setInputs({ ...inputs, [field.name]: e.target.value })}
+                        onChange={(e) =>
+                          setInputs({ ...inputs, [field.name]: e.target.value })
+                        }
                         placeholder={field.placeholder}
                         rows={3}
                         className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-rose-400/40 text-sm leading-relaxed"
@@ -264,7 +275,9 @@ export default function IAClient() {
                     ) : (
                       <input
                         value={inputs[field.name] || ""}
-                        onChange={(e) => setInputs({ ...inputs, [field.name]: e.target.value })}
+                        onChange={(e) =>
+                          setInputs({ ...inputs, [field.name]: e.target.value })
+                        }
                         placeholder={field.placeholder}
                         className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-rose-400/40 text-sm"
                       />
@@ -272,6 +285,10 @@ export default function IAClient() {
                   </div>
                 ))}
               </div>
+
+              {error && (
+                <p className="text-red-400 text-sm mb-4 text-center">{error}</p>
+              )}
 
               <button
                 onClick={handleGenerate}
@@ -282,7 +299,11 @@ export default function IAClient() {
                   <>
                     <motion.span
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
                       className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
                     />
                     Escrevendo do coração…
@@ -292,7 +313,7 @@ export default function IAClient() {
                 )}
               </button>
 
-              {generationsUsed === 0 && (
+              {generationsUsed === 0 && !output && (
                 <p className="text-white/45 text-xs text-center mt-3">
                   🎁 1 geração grátis · Sem cadastro
                 </p>
@@ -307,8 +328,13 @@ export default function IAClient() {
                     className="mt-8"
                   >
                     <div className="flex items-center justify-between mb-3">
-                      <p className="text-white/60 text-xs uppercase tracking-wider">✨ Resultado gerado</p>
-                      <button onClick={handleCopy} className="text-rose-300 text-xs hover:text-rose-200 font-medium">
+                      <p className="text-white/60 text-xs uppercase tracking-wider">
+                        ✨ Resultado gerado
+                      </p>
+                      <button
+                        onClick={handleCopy}
+                        className="text-rose-300 text-xs hover:text-rose-200 font-medium"
+                      >
                         {copied ? "✓ Copiado" : "📋 Copiar"}
                       </button>
                     </div>
@@ -341,11 +367,18 @@ export default function IAClient() {
             </div>
           </div>
 
-          {/* Mobile premium card */}
+          {/* Mobile premium */}
           <div className="lg:hidden mt-6 rounded-2xl p-4 bg-amber-500/5 border border-amber-500/20">
-            <p className="text-amber-200 text-sm font-semibold mb-1">💎 Premium ilimitado — R$ 19</p>
-            <p className="text-white/55 text-xs leading-relaxed mb-3">Todos os geradores, pra sempre. Inclui templates premium.</p>
-            <Link href="/criar?plan=premium" className="btn-premium text-center block text-sm">
+            <p className="text-amber-200 text-sm font-semibold mb-1">
+              💎 Premium ilimitado — R$ 19
+            </p>
+            <p className="text-white/55 text-xs leading-relaxed mb-3">
+              Todos os geradores, pra sempre.
+            </p>
+            <Link
+              href="/criar?plan=premium"
+              className="btn-premium text-center block text-sm"
+            >
               Desbloquear premium →
             </Link>
           </div>
@@ -389,24 +422,11 @@ export default function IAClient() {
                 desbloqueia <strong>tudo</strong> da IA Romântica — pra sempre.
               </p>
 
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                <div className="rounded-2xl border border-white/10 p-4">
-                  <p className="text-white/50 text-xs">Avulso</p>
-                  <p className="font-heading text-3xl text-white mt-1">R$ 6</p>
-                  <p className="text-white/40 text-[11px] mt-1">5 gerações</p>
-                </div>
-                <div className="rounded-2xl border border-rose-400/40 bg-gradient-to-br from-rose-500/10 to-amber-400/5 p-4 relative">
-                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] bg-rose-500 text-white px-2 py-0.5 rounded-full font-bold">
-                    PREMIUM
-                  </span>
-                  <p className="text-rose-300 text-xs">Tudo</p>
-                  <p className="font-heading text-3xl text-gradient-fire mt-1">R$ 19</p>
-                  <p className="text-white/55 text-[11px] mt-1">Ilimitado vitalício</p>
-                </div>
-              </div>
-
-              <Link href="/criar?plan=premium" className="btn-premium w-full block text-center">
-                Desbloquear premium →
+              <Link
+                href="/criar?plan=premium"
+                className="btn-premium w-full block text-center"
+              >
+                Desbloquear premium — R$ 19 →
               </Link>
 
               <p className="text-white/40 text-xs mt-3">

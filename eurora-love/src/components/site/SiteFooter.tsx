@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { isLovePage } from "@/lib/utils/isLovePage";
 
 const PRODUCTS = [
   { href: "/criar", label: "Página do Amor" },
@@ -27,24 +28,12 @@ const LEGAL = [
 export default function SiteFooter() {
   const pathname = usePathname();
 
-  const isLovePage =
-    pathname &&
-    !pathname.startsWith("/criar") &&
-    !pathname.startsWith("/checkout") &&
-    !pathname.startsWith("/sucesso") &&
-    !pathname.startsWith("/presentes") &&
-    !pathname.startsWith("/mensagem") &&
-    !pathname.startsWith("/quiz") &&
-    !pathname.startsWith("/ia") &&
-    pathname !== "/" &&
-    pathname.length > 1;
-
-  if (isLovePage) return null;
+  if (isLovePage(pathname)) return null;
 
   return (
     <footer className="relative mt-20 pt-14 pb-10 px-4 border-t border-white/5 overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-rose-600/8 rounded-full blur-[100px]" />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-rose-600/10 rounded-full blur-[100px]" />
       </div>
 
       <div className="relative max-w-7xl mx-auto">

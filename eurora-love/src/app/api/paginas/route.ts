@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 import { createServerClient } from "@/lib/supabase/server";
-import { coupleFieldsSchema, coupleSchema } from "@/lib/validations";
+import { coupleFieldsSchema } from "@/lib/validations";
 import { generateSlug } from "@/lib/utils/slug";
+import type { Theme, Plan } from "@prisma/client";
 
 const RATE_LIMIT = new Map<string, { count: number; ts: number }>();
 
@@ -17,10 +19,20 @@ function checkRateLimit(ip: string, max = 5, windowMs = 60_000): boolean {
   return true;
 }
 
+const THEME_MAP: Record<string, Theme> = {
+  "black-luxury": "black_luxury",
+  "neon-romance": "neon_romance",
+  "minimal-love": "minimal_love",
+  "velvet-dark": "velvet_dark",
+};
+
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for") ?? "unknown";
   if (!checkRateLimit(ip)) {
-    return NextResponse.json({ error: "Muitas requisições. Tente novamente em 1 minuto." }, { status: 429 });
+    return NextResponse.json(
+      { error: "Muitas requisições. Tente novamente em 1 minuto." },
+      { status: 429 }
+    );
   }
 
   let formData: FormData;
@@ -32,19 +44,27 @@ export async function POST(req: NextRequest) {
 
   const photos = formData.getAll("photos") as File[];
   if (!photos.length || photos.length > 10) {
-    return NextResponse.json({ error: "Envie entre 1 e 10 fotos." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Envie entre 1 e 10 fotos." },
+      { status: 400 }
+    );
   }
 
   for (const photo of photos) {
     if (!["image/jpeg", "image/png", "image/webp"].includes(photo.type)) {
-      return NextResponse.json({ error: "Formato de imagem inválido." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Formato de imagem inválido." },
+        { status: 400 }
+      );
     }
     if (photo.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: "Foto muito grande (máx 5MB)." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Foto muito grande (máx 5MB)." },
+        { status: 400 }
+      );
     }
   }
 
-  // Validate text fields BEFORE uploading photos to avoid orphaned storage files
   const fieldsCheck = coupleFieldsSchema.safeParse({
     person1: formData.get("person1"),
     person2: formData.get("person2"),
@@ -55,59 +75,59 @@ export async function POST(req: NextRequest) {
     plan: formData.get("plan"),
   });
   if (!fieldsCheck.success) {
-    return NextResponse.json({ error: "Dados inválidos.", details: fieldsCheck.error.flatten() }, { status: 400 });
+    return NextResponse.json(
+      { error: "Dados inválidos.", details: fieldsCheck.error.flatten() },
+      { status: 400 }
+    );
   }
 
+  // Upload photos to Supabase Storage (Prisma doesn't handle file storage)
   const supabase = createServerClient();
   const photoUrls: string[] = [];
 
   for (const photo of photos) {
     const bytes = await photo.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${photo.type.split("/")[1]}`;
+    const ext = photo.type.split("/")[1];
+    const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
     const { error: uploadError } = await supabase.storage
       .from("couple-photos")
       .upload(filename, buffer, { contentType: photo.type, upsert: false });
 
     if (uploadError) {
-      return NextResponse.json({ error: "Erro ao fazer upload da foto." }, { status: 500 });
+      return NextResponse.json(
+        { error: "Erro ao fazer upload da foto." },
+        { status: 500 }
+      );
     }
 
-    const { data: urlData } = supabase.storage.from("couple-photos").getPublicUrl(filename);
+    const { data: urlData } = supabase.storage
+      .from("couple-photos")
+      .getPublicUrl(filename);
     photoUrls.push(urlData.publicUrl);
   }
 
-  const body = {
-    person1: formData.get("person1") as string,
-    person2: formData.get("person2") as string,
-    message: formData.get("message") as string,
-    music_url: (formData.get("music_url") as string) || undefined,
-    relationship_date: formData.get("relationship_date") as string,
-    theme: formData.get("theme") as string,
-    plan: formData.get("plan") as string,
-    photo_urls: photoUrls,
-  };
+  const fields = fieldsCheck.data;
+  const slug = generateSlug(fields.person1, fields.person2);
+  const theme = THEME_MAP[fields.theme] as Theme;
+  const plan = fields.plan as Plan;
 
-  const parsed = coupleSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Dados inválidos.", details: parsed.error.flatten() }, { status: 400 });
-  }
-
-  const slug = generateSlug(parsed.data.person1, parsed.data.person2);
-
-  const { data: couple, error: dbError } = await supabase
-    .from("couples")
-    .insert({
-      ...parsed.data,
+  const couple = await prisma.couple.create({
+    data: {
       slug,
+      person1: fields.person1,
+      person2: fields.person2,
+      message: fields.message,
+      music_url: fields.music_url || null,
+      relationship_date: fields.relationship_date,
+      theme,
+      plan,
+      photo_urls: photoUrls,
       paid: false,
-    })
-    .select("id")
-    .single();
-
-  if (dbError || !couple) {
-    return NextResponse.json({ error: "Erro ao salvar dados." }, { status: 500 });
-  }
+    },
+    select: { id: true },
+  });
 
   return NextResponse.json({ page_id: couple.id });
 }

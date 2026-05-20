@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Theme {
+  black_luxury @map("black-luxury")
+  neon_romance @map("neon-romance")
+  minimal_love @map("minimal-love")
+  velvet_dark  @map("velvet-dark")
+}
+
+enum Plan {
+  basic
+  premium
+}
+
+model Couple {
+  id                String   @id @default(uuid())
+  slug              String   @unique
+  person1           String   @db.VarChar(50)
+  person2           String   @db.VarChar(50)
+  message           String   @db.VarChar(1000)
+  music_url         String?
+  relationship_date String
+  theme             Theme    @default(black_luxury)
+  plan              Plan     @default(basic)
+  paid              Boolean  @default(false)
+  payment_id        String?
+  photo_urls        String[]
+  qr_code_url       String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  @@map("couples")
+}
+
+model ScheduledMessage {
+  id         String    @id @default(uuid())
+  channel    String
+  recipient  String
+  message    String    @db.VarChar(2000)
+  send_at    DateTime
+  sent       Boolean   @default(false)
+  sent_at    DateTime?
+  paid       Boolean   @default(false)
+  payment_id String?
+  created_at DateTime  @default(now())
+
+  @@map("scheduled_messages")
+}
