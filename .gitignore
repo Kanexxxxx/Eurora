@@ -4,6 +4,7 @@
 # Agentes e skills (ferramentas de AI — não subir)
 .agents/
 skills/
+skills-lock.json
 docs/superpowers/
 
 # Superpowers runtime
