@@ -1,10 +1,18 @@
-# Superpowers runtime state
-.superpowers/brainstorm/*/state/
+# Claude Code (configurações locais — não subir)
+.claude/
+
+# Agentes e skills (ferramentas de AI — não subir)
+.agents/
+skills/
+docs/superpowers/
+
+# Superpowers runtime
+.superpowers/
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Logs soltos
+# Logs
 *.log
 *.log.err
