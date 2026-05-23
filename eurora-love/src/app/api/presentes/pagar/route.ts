@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
           billingType: "PIX",
           value: 8,
           dueDate: todayIsoDate(),
-          description: “EURORA LOVE — Curadoria 250 Presentes”,
+          description: “EURORA LOVE - Curadoria 250 Presentes”,
           externalReference: `presentes:${Date.now()}`,
         }),
       }
