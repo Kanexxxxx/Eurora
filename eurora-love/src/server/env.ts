@@ -12,7 +12,8 @@ type EnvKey =
   | "RESEND_FROM_EMAIL"
   | "ANTHROPIC_API_KEY"
   | "NEXT_PUBLIC_WHATSAPP_NUMBER"
-  | "NEXT_PUBLIC_SUPPORT_EMAIL";
+  | "NEXT_PUBLIC_SUPPORT_EMAIL"
+  | "ADMIN_PASSWORD";
 
 export function requiredEnv(key: EnvKey) {
   const value = process.env[key];

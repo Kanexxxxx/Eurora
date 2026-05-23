@@ -231,10 +231,10 @@ export default function SucessoClient() {
           <p className="text-center text-white/40 text-xs mt-10">
             Precisa de ajuda?{" "}
             <a
-              href="mailto:oi@eurora.site"
+              href="mailto:eurora.com.br@gmail.com"
               className="text-rose-300 hover:text-rose-200"
             >
-              oi@eurora.site
+              eurora.com.br@gmail.com
             </a>
           </p>
         </div>

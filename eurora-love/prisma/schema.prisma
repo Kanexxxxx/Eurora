@@ -52,3 +52,17 @@ model ScheduledMessage {
 
   @@map("scheduled_messages")
 }
+
+model PresenteLink {
+  id         String   @id @default(uuid())
+  name       String
+  platform   String
+  url        String
+  categoria  String
+  active     Boolean  @default(true)
+  order      Int      @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("presente_links")
+}

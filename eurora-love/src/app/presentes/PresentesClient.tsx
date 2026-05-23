@@ -62,6 +62,7 @@ export default function PresentesClient() {
   const [step, setStep] = useState<Step>("verificando");
   const [categoria, setCategoria] = useState("Todos");
   const [busca, setBusca] = useState("");
+  const [dbLinks, setDbLinks] = useState<Produto[]>([]);
   const [form, setForm] = useState({ name: "", email: "", cpf: "" });
   const [pix, setPix] = useState<{ payment_id: string; qr_code: string; copia_cola: string } | null>(null);
   const [loadingPagar, setLoadingPagar] = useState(false);
@@ -150,8 +151,24 @@ export default function PresentesClient() {
     setTimeout(() => setCopied(false), 3000);
   };
 
+  // Load DB links when unlocked
+  useEffect(() => {
+    if (step !== "unlocked") return;
+    fetch("/api/presentes/links")
+      .then((r) => r.json())
+      .then((links: { id: string; name: string; platform: string; url: string; categoria: string }[]) => {
+        setDbLinks(links.map((l, i) => ({
+          ...l,
+          id: 100000 + i,
+          platform: l.platform as Produto["platform"],
+        })));
+      })
+      .catch(() => {});
+  }, [step]);
+
   // Filtered products
-  const produtos = PRODUTOS.filter((p) => {
+  const todosOsProdutos = [...PRODUTOS, ...dbLinks];
+  const produtos = todosOsProdutos.filter((p) => {
     const matchCat = categoria === "Todos" || p.categoria === categoria;
     const matchBusca = !busca || p.name.toLowerCase().includes(busca.toLowerCase());
     return matchCat && matchBusca;

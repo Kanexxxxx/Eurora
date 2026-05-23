@@ -178,6 +178,30 @@ function PoemOverlay({ song }: { song: SongPreview }) {
   );
 }
 
+function IslandCover({ src, title }: { src: string; title: string }) {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const failed = failedSrc === src;
+
+  if (failed) {
+    return (
+      <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[7px] bg-white/10 text-[12px] text-white">
+        ♪
+      </span>
+    );
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={`Capa de ${title}`}
+      className="h-[22px] w-[22px] shrink-0 rounded-[7px] object-cover"
+      crossOrigin="anonymous"
+      onError={() => setFailedSrc(src)}
+    />
+  );
+}
+
 export default function PreviewMockup({}: Props) {
   const [photoIndex, setPhotoIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState("9:41");
@@ -263,20 +287,14 @@ export default function PreviewMockup({}: Props) {
               </div>
 
               {/* Dynamic Island — album cover + waveform in album's color */}
-              <div className="absolute left-1/2 top-2 z-40 -translate-x-1/2">
+              <div className={`absolute left-1/2 top-2 z-40 -translate-x-1/2 song-theme-${songIndex}`}>
                 <motion.div
                   initial={{ width: 94, height: 26 }}
                   animate={{ width: 136, height: 32 }}
                   transition={{ delay: 0.8, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                   className="flex items-center gap-2 overflow-hidden rounded-full bg-black px-2 shadow-[0_10px_24px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.07)]"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={song.cover}
-                    alt="Capa"
-                    className="h-5.5 w-5.5 shrink-0 rounded-[7px] object-cover"
-                    crossOrigin="anonymous"
-                  />
+                  <IslandCover src={song.cover} title={song.title} />
                   <span className="flex-1 truncate text-[9px] font-semibold text-white/80">{song.title}</span>
                   <div className="flex h-4 shrink-0 items-end gap-0.5 pr-0.5">
                     {WAVEFORM.slice(0, 6).map((h, i) => (
@@ -380,18 +398,18 @@ export default function PreviewMockup({}: Props) {
                 </div>
 
                 {/* CTAs — colored by album via song-theme-N CSS var */}
-                <div className="mx-auto mt-2 grid w-[88%] grid-cols-2 gap-2">
+                <div className="mx-auto mt-2.5 grid w-[84%] grid-cols-2 gap-2">
                   <Link
                     href="/criar"
-                    className="song-btn-primary rounded-full px-3 py-2 text-[10px] font-extrabold"
+                    className="song-btn-primary flex min-h-9 items-center justify-center rounded-full px-2.5 text-center text-[10px] font-extrabold leading-none"
                   >
                     Faça o mesmo
                   </Link>
                   <Link
                     href="/presentes"
-                    className="song-btn-secondary rounded-full px-3 py-2 text-[10px] font-extrabold"
+                    className="song-btn-secondary flex min-h-9 items-center justify-center rounded-full px-2.5 text-center text-[10px] font-extrabold leading-none"
                   >
-                    Ver presentes
+                    Comprar presente
                   </Link>
                 </div>
 
