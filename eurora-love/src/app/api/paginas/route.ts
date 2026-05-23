@@ -1,6 +1,6 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/server/db/prisma";
-import { createServerClient } from "@/server/storage/supabase";
+import { createUploadKey, extensionFromMime, saveUpload } from "@/server/storage/local";
 import { coupleFieldsSchema } from "@/lib/validations";
 import { generateSlug } from "@/lib/utils/slug";
 import type { Theme, Plan } from "@prisma/client";
@@ -81,31 +81,30 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Upload photos to Supabase Storage (Prisma doesn't handle file storage)
-  const supabase = createServerClient();
+  // Upload photos to local VPS storage (served by Nginx at /uploads).
   const photoUrls: string[] = [];
 
   for (const photo of photos) {
     const bytes = await photo.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const ext = photo.type.split("/")[1];
-    const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const ext = extensionFromMime(photo.type);
+    if (!ext) {
+      return NextResponse.json(
+        { error: "Formato de imagem invalido." },
+        { status: 400 }
+      );
+    }
 
-    const { error: uploadError } = await supabase.storage
-      .from("couple-photos")
-      .upload(filename, buffer, { contentType: photo.type, upsert: false });
-
-    if (uploadError) {
+    try {
+      const key = createUploadKey("couples", ext);
+      const publicUrl = await saveUpload(key, buffer);
+      photoUrls.push(publicUrl);
+    } catch {
       return NextResponse.json(
         { error: "Erro ao fazer upload da foto." },
         { status: 500 }
       );
     }
-
-    const { data: urlData } = supabase.storage
-      .from("couple-photos")
-      .getPublicUrl(filename);
-    photoUrls.push(urlData.publicUrl);
   }
 
   const fields = fieldsCheck.data;

@@ -3,9 +3,13 @@
 ## 1. `.env` template
 
 ```bash
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxxxxxxxxxxx.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+# PostgreSQL local na VPS
+DATABASE_URL=postgresql://eurora:SENHA@127.0.0.1:5432/eurora_love
+DIRECT_URL=postgresql://eurora:SENHA@127.0.0.1:5432/eurora_love
+
+# Uploads locais
+UPLOAD_DIR=/var/www/eurora/uploads
+UPLOAD_PUBLIC_URL=https://eurora.site/uploads
 
 # Asaas
 ASAAS_API_KEY=$aact_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -23,16 +27,9 @@ RESEND_API_KEY=re_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 RESEND_FROM_EMAIL=no-reply@eurora.site
 ```
 
-## 2. Supabase setup
+## 2. PostgreSQL e uploads locais
 
-1. Create a project at [supabase.com](https://supabase.com).
-2. Run `supabase/schema.sql` in SQL Editor.
-3. Create the storage bucket:
-   - Name: `couple-photos`
-   - Public: `ON`
-   - File size limit: `5242880`
-   - Allowed MIME types: `image/jpeg,image/png,image/webp`
-4. Copy credentials from Settings > API.
+Use `DEPLOY_VPS.md` para instalar PostgreSQL, criar usuario/banco `eurora_love` e configurar a pasta `/var/www/eurora/uploads`.
 
 ## 3. Asaas setup
 
@@ -51,7 +48,7 @@ Use `DEPLOY_VPS.md` as the main VPS guide. Minimum deploy flow:
 
 ```bash
 npm ci
-npx prisma migrate deploy
+npx prisma db push
 npm run build
 npm run start:prod
 ```

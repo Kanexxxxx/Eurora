@@ -1,8 +1,6 @@
 type EnvKey =
   | "DATABASE_URL"
   | "DIRECT_URL"
-  | "NEXT_PUBLIC_SUPABASE_URL"
-  | "SUPABASE_SERVICE_ROLE_KEY"
   | "ASAAS_API_KEY"
   | "ASAAS_API_URL"
   | "ASAAS_WEBHOOK_TOKEN"
@@ -13,7 +11,9 @@ type EnvKey =
   | "ANTHROPIC_API_KEY"
   | "NEXT_PUBLIC_WHATSAPP_NUMBER"
   | "NEXT_PUBLIC_SUPPORT_EMAIL"
-  | "ADMIN_PASSWORD";
+  | "ADMIN_PASSWORD"
+  | "UPLOAD_DIR"
+  | "UPLOAD_PUBLIC_URL";
 
 export function requiredEnv(key: EnvKey) {
   const value = process.env[key];

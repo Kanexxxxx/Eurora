@@ -26,6 +26,8 @@ apt-get install -y \
   nginx \
   certbot \
   python3-certbot-nginx \
+  postgresql \
+  postgresql-contrib \
   ufw
 
 install_node=false
@@ -58,6 +60,15 @@ echo "==> Habilitando Nginx"
 systemctl enable nginx
 systemctl start nginx
 
+echo "==> Habilitando PostgreSQL"
+systemctl enable postgresql
+systemctl start postgresql
+
+echo "==> Criando pasta de uploads"
+mkdir -p /var/www/eurora/uploads
+chown -R "${SUDO_USER:-root}:${SUDO_USER:-root}" /var/www/eurora/uploads
+chmod -R 755 /var/www/eurora/uploads
+
 echo "==> Preparando firewall sem ativar automaticamente"
 ufw allow OpenSSH
 ufw allow "Nginx Full"
@@ -69,9 +80,11 @@ node -v
 npm -v
 pm2 -v
 nginx -v
+psql --version
 echo ""
 echo "Proximos passos:"
 echo "1. Confira acesso SSH antes de ativar firewall: sudo ufw enable"
-echo "2. Configure .env dentro da pasta do projeto"
-echo "3. Rode: npm ci && npm run prisma:generate && npm run build"
-echo "4. Suba com PM2: PORT=3000 pm2 start npm --name eurora-love -- run start:prod"
+echo "2. Crie usuario/banco PostgreSQL conforme DEPLOY_VPS.md"
+echo "3. Configure .env dentro da pasta do projeto"
+echo "4. Rode: npm ci && npm run prisma:generate && npx prisma db push && npm run build"
+echo "5. Suba com PM2: PORT=3000 pm2 start npm --name eurora-love -- run start:prod"

@@ -1,24 +1,15 @@
 import { optionalEnv } from "@/server/env";
 import { prisma } from "@/server/db/prisma";
-import { createServerClient } from "@/server/storage/supabase";
+import { saveUpload } from "@/server/storage/local";
 
 async function generateAndStoreQR(slug: string): Promise<string | null> {
   try {
-    const supabase = createServerClient();
     const pageUrl = `${optionalEnv("NEXT_PUBLIC_APP_URL", "https://eurora.site")}/${slug}`;
     const QRCode = await import("qrcode");
     const qrBuffer = await QRCode.toBuffer(pageUrl, { width: 400, margin: 2 });
 
     const filename = `qrcodes/${slug}.png`;
-    await supabase.storage
-      .from("couple-photos")
-      .upload(filename, qrBuffer, { contentType: "image/png", upsert: true });
-
-    const { data } = supabase.storage
-      .from("couple-photos")
-      .getPublicUrl(filename);
-
-    return data.publicUrl;
+    return saveUpload(filename, qrBuffer);
   } catch {
     return null;
   }
