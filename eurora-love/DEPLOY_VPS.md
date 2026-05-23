@@ -2,6 +2,43 @@
 
 Checklist para colocar a EURORA LOVE em producao.
 
+## 0. Preparar VPS sem apagar o projeto atual
+
+Este projeto usa Supabase/PostgreSQL externo, entao a VPS nao precisa instalar banco local.
+
+O script abaixo instala apenas dependencias do servidor:
+
+- Node.js 22
+- npm
+- PM2
+- Nginx
+- Certbot
+- Git/build tools
+- regras basicas de firewall
+
+Ele nao apaga pasta, nao roda `git reset`, nao altera `.env` e nao reinicia app existente.
+
+```bash
+cd /caminho/do/projeto/eurora-love
+sudo bash infra/vps-setup-ubuntu.sh
+```
+
+Se o projeto ainda nao estiver na VPS:
+
+```bash
+cd /var/www
+git clone https://github.com/Kanexxxxx/Eurora.git eurora
+cd /var/www/eurora/eurora-love
+sudo bash infra/vps-setup-ubuntu.sh
+```
+
+Se ja existe projeto na VPS, antes de atualizar faca backup do `.env`:
+
+```bash
+cd /caminho/do/projeto/eurora-love
+cp .env ".env.backup-$(date +%Y%m%d-%H%M%S)"
+```
+
 ## 1. Variaveis obrigatorias
 
 Crie `.env` no servidor com:
@@ -21,6 +58,8 @@ CRON_SECRET=
 NEXT_PUBLIC_APP_URL=https://eurora.site
 NEXT_PUBLIC_WHATSAPP_NUMBER=
 NEXT_PUBLIC_SUPPORT_EMAIL=
+ADMIN_PASSWORD=
+NODE_ENV=production
 ```
 
 Nao coloque chaves reais no Git.
@@ -33,13 +72,26 @@ npm run prisma:generate
 npm run build
 ```
 
-## 3. Subir o app
+## 3. Subir ou reiniciar o app
 
 Com PM2:
 
 ```bash
 PORT=3000 pm2 start npm --name eurora-love -- run start:prod
 pm2 save
+```
+
+Se o app ja existir no PM2:
+
+```bash
+pm2 restart eurora-love --update-env
+pm2 save
+```
+
+Ver logs:
+
+```bash
+pm2 logs eurora-love
 ```
 
 ## 4. Nginx
@@ -64,7 +116,20 @@ server {
 }
 ```
 
-Depois ative HTTPS com Certbot.
+Salvar em:
+
+```bash
+sudo nano /etc/nginx/sites-available/eurora-love
+sudo ln -s /etc/nginx/sites-available/eurora-love /etc/nginx/sites-enabled/eurora-love
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+Depois ative HTTPS com Certbot:
+
+```bash
+sudo certbot --nginx -d eurora.site -d www.eurora.site
+```
 
 ## 5. Webhook Asaas
 
@@ -99,5 +164,6 @@ Sugestao: rodar a cada 5 minutos.
 ```bash
 npm run lint
 npm run build
+pm2 status
 curl -I https://eurora.site
 ```

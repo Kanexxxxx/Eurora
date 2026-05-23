@@ -14,6 +14,143 @@ const THEME_STYLES: Record<Theme, { bg: string; accent: string; text: string; ac
 
 const WAVEFORM = [6, 10, 8, 14, 5, 12, 7, 13];
 
+const DEFAULT_HERO_POEMS = [
+  "Tem coisas que a gente não explica, só sente. E quando toca a nossa música, eu volto para aquele instante em que tudo começou a fazer sentido.",
+  "Se alguém me perguntasse onde mora a parte mais bonita da minha vida, eu lembraria do seu sorriso antes de conseguir responder.",
+  "Você virou meu lugar favorito no mundo: não um endereço, mas uma sensação de paz, cuidado e vontade de ficar.",
+];
+
+function buildHeroPoems(message: string) {
+  const customMessage = message.trim();
+  return customMessage
+    ? [customMessage, ...DEFAULT_HERO_POEMS.slice(0, 2)]
+    : DEFAULT_HERO_POEMS;
+}
+
+function getSpotifyEmbedUrl(url?: string | null) {
+  if (!url) return null;
+
+  try {
+    const parsed = new URL(url);
+    if (!parsed.hostname.includes("spotify.com")) return null;
+
+    const parts = parsed.pathname.split("/").filter(Boolean);
+    const [type, id] = parts;
+    const allowedTypes = new Set(["track", "album", "playlist", "episode", "show"]);
+    if (!type || !id || !allowedTypes.has(type)) return null;
+
+    return `https://open.spotify.com/embed/${type}/${id}`;
+  } catch {
+    return null;
+  }
+}
+
+function getDominantAlbumColor(src: string, fallback: string, onColor: (color: string) => void) {
+  const image = new Image();
+  image.crossOrigin = "anonymous";
+  image.referrerPolicy = "no-referrer";
+  image.src = src;
+
+  image.onload = () => {
+    try {
+      const size = 28;
+      const canvas = document.createElement("canvas");
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      if (!ctx) return onColor(fallback);
+
+      ctx.drawImage(image, 0, 0, size, size);
+      const { data } = ctx.getImageData(0, 0, size, size);
+      let best = { score: -1, r: 255, g: 45, b: 106 };
+
+      for (let i = 0; i < data.length; i += 16) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const alpha = data[i + 3];
+        if (alpha < 180) continue;
+
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        const saturation = max - min;
+        const brightness = max;
+        if (brightness < 45 || brightness > 245 || saturation < 24) continue;
+
+        const score = saturation * 1.8 + brightness * 0.35;
+        if (score > best.score) best = { score, r, g, b };
+      }
+
+      onColor(best.score > -1 ? `rgb(${best.r}, ${best.g}, ${best.b})` : fallback);
+    } catch {
+      onColor(fallback);
+    }
+  };
+
+  image.onerror = () => onColor(fallback);
+}
+
+function IslandCover({ src, title }: { src: string; title: string }) {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const failed = failedSrc === src;
+
+  if (failed) {
+    return (
+      <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[7px] bg-white/10 text-[12px] text-white">
+        ♪
+      </span>
+    );
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={`Capa de ${title}`}
+      className="h-[22px] w-[22px] shrink-0 rounded-[7px] object-cover"
+      crossOrigin="anonymous"
+      referrerPolicy="no-referrer"
+      onError={() => setFailedSrc(src)}
+    />
+  );
+}
+
+function HeroPoemOverlay({ poems }: { poems: string[] }) {
+  const [poemIndex, setPoemIndex] = useState(0);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const showTimer = window.setTimeout(() => setVisible(true), 2200);
+    const interval = window.setInterval(() => {
+      setPoemIndex((index) => (index + 1) % poems.length);
+    }, 7600);
+
+    return () => {
+      window.clearTimeout(showTimer);
+      window.clearInterval(interval);
+    };
+  }, [poems.length]);
+
+  return (
+    <div className="pointer-events-none absolute inset-x-0 top-[43%] z-10 -translate-y-1/2 px-7 text-center">
+      <AnimatePresence mode="wait">
+        {visible && (
+          <motion.p
+            key={poemIndex}
+            className="mx-auto max-w-[310px] font-heading text-[15px] font-semibold italic leading-relaxed text-white drop-shadow-[0_3px_18px_rgba(0,0,0,0.95)]"
+            initial={{ opacity: 0, y: 18, filter: "blur(8px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: -12, filter: "blur(8px)" }}
+            transition={{ duration: 2.2, ease: [0.16, 1, 0.3, 1] }}
+          >
+            &ldquo;{poems[poemIndex]}&rdquo;
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 function formatSinceDate(dateStr: string) {
   const d = new Date(dateStr + "T12:00:00");
   const month = String(d.getMonth() + 1).padStart(2, "0");
@@ -55,6 +192,7 @@ export default function LovePage({ couple, musicMeta }: Props) {
   const [together, setTogether] = useState({ days: 0, months: 0, years: 0 });
   const [nextAnn, setNextAnn] = useState({ days: 0, label: "" });
   const [musicExpanded, setMusicExpanded] = useState(false);
+  const [albumColor, setAlbumColor] = useState(styles.accentHex);
 
   const galleryPhotos = couple.photo_urls.length > 1 ? couple.photo_urls.slice(1) : [];
 
@@ -80,6 +218,11 @@ export default function LovePage({ couple, musicMeta }: Props) {
     return () => clearInterval(id);
   }, [couple.relationship_date]);
 
+  useEffect(() => {
+    if (!musicMeta?.albumArt) return;
+    getDominantAlbumColor(musicMeta.albumArt, styles.accentHex, setAlbumColor);
+  }, [musicMeta?.albumArt, styles.accentHex]);
+
   const copy = () => {
     navigator.clipboard.writeText(window.location.href);
     setCopied(true);
@@ -87,10 +230,9 @@ export default function LovePage({ couple, musicMeta }: Props) {
   };
 
   const sinceLabel = formatSinceDate(couple.relationship_date);
+  const heroPoems = buildHeroPoems(couple.message);
 
-  const spotifyEmbedUrl = couple.music_url?.includes("spotify.com/track/")
-    ? couple.music_url.replace("open.spotify.com/track/", "open.spotify.com/embed/track/").split("?")[0]
-    : null;
+  const spotifyEmbedUrl = getSpotifyEmbedUrl(couple.music_url);
 
   const hasMusicMeta = musicMeta && musicMeta.albumArt;
 
@@ -157,28 +299,26 @@ export default function LovePage({ couple, musicMeta }: Props) {
               type="button"
               onClick={() => setMusicExpanded((v) => !v)}
               aria-expanded={musicExpanded}
-              className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/85 backdrop-blur-md border border-white/10 shadow-lg"
+              className="absolute top-4 left-1/2 z-20 flex h-8 min-w-[132px] -translate-x-1/2 items-center gap-2 rounded-full border border-white/10 bg-black/90 px-2 shadow-lg backdrop-blur-md"
+              style={{
+                boxShadow: `0 10px 26px rgba(0,0,0,.58), 0 0 22px color-mix(in srgb, ${albumColor} 28%, transparent)`,
+              }}
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 2 }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={musicMeta!.albumArt}
-                alt="Capa do álbum"
-                className="w-5 h-5 rounded-[5px] object-cover"
-              />
-              <span className="text-white text-[11px] font-medium max-w-[120px] truncate">
+              <IslandCover src={musicMeta!.albumArt} title={musicMeta!.title} />
+              <span className="max-w-[86px] truncate text-[10px] font-semibold text-white/90">
                 {musicMeta!.title}
               </span>
-              <div className="flex items-end gap-[2px]">
+              <div className="ml-auto flex h-4 shrink-0 items-end gap-[2px]">
                 {WAVEFORM.slice(0, 5).map((h, i) => (
                   <motion.span
                     key={i}
-                    className="w-[2px] rounded-full bg-[#2f9ee9]"
+                    className="w-[2px] rounded-full"
                     animate={{ height: [h * 0.4, h * 0.85, h * 0.5] }}
                     transition={{ duration: 0.9, repeat: Infinity, delay: i * 0.07, ease: "easeInOut" }}
-                    style={{ minHeight: 2, maxHeight: 10 }}
+                    style={{ minHeight: 2, maxHeight: 10, backgroundColor: albumColor }}
                   />
                 ))}
               </div>
@@ -200,6 +340,8 @@ export default function LovePage({ couple, musicMeta }: Props) {
               ))}
             </div>
           )}
+
+          <HeroPoemOverlay poems={heroPoems} />
 
           {/* Names + date */}
           <motion.div
@@ -400,39 +542,23 @@ export default function LovePage({ couple, musicMeta }: Props) {
 
           {/* CTAs */}
           <motion.div
-            className="space-y-3 pt-2"
+            className="grid grid-cols-2 gap-3 pt-2"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 2.8 }}
           >
             <Link
               href={`/criar?theme=${couple.theme}`}
-              className={`btn-shimmer btn-cta-${couple.theme} relative flex items-center justify-between w-full px-6 py-4 rounded-2xl overflow-hidden transition-all active:scale-[0.98]`}
+              className={`btn-shimmer btn-cta-${couple.theme} relative flex min-h-[52px] items-center justify-center rounded-full px-3 text-center transition-all active:scale-[0.98]`}
             >
-              <div>
-                <p className="text-white font-bold text-[15px] leading-tight">Faça o mesmo ✨</p>
-                <p className="text-white/70 text-[11px] mt-0.5">Crie sua página romântica agora</p>
-              </div>
-              <div className="shrink-0 w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center ml-3">
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
+              <span className="text-[13px] font-extrabold leading-none text-white">Faça o mesmo</span>
             </Link>
 
             <Link
               href="/presentes"
-              className="group flex items-center justify-between w-full px-6 py-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/8 transition-all active:scale-[0.98]"
+              className="group flex min-h-[52px] items-center justify-center rounded-full border border-white/15 bg-white/[0.07] px-3 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-xl transition-all hover:bg-white/[0.1] active:scale-[0.98]"
             >
-              <div>
-                <p className="text-white font-semibold text-[15px] leading-tight">Não sabe o que dar? 🎁</p>
-                <p className="text-gray-400 text-[11px] mt-0.5">250+ presentes selecionados por R$8</p>
-              </div>
-              <div className="shrink-0 w-9 h-9 bg-white/8 rounded-xl flex items-center justify-center ml-3">
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
+              <span className="text-[13px] font-extrabold leading-none text-white">Comprar presente</span>
             </Link>
           </motion.div>
 
