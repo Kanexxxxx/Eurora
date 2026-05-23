@@ -445,6 +445,8 @@ export default function LovePage({ couple, musicMeta }: Props) {
                       src={url}
                       alt={`Momento ${i + 1}`}
                       className="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                   </motion.div>
@@ -469,6 +471,8 @@ export default function LovePage({ couple, musicMeta }: Props) {
                     src={musicMeta!.albumArt}
                     alt="Capa do álbum"
                     className="absolute inset-0 w-full h-full object-cover scale-110 blur-md opacity-50"
+                    loading="lazy"
+                    decoding="async"
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/90" />
                   <div className="absolute inset-x-0 bottom-0 px-4 pb-4 flex items-end gap-3">
@@ -477,6 +481,8 @@ export default function LovePage({ couple, musicMeta }: Props) {
                       src={musicMeta!.albumArt}
                       alt="Capa"
                       className="w-16 h-16 rounded-xl object-cover shadow-2xl ring-1 ring-white/20 shrink-0"
+                      loading="lazy"
+                      decoding="async"
                     />
                     <div className="flex-1 min-w-0">
                       <p className="text-white/50 text-[10px] uppercase tracking-widest mb-1">Nossa Música</p>
