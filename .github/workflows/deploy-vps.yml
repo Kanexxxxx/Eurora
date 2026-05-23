@@ -36,12 +36,7 @@ jobs:
             mkdir -p /var/www/eurora/uploads
             chmod -R 755 /var/www/eurora/uploads
 
-            # Limpa node_modules se Next.js estiver corrompido
-            if [ ! -f node_modules/next/dist/client/components/builtin/global-not-found.js ]; then
-              echo "next corrompido, reinstalando node_modules..."
-              rm -rf node_modules .next
-            fi
-
+            rm -rf node_modules .next
             npm ci
             npm run prisma:generate
             npx prisma db push
