@@ -1,10 +1,11 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/server/db/prisma";
 import { z } from "zod";
 
 const schema = z.object({
-  channel: z.enum(["email", "wpp"]),
-  recipient: z.string().min(5).max(200),
+  channel: z.enum(["email", "wpp", "telegram", "correios"]),
+  recipient: z.string().min(3).max(500),
+  sender_email: z.string().email().optional(),
   message: z.string().min(10).max(2000),
   send_at: z.string().datetime(),
   payment_id: z.string().optional(),
@@ -16,12 +17,13 @@ export async function POST(req: NextRequest) {
   if (!parsed.success)
     return NextResponse.json({ error: "Dados inválidos." }, { status: 400 });
 
-  const { channel, recipient, message, send_at, payment_id } = parsed.data;
+  const { channel, recipient, sender_email, message, send_at, payment_id } = parsed.data;
 
   const scheduled = await prisma.scheduledMessage.create({
     data: {
       channel,
       recipient,
+      sender_email: sender_email ?? null,
       message,
       send_at: new Date(send_at),
       paid: true,
@@ -32,4 +34,3 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ id: scheduled.id });
 }
-

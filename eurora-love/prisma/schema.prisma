@@ -39,16 +39,17 @@ model Couple {
 }
 
 model ScheduledMessage {
-  id         String    @id @default(uuid())
-  channel    String
-  recipient  String
-  message    String    @db.VarChar(2000)
-  send_at    DateTime
-  sent       Boolean   @default(false)
-  sent_at    DateTime?
-  paid       Boolean   @default(false)
-  payment_id String?
-  created_at DateTime  @default(now())
+  id           String    @id @default(uuid())
+  channel      String
+  recipient    String
+  sender_email String?
+  message      String    @db.VarChar(2000)
+  send_at      DateTime
+  sent         Boolean   @default(false)
+  sent_at      DateTime?
+  paid         Boolean   @default(false)
+  payment_id   String?
+  created_at   DateTime  @default(now())
 
   @@map("scheduled_messages")
 }
