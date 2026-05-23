@@ -93,19 +93,19 @@ export default function AdminLinks() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-white text-2xl font-bold">
-          Links R$8{" "}
+          Produtos do catálogo{" "}
           <span className="text-white/40 text-base font-normal">({items.length})</span>
         </h1>
         <button
           onClick={() => setForm({ ...EMPTY })}
           className="bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
         >
-          + Novo link
+          + Novo produto
         </button>
       </div>
 
       <p className="text-white/40 text-sm mb-6">
-        Links adicionados aqui aparecem automaticamente no catálogo de presentes para os clientes desbloquearem.
+        Produtos adicionados aqui aparecem automaticamente no catálogo de presentes.
       </p>
 
       {/* Modal */}
@@ -193,8 +193,8 @@ export default function AdminLinks() {
       ) : items.length === 0 ? (
         <div className="text-center py-16 text-white/30">
           <p className="text-4xl mb-3">🔗</p>
-          <p>Nenhum link adicionado ainda.</p>
-          <p className="text-sm mt-1">Clique em &quot;Novo link&quot; para adicionar.</p>
+          <p>Nenhum produto adicionado ainda.</p>
+          <p className="text-sm mt-1">Clique em &quot;Novo produto&quot; para adicionar.</p>
         </div>
       ) : (
         <div className="space-y-2">

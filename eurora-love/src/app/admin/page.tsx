@@ -15,7 +15,7 @@ const CARDS = [
   { key: "totalCouples",    label: "Cadastros totais",      icon: "👥", color: "text-blue-400"    },
   { key: "totalMessages",   label: "Mensagens agendadas",   icon: "✉️", color: "text-rose-400"    },
   { key: "pendingMessages", label: "Mensagens pendentes",   icon: "⏳", color: "text-amber-400"   },
-  { key: "totalLinks",      label: "Links R$8 ativos",      icon: "🔗", color: "text-violet-400"  },
+  { key: "totalLinks",      label: "Produtos no catálogo",  icon: "🎁", color: "text-violet-400"  },
 ] as const;
 
 export default function AdminDashboard() {
