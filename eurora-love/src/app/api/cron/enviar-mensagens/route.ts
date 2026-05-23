@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
         await resend.emails.send({
           from: `EURORA LOVE <${FROM_EMAIL}>`,
           to: msg.recipient,
-          subject: "Uma mensagem especial chegou pra vocÃª ðŸ’Œ",
+          subject: "Uma mensagem especial chegou pra você 💌",
           html: `
             <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#07050a;color:#fff5f0;padding:40px;border-radius:16px;">
               <p style="color:#ff2d6a;font-size:12px;letter-spacing:0.3em;text-transform:uppercase;margin-bottom:24px;">EURORA LOVE</p>
@@ -47,9 +47,9 @@ export async function GET(req: NextRequest) {
           `,
         });
       }
-      // WhatsApp: nÃ£o hÃ¡ API automÃ¡tica sem aprovaÃ§Ã£o do Meta Business.
-      // Para WhatsApp, a mensagem Ã© armazenada e o usuÃ¡rio Ã© notificado por email
-      // para enviÃ¡-la manualmente no momento certo (via link wa.me prÃ©-formatado).
+      // WhatsApp: não há API automática sem aprovação do Meta Business.
+      // Para WhatsApp, a mensagem é armazenada e o usuário é notificado por email
+      // para enviá-la manualmente no momento certo (via link wa.me pré-formatado).
 
       await prisma.scheduledMessage.update({
         where: { id: msg.id },

@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
   // Poll Asaas for payment status
   const payment_id = searchParams.get("payment_id");
   if (!payment_id)
-    return NextResponse.json({ error: "payment_id obrigatÃ³rio" }, { status: 400 });
+    return NextResponse.json({ error: "payment_id obrigatório" }, { status: 400 });
 
   try {
     const payment = await asaasRequest<{ status?: string }>(
