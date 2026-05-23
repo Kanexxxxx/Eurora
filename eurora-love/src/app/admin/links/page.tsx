@@ -49,7 +49,28 @@ export default function AdminLinks() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    let cancelled = false;
+
+    Promise.all([
+      fetch("/api/admin/links").then((r) => r.json()),
+      fetch("/api/admin/hidden").then((r) => r.json()),
+    ])
+      .then(([linksRes, hiddenRes]) => {
+        if (cancelled) return;
+        setItems(linksRes.items ?? []);
+        setHiddenIds(Array.isArray(hiddenRes) ? hiddenRes : []);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function handleSave() {
     if (!form) return;
