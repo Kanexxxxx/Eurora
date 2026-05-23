@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CATEGORIAS } from "@/data/presentes";
+import { PRODUTOS, CATEGORIAS } from "@/data/presentes";
 
 type LinkItem = {
   id: string;
@@ -15,41 +15,41 @@ type LinkItem = {
 };
 
 const PLATAFORMAS = ["Amazon", "Shopee", "ML"];
-
 const EMPTY = { name: "", platform: "Amazon", url: "", categoria: "Presentes em Geral", active: true, order: 0 };
+type Tab = "adicionados" | "estaticos";
+
+function PlatBadge({ platform }: { platform: string }) {
+  const cls =
+    platform === "Amazon" ? "bg-orange-500" :
+    platform === "Shopee" ? "bg-[#ee4d2d]" : "bg-yellow-400 text-black";
+  return (
+    <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold text-white ${cls}`}>
+      {platform === "ML" ? "ML" : platform}
+    </span>
+  );
+}
 
 export default function AdminLinks() {
+  const [tab, setTab] = useState<Tab>("adicionados");
   const [items, setItems] = useState<LinkItem[]>([]);
+  const [hiddenIds, setHiddenIds] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState<typeof EMPTY & { id?: string } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [busca, setBusca] = useState("");
+  const [catFiltro, setCatFiltro] = useState("Todos");
 
   const load = useCallback(async () => {
-    const r = await fetch("/api/admin/links");
-    const d = await r.json();
-    setItems(d.items ?? []);
+    const [linksRes, hiddenRes] = await Promise.all([
+      fetch("/api/admin/links").then((r) => r.json()),
+      fetch("/api/admin/hidden").then((r) => r.json()),
+    ]);
+    setItems(linksRes.items ?? []);
+    setHiddenIds(Array.isArray(hiddenRes) ? hiddenRes : []);
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    fetch("/api/admin/links")
-      .then((r) => r.json())
-      .then((d) => {
-        if (cancelled) return;
-        setItems(d.items ?? []);
-        setLoading(false);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  useEffect(() => { void load(); }, [load]);
 
   async function handleSave() {
     if (!form) return;
@@ -69,13 +69,23 @@ export default function AdminLinks() {
     }
     setSaving(false);
     setForm(null);
-    load();
+    void load();
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Excluir este link?")) return;
+    if (!confirm("Excluir este produto?")) return;
     await fetch(`/api/admin/links/${id}`, { method: "DELETE" });
-    load();
+    void load();
+  }
+
+  async function toggleHidden(produto_id: number) {
+    const isHidden = hiddenIds.includes(produto_id);
+    await fetch("/api/admin/hidden", {
+      method: isHidden ? "DELETE" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ produto_id }),
+    });
+    void load();
   }
 
   async function toggleActive(item: LinkItem) {
@@ -84,18 +94,21 @@ export default function AdminLinks() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...item, active: !item.active }),
     });
-    load();
+    void load();
   }
 
   const categorias = Object.keys(CATEGORIAS);
 
+  const produtosEstaticos = PRODUTOS.filter((p) => {
+    const matchCat = catFiltro === "Todos" || p.categoria === catFiltro;
+    const matchBusca = !busca || p.name.toLowerCase().includes(busca.toLowerCase());
+    return matchCat && matchBusca;
+  });
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-white text-2xl font-bold">
-          Produtos do catálogo{" "}
-          <span className="text-white/40 text-base font-normal">({items.length})</span>
-        </h1>
+        <h1 className="text-white text-2xl font-bold">Produtos do catálogo</h1>
         <button
           onClick={() => setForm({ ...EMPTY })}
           className="bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
@@ -104,18 +117,38 @@ export default function AdminLinks() {
         </button>
       </div>
 
-      <p className="text-white/40 text-sm mb-6">
-        Produtos adicionados aqui aparecem automaticamente no catálogo de presentes.
-      </p>
+      {/* Tabs */}
+      <div className="flex gap-1 mb-6 bg-white/4 rounded-xl p-1 w-fit">
+        <button
+          onClick={() => setTab("adicionados")}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            tab === "adicionados" ? "bg-rose-600 text-white" : "text-white/50 hover:text-white"
+          }`}
+        >
+          Adicionados por você{" "}
+          <span className="text-xs opacity-70">({items.length})</span>
+        </button>
+        <button
+          onClick={() => setTab("estaticos")}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            tab === "estaticos" ? "bg-rose-600 text-white" : "text-white/50 hover:text-white"
+          }`}
+        >
+          Produtos do site{" "}
+          <span className="text-xs opacity-70">({PRODUTOS.length})</span>
+          {hiddenIds.length > 0 && (
+            <span className="ml-1 text-xs text-amber-400">({hiddenIds.length} ocultos)</span>
+          )}
+        </button>
+      </div>
 
       {/* Modal */}
       {form && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-[#141414] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4">
             <h2 className="text-white font-bold text-lg">
-              {form.id ? "Editar link" : "Novo link"}
+              {form.id ? "Editar produto" : "Novo produto"}
             </h2>
-
             <div className="space-y-3">
               <input
                 type="text"
@@ -149,15 +182,13 @@ export default function AdminLinks() {
                   <option key={c} value={c} className="bg-[#141414]">{c}</option>
                 ))}
               </select>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  placeholder="Ordem (0 = primeiro)"
-                  value={form.order}
-                  onChange={(e) => setForm({ ...form, order: Number(e.target.value) })}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:border-rose-500"
-                />
-              </div>
+              <input
+                type="number"
+                placeholder="Ordem (0 = primeiro)"
+                value={form.order}
+                onChange={(e) => setForm({ ...form, order: Number(e.target.value) })}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:border-rose-500"
+              />
               <label className="flex items-center gap-2 text-white/60 text-sm">
                 <input
                   type="checkbox"
@@ -168,7 +199,6 @@ export default function AdminLinks() {
                 Ativo no catálogo
               </label>
             </div>
-
             <div className="flex gap-3 pt-2">
               <button
                 onClick={handleSave}
@@ -190,59 +220,119 @@ export default function AdminLinks() {
 
       {loading ? (
         <p className="text-white/40">Carregando...</p>
-      ) : items.length === 0 ? (
-        <div className="text-center py-16 text-white/30">
-          <p className="text-4xl mb-3">🔗</p>
-          <p>Nenhum produto adicionado ainda.</p>
-          <p className="text-sm mt-1">Clique em &quot;Novo produto&quot; para adicionar.</p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {items.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center gap-3 bg-white/4 border border-white/8 rounded-xl px-4 py-3 hover:border-white/15 transition-colors"
-            >
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className={`text-xs px-1.5 py-0.5 rounded font-bold text-white ${
-                    item.platform === "Amazon" ? "bg-orange-500" :
-                    item.platform === "Shopee" ? "bg-[#ee4d2d]" : "bg-yellow-400 text-black"
-                  }`}>
-                    {item.platform}
-                  </span>
-                  <span className="text-white/40 text-xs">{item.categoria}</span>
+      ) : tab === "adicionados" ? (
+        items.length === 0 ? (
+          <div className="text-center py-16 text-white/30">
+            <p className="text-4xl mb-3">🎁</p>
+            <p>Nenhum produto adicionado ainda.</p>
+            <p className="text-sm mt-1">Clique em &quot;Novo produto&quot; para adicionar.</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {items.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center gap-3 bg-white/4 border border-white/8 rounded-xl px-4 py-3"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <PlatBadge platform={item.platform} />
+                    <span className="text-white/40 text-xs truncate">{item.categoria}</span>
+                  </div>
+                  <p className="text-white text-sm font-medium truncate">{item.name}</p>
+                  <p className="text-white/30 text-xs truncate">{item.url}</p>
                 </div>
-                <p className="text-white text-sm font-medium truncate">{item.name}</p>
-                <p className="text-white/30 text-xs truncate">{item.url}</p>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => toggleActive(item)}
+                    className={`text-xs px-2 py-1 rounded-full transition-colors ${
+                      item.active
+                        ? "bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30"
+                        : "bg-white/10 text-white/40 hover:bg-white/20"
+                    }`}
+                  >
+                    {item.active ? "Ativo" : "Inativo"}
+                  </button>
+                  <button
+                    onClick={() => setForm({ ...item })}
+                    className="text-white/40 hover:text-white px-2 py-1 transition-colors"
+                    title="Editar"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className="text-red-400/60 hover:text-red-400 px-2 py-1 transition-colors"
+                    title="Excluir"
+                  >
+                    🗑️
+                  </button>
+                </div>
               </div>
+            ))}
+          </div>
+        )
+      ) : (
+        /* Aba: produtos estáticos */
+        <div>
+          <div className="flex gap-2 mb-4">
+            <input
+              type="search"
+              placeholder="Buscar produto..."
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:border-rose-500"
+            />
+            <select
+              value={catFiltro}
+              onChange={(e) => setCatFiltro(e.target.value)}
+              className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-rose-500"
+            >
+              <option value="Todos" className="bg-[#141414]">Todas as categorias</option>
+              {categorias.map((c) => (
+                <option key={c} value={c} className="bg-[#141414]">{c}</option>
+              ))}
+            </select>
+          </div>
 
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => toggleActive(item)}
-                  className={`text-xs px-2 py-1 rounded-full transition-colors ${
-                    item.active
-                      ? "bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30"
-                      : "bg-white/10 text-white/40 hover:bg-white/20"
+          <p className="text-white/30 text-xs mb-3">
+            {produtosEstaticos.length} produto{produtosEstaticos.length !== 1 ? "s" : ""} ·{" "}
+            Ocultar remove do catálogo sem excluir permanentemente.
+          </p>
+
+          <div className="space-y-2">
+            {produtosEstaticos.map((p) => {
+              const isHidden = hiddenIds.includes(p.id);
+              return (
+                <div
+                  key={p.id}
+                  className={`flex items-center gap-3 border rounded-xl px-4 py-3 transition-colors ${
+                    isHidden
+                      ? "bg-white/2 border-white/5 opacity-50"
+                      : "bg-white/4 border-white/8"
                   }`}
                 >
-                  {item.active ? "Ativo" : "Inativo"}
-                </button>
-                <button
-                  onClick={() => setForm({ ...item })}
-                  className="text-white/40 hover:text-white text-sm px-2 py-1 transition-colors"
-                >
-                  ✏️
-                </button>
-                <button
-                  onClick={() => handleDelete(item.id)}
-                  className="text-red-400/60 hover:text-red-400 text-sm px-2 py-1 transition-colors"
-                >
-                  🗑️
-                </button>
-              </div>
-            </div>
-          ))}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <PlatBadge platform={p.platform} />
+                      <span className="text-white/40 text-xs truncate">{p.categoria}</span>
+                    </div>
+                    <p className="text-white text-sm font-medium truncate">{p.name}</p>
+                  </div>
+                  <button
+                    onClick={() => toggleHidden(p.id)}
+                    className={`text-xs px-3 py-1 rounded-full shrink-0 transition-colors ${
+                      isHidden
+                        ? "bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30"
+                        : "bg-red-500/15 text-red-300 hover:bg-red-500/25"
+                    }`}
+                  >
+                    {isHidden ? "Mostrar" : "Ocultar"}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

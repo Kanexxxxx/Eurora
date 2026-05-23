@@ -53,6 +53,13 @@ model ScheduledMessage {
   @@map("scheduled_messages")
 }
 
+model HiddenProduto {
+  produto_id Int      @id
+  created_at DateTime @default(now())
+
+  @@map("hidden_produtos")
+}
+
 model PresenteLink {
   id         String   @id @default(uuid())
   name       String
