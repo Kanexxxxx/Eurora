@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { asaasRequest, onlyDigits, todayIsoDate } from "@/server/payments/asaas";
 
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
   if (!parsed.success)
-    return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
+    return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
 
   const { name, email, cpf } = parsed.data;
 
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
           billingType: "PIX",
           value: 8,
           dueDate: todayIsoDate(),
-          description: “EURORA LOVE — Curadoria 250 Presentes”,
+          description: "EURORA LOVE - Curadoria 250 Presentes",
           externalReference: `presentes:${Date.now()}`,
         }),
       }
@@ -78,4 +78,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: message }, { status: 502 });
   }
 }
-

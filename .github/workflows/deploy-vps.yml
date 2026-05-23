@@ -41,10 +41,15 @@ jobs:
             npx prisma db push
             npm run build
 
+            # Prepare standalone deployment
+            cp .env .next/standalone/.env
+            cp -r public .next/standalone/public
+            cp -r .next/static .next/standalone/.next/static
+
             if pm2 describe eurora-love >/dev/null 2>&1; then
-              pm2 restart eurora-love --update-env
+              PORT=4000 pm2 restart eurora-love --update-env
             else
-              PORT=3000 pm2 start npm --name eurora-love -- run start:prod
+              PORT=4000 pm2 start node --name eurora-love -- .next/standalone/server.js
             fi
 
             pm2 save

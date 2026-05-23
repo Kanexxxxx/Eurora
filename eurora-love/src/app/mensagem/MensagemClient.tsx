@@ -5,8 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import FloatingHearts from "@/components/effects/FloatingHearts";
 
 const CHANNELS = [
-  { id: "email", label: "E-mail", emoji: "✉️", popular: true },
-  { id: "wpp", label: "WhatsApp", emoji: "💬", note: "link pronto para enviar" },
+  { id: "email", label: "E-mail", emoji: "✉️", popular: true, desc: "Entregue na caixa de entrada" },
+  { id: "wpp", label: "WhatsApp", emoji: "💬", desc: "Lembrete com link pronto" },
+  { id: "telegram", label: "Telegram", emoji: "✈️", desc: "Aviso com texto formatado" },
+  { id: "correios", label: "Correios", emoji: "📬", desc: "Carta física em casa" },
 ];
 
 const TEMPLATES = [
@@ -31,7 +33,7 @@ const TEMPLATES = [
   {
     id: "distancia",
     title: "Relacionamento à distância",
-    emoji: "✈️",
+    emoji: "🌍",
     desc: "Pra encurtar quilômetros com palavras",
     preview:
       "Existem 2.418 km entre a gente, e mesmo assim você é o lugar mais perto que eu tenho de casa. Hoje, no Dia dos Namorados, eu queria que isso virasse zero metros.",
@@ -66,12 +68,27 @@ const TEMPLATES = [
   },
 ];
 
+function recipientLabel(ch: string) {
+  if (ch === "email") return "E-mail dela";
+  if (ch === "wpp") return "Número do WhatsApp (com DDD)";
+  if (ch === "telegram") return "@ do Telegram";
+  return "Endereço completo para entrega";
+}
+
+function recipientPlaceholder(ch: string) {
+  if (ch === "email") return "ela@email.com";
+  if (ch === "wpp") return "+55 11 99999-9999";
+  if (ch === "telegram") return "@usuario";
+  return `Nome Completo\nRua dos Amores, 123 - Apto 45\nBairro - Cidade/SP\nCEP 01001-000`;
+}
+
 export default function MensagemClient() {
   const [step, setStep] = useState(1);
   const [channel, setChannel] = useState("email");
   const [templateId, setTemplateId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [recipient, setRecipient] = useState("");
+  const [senderEmail, setSenderEmail] = useState("");
   const [date, setDate] = useState("2026-06-12");
   const [time, setTime] = useState("06:00");
   const [loading, setLoading] = useState(false);
@@ -91,6 +108,10 @@ export default function MensagemClient() {
 
   const handleSchedule = async () => {
     if (!recipient || !message) return;
+    if (channel !== "email" && !senderEmail.includes("@")) {
+      setError("Informe um e-mail válido para receber o lembrete.");
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -99,7 +120,13 @@ export default function MensagemClient() {
       const res = await fetch("/api/mensagem/agendar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ channel, recipient, message, send_at }),
+        body: JSON.stringify({
+          channel,
+          recipient,
+          message,
+          send_at,
+          ...(channel !== "email" && senderEmail ? { sender_email: senderEmail } : {}),
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao agendar.");
@@ -111,9 +138,14 @@ export default function MensagemClient() {
     }
   };
 
-  const whatsappLink =
+  const waLink =
     recipient && channel === "wpp"
       ? `https://wa.me/${recipient.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`
+      : null;
+
+  const tgLink =
+    recipient && channel === "telegram"
+      ? `https://t.me/${recipient.replace(/^@/, "")}`
       : null;
 
   return (
@@ -131,8 +163,8 @@ export default function MensagemClient() {
             emocioná-la.
           </h1>
           <p className="text-white/65 text-lg max-w-2xl mx-auto">
-            Programe envio por e-mail ou gere um link de WhatsApp já preenchido
-            para mandar no momento certo.
+            Programe por e-mail, WhatsApp, Telegram ou carta física — entregue
+            na hora certa, sem você precisar lembrar.
           </p>
         </div>
       </section>
@@ -146,7 +178,7 @@ export default function MensagemClient() {
                 <div
                   className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
                     step >= s
-                      ? "bg-gradient-to-br from-rose-500 to-amber-400 text-white shadow-[0_0_20px_rgba(255,45,106,0.4)]"
+                      ? "bg-linear-to-br from-rose-500 to-amber-400 text-white shadow-[0_0_20px_rgba(255,45,106,0.4)]"
                       : "bg-white/5 text-white/40"
                   }`}
                 >
@@ -181,6 +213,7 @@ export default function MensagemClient() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {TEMPLATES.map((t, i) => (
                     <motion.button
+                      type="button"
                       key={t.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -212,6 +245,7 @@ export default function MensagemClient() {
 
                 <div className="text-center mt-10">
                   <button
+                    type="button"
                     onClick={() => setStep(2)}
                     className="btn-ghost-glow inline-flex items-center gap-2"
                   >
@@ -259,10 +293,11 @@ export default function MensagemClient() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 justify-between mt-6">
-                  <button onClick={() => setStep(1)} className="btn-ghost-glow">
+                  <button type="button" onClick={() => setStep(1)} className="btn-ghost-glow">
                     ← Trocar template
                   </button>
                   <button
+                    type="button"
                     onClick={() => setStep(3)}
                     disabled={message.trim().length < 10}
                     className="btn-premium disabled:opacity-40 disabled:cursor-not-allowed"
@@ -291,7 +326,7 @@ export default function MensagemClient() {
                 </p>
 
                 <div className="card-premium p-6 space-y-6">
-                  {/* Channel */}
+                  {/* Channel selector */}
                   <div>
                     <label className="block text-white/70 text-xs uppercase tracking-wider mb-3">
                       Por onde enviar
@@ -299,26 +334,28 @@ export default function MensagemClient() {
                     <div className="grid grid-cols-2 gap-2">
                       {CHANNELS.map((c) => (
                         <button
+                          type="button"
                           key={c.id}
-                          onClick={() => setChannel(c.id)}
-                          className={`relative px-4 py-3 rounded-2xl border text-sm transition-all ${
+                          onClick={() => {
+                            setChannel(c.id);
+                            setRecipient("");
+                          }}
+                          className={`relative px-4 py-3 rounded-2xl border text-sm transition-all text-left ${
                             channel === c.id
                               ? "border-rose-400/60 bg-rose-500/10 text-white shadow-[0_0_20px_rgba(255,45,106,0.2)]"
                               : "border-white/10 bg-white/5 text-white/60 hover:border-white/20"
                           }`}
                         >
                           <span className="text-xl mr-2">{c.emoji}</span>
-                          {c.label}
+                          <span className="font-medium">{c.label}</span>
                           {c.popular && (
                             <span className="absolute -top-2 -right-2 text-[9px] bg-rose-500 text-white px-1.5 py-0.5 rounded-full">
-                              RECOMENDADO
+                              MELHOR
                             </span>
                           )}
-                          {c.note && (
-                            <span className="block text-[10px] text-white/40 mt-1">
-                              {c.note}
-                            </span>
-                          )}
+                          <span className="block text-[11px] text-white/40 mt-1 pl-8">
+                            {c.desc}
+                          </span>
                         </button>
                       ))}
                     </div>
@@ -327,25 +364,47 @@ export default function MensagemClient() {
                   {/* Recipient */}
                   <div>
                     <label className="block text-white/70 text-xs uppercase tracking-wider mb-2">
-                      {channel === "email" ? "E-mail dela" : "WhatsApp (com DDD)"}
+                      {recipientLabel(channel)}
                     </label>
-                    <input
-                      value={recipient}
-                      onChange={(e) => setRecipient(e.target.value)}
-                      placeholder={
-                        channel === "email"
-                          ? "ela@email.com"
-                          : "+55 11 99999-9999"
-                      }
-                      type={channel === "email" ? "email" : "tel"}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-rose-400/40"
-                    />
-                    {channel === "wpp" && (
-                      <p className="text-white/40 text-xs mt-2">
-                        Para WhatsApp, o sistema gera o texto pronto e o link wa.me. Envio automático no WhatsApp exige API oficial da Meta.
-                      </p>
+                    {channel === "correios" ? (
+                      <textarea
+                        value={recipient}
+                        onChange={(e) => setRecipient(e.target.value)}
+                        rows={4}
+                        placeholder={recipientPlaceholder(channel)}
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-rose-400/40 text-sm leading-relaxed"
+                      />
+                    ) : (
+                      <input
+                        value={recipient}
+                        onChange={(e) => setRecipient(e.target.value)}
+                        placeholder={recipientPlaceholder(channel)}
+                        type={channel === "email" ? "email" : "text"}
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-rose-400/40 text-sm"
+                      />
                     )}
                   </div>
+
+                  {/* Sender e-mail — shown for non-email channels */}
+                  {channel !== "email" && (
+                    <div>
+                      <label className="block text-white/70 text-xs uppercase tracking-wider mb-2">
+                        Seu e-mail (para receber o lembrete)
+                      </label>
+                      <input
+                        value={senderEmail}
+                        onChange={(e) => setSenderEmail(e.target.value)}
+                        placeholder="voce@email.com"
+                        type="email"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-rose-400/40 text-sm"
+                      />
+                      <p className="text-white/40 text-xs mt-2">
+                        {channel === "correios"
+                          ? "Você receberá confirmação quando nossa equipe processar o envio."
+                          : "No horário agendado você recebe um lembrete com o link pronto para enviar."}
+                      </p>
+                    </div>
+                  )}
 
                   {/* Date / Time */}
                   <div className="grid grid-cols-2 gap-3">
@@ -357,7 +416,9 @@ export default function MensagemClient() {
                         type="date"
                         value={date}
                         onChange={(e) => setDate(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-rose-400/40 [color-scheme:dark]"
+                        title="Data de envio"
+                        aria-label="Data de envio"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-rose-400/40 scheme-dark"
                       />
                     </div>
                     <div>
@@ -368,7 +429,9 @@ export default function MensagemClient() {
                         type="time"
                         value={time}
                         onChange={(e) => setTime(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-rose-400/40 [color-scheme:dark]"
+                        title="Horário de envio"
+                        aria-label="Horário de envio"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-rose-400/40 scheme-dark"
                       />
                     </div>
                   </div>
@@ -395,10 +458,11 @@ export default function MensagemClient() {
                 )}
 
                 <div className="flex flex-col sm:flex-row gap-3 justify-between mt-6">
-                  <button onClick={() => setStep(2)} className="btn-ghost-glow">
+                  <button type="button" onClick={() => setStep(2)} className="btn-ghost-glow">
                     ← Voltar
                   </button>
                   <button
+                    type="button"
                     onClick={handleSchedule}
                     disabled={!recipient || loading}
                     className="btn-premium disabled:opacity-40 disabled:cursor-not-allowed"
@@ -421,7 +485,7 @@ export default function MensagemClient() {
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: "spring", stiffness: 200 }}
-                  className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-5xl mb-8 shadow-[0_0_60px_rgba(16,185,129,0.4)]"
+                  className="w-24 h-24 mx-auto rounded-full bg-linear-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-5xl mb-8 shadow-[0_0_60px_rgba(16,185,129,0.4)]"
                 >
                   ✓
                 </motion.div>
@@ -429,28 +493,63 @@ export default function MensagemClient() {
                   Mensagem{" "}
                   <span className="text-gradient-ember">agendada!</span>
                 </h2>
+
                 <p className="text-white/65 mb-8 leading-relaxed">
-                  No dia <strong className="text-white">{date}</strong> às{" "}
-                  <strong className="text-white">{time}</strong>
-                  {channel === "email" ? (
+                  {channel === "email" && (
                     <>
-                      {" "}
-                      enviamos um e-mail para{" "}
+                      No dia <strong className="text-white">{date}</strong> às{" "}
+                      <strong className="text-white">{time}</strong> enviamos
+                      um e-mail diretamente para{" "}
                       <strong className="text-rose-300">{recipient}</strong>.
                     </>
-                  ) : (
-                    <> você recebe um lembrete com o link do WhatsApp.</>
+                  )}
+                  {channel === "wpp" && (
+                    <>
+                      No dia <strong className="text-white">{date}</strong> às{" "}
+                      <strong className="text-white">{time}</strong> você
+                      recebe um lembrete em{" "}
+                      <strong className="text-rose-300">{senderEmail}</strong>{" "}
+                      com o link do WhatsApp já preenchido — só apertar enviar!
+                    </>
+                  )}
+                  {channel === "telegram" && (
+                    <>
+                      No dia <strong className="text-white">{date}</strong> às{" "}
+                      <strong className="text-white">{time}</strong> você
+                      recebe um aviso em{" "}
+                      <strong className="text-rose-300">{senderEmail}</strong>{" "}
+                      com a mensagem formatada para enviar no Telegram.
+                    </>
+                  )}
+                  {channel === "correios" && (
+                    <>
+                      Pedido recebido! Nossa equipe vai processar e enviar a
+                      carta para o endereço informado. Você recebe confirmação
+                      em{" "}
+                      <strong className="text-rose-300">{senderEmail}</strong>.
+                    </>
                   )}
                 </p>
 
-                {whatsappLink && (
+                {/* Quick-send buttons */}
+                {waLink && (
                   <a
-                    href={whatsappLink}
+                    href={waLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="btn-premium inline-flex items-center gap-2 mb-8"
+                    className="btn-premium inline-flex items-center gap-2 mb-4"
                   >
                     💬 Enviar agora pelo WhatsApp
+                  </a>
+                )}
+                {tgLink && (
+                  <a
+                    href={tgLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-premium inline-flex items-center gap-2 mb-4"
+                  >
+                    ✈️ Abrir Telegram agora
                   </a>
                 )}
 
@@ -464,12 +563,14 @@ export default function MensagemClient() {
                 </div>
 
                 <button
+                  type="button"
                   onClick={() => {
                     setScheduledId(null);
                     setStep(1);
                     setTemplateId(null);
                     setMessage("");
                     setRecipient("");
+                    setSenderEmail("");
                   }}
                   className="btn-ghost-glow"
                 >
