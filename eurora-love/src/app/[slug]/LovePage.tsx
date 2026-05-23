@@ -27,19 +27,34 @@ function buildHeroPoems(message: string) {
     : DEFAULT_HERO_POEMS;
 }
 
-function getSpotifyEmbedUrl(url?: string | null) {
+function getMusicEmbed(url?: string | null): { src: string; type: "spotify" | "youtube" } | null {
   if (!url) return null;
-
   try {
     const parsed = new URL(url);
-    if (!parsed.hostname.includes("spotify.com")) return null;
 
-    const parts = parsed.pathname.split("/").filter(Boolean);
-    const [type, id] = parts;
-    const allowedTypes = new Set(["track", "album", "playlist", "episode", "show"]);
-    if (!type || !id || !allowedTypes.has(type)) return null;
+    if (parsed.hostname.includes("spotify.com")) {
+      const parts = parsed.pathname.split("/").filter(Boolean);
+      const [type, id] = parts;
+      if (!type || !id || !["track","album","playlist","episode","show"].includes(type)) return null;
+      return { src: `https://open.spotify.com/embed/${type}/${id}?autoplay=1&theme=0`, type: "spotify" };
+    }
 
-    return `https://open.spotify.com/embed/${type}/${id}`;
+    if (parsed.hostname.includes("youtube.com") || parsed.hostname.includes("youtu.be")) {
+      let videoId: string | null = null;
+      if (parsed.hostname.includes("youtu.be")) {
+        videoId = parsed.pathname.slice(1).split("?")[0];
+      } else {
+        videoId = parsed.searchParams.get("v");
+        if (!videoId) {
+          const m = parsed.pathname.match(/\/(?:shorts|embed)\/([^/?]+)/);
+          if (m) videoId = m[1];
+        }
+      }
+      if (!videoId) return null;
+      return { src: `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`, type: "youtube" };
+    }
+
+    return null;
   } catch {
     return null;
   }
@@ -232,7 +247,7 @@ export default function LovePage({ couple, musicMeta }: Props) {
   const sinceLabel = formatSinceDate(couple.relationship_date);
   const heroPoems = buildHeroPoems(couple.message);
 
-  const spotifyEmbedUrl = getSpotifyEmbedUrl(couple.music_url);
+  const musicEmbed = getMusicEmbed(couple.music_url);
 
   const hasMusicMeta = musicMeta && musicMeta.albumArt;
 
@@ -446,76 +461,65 @@ export default function LovePage({ couple, musicMeta }: Props) {
               transition={{ delay: 2.5 }}
               className="rounded-3xl overflow-hidden border border-white/10"
             >
-              {hasMusicMeta ? (
-                <>
-                  {/* Album art header */}
-                  <div className="relative h-44 overflow-hidden">
+              {hasMusicMeta && (
+                /* Album art header */
+                <div className="relative h-44 overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={musicMeta!.albumArt}
+                    alt="Capa do álbum"
+                    className="absolute inset-0 w-full h-full object-cover scale-110 blur-md opacity-50"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/90" />
+                  <div className="absolute inset-x-0 bottom-0 px-4 pb-4 flex items-end gap-3">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={musicMeta!.albumArt}
-                      alt="Capa do álbum"
-                      className="absolute inset-0 w-full h-full object-cover scale-110 blur-md opacity-50"
+                      alt="Capa"
+                      className="w-16 h-16 rounded-xl object-cover shadow-2xl ring-1 ring-white/20 shrink-0"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/90" />
-
-                    <div className="absolute inset-x-0 bottom-0 px-4 pb-4 flex items-end gap-3">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={musicMeta!.albumArt}
-                        alt="Capa"
-                        className="w-16 h-16 rounded-xl object-cover shadow-2xl ring-1 ring-white/20 shrink-0"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-white/50 text-[10px] uppercase tracking-widest mb-1">Nossa Música</p>
-                        <p className="text-white font-semibold text-sm leading-snug line-clamp-2">
-                          {musicMeta!.title}
-                        </p>
-                        {musicMeta!.provider && (
-                          <p className="text-white/40 text-[11px] mt-0.5">{musicMeta!.provider}</p>
-                        )}
-                      </div>
-                      <a
-                        href={couple.music_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="shrink-0 w-11 h-11 rounded-full flex items-center justify-center shadow-lg"
-                        style={{ backgroundColor: styles.accentHex }}
-                        aria-label="Ouvir música"
-                      >
-                        <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                      </a>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white/50 text-[10px] uppercase tracking-widest mb-1">Nossa Música</p>
+                      <p className="text-white font-semibold text-sm leading-snug line-clamp-2">
+                        {musicMeta!.title}
+                      </p>
+                      {musicMeta!.provider && (
+                        <p className="text-white/40 text-[11px] mt-0.5">{musicMeta!.provider}</p>
+                      )}
                     </div>
                   </div>
+                </div>
+              )}
 
-                  {/* Spotify embed if available */}
-                  {spotifyEmbedUrl && (
-                    <iframe
-                      title="Nossa música"
-                      src={spotifyEmbedUrl}
-                      width="100%"
-                      height="80"
-                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                      className="block"
-                    />
-                  )}
-                </>
-              ) : spotifyEmbedUrl ? (
+              {musicEmbed?.type === "spotify" && (
                 <iframe
                   title="Nossa música"
-                  src={spotifyEmbedUrl}
+                  src={musicEmbed.src}
                   width="100%"
-                  height="152"
+                  height={hasMusicMeta ? "80" : "152"}
                   allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                  className="rounded-3xl"
+                  className="block"
                 />
-              ) : (
+              )}
+
+              {musicEmbed?.type === "youtube" && (
+                <div className="aspect-video w-full">
+                  <iframe
+                    title="Nossa música"
+                    src={musicEmbed.src}
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    allowFullScreen
+                    className="w-full h-full block"
+                  />
+                </div>
+              )}
+
+              {!musicEmbed && (
                 <a
                   href={couple.music_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 glass rounded-3xl p-4 hover:border-white/20 transition-all"
+                  className="flex items-center gap-3 p-4 hover:bg-white/5 transition-all"
                 >
                   <span className="text-2xl">🎵</span>
                   <span className="text-gray-300 text-sm">Ouvir nossa música</span>
