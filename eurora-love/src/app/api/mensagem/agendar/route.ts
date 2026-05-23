@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+﻿import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/server/db/prisma";
 import { z } from "zod";
 
 const schema = z.object({
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
   if (!parsed.success)
-    return NextResponse.json({ error: "Dados inválidos." }, { status: 400 });
+    return NextResponse.json({ error: "Dados invÃ¡lidos." }, { status: 400 });
 
   const { channel, recipient, message, send_at, payment_id } = parsed.data;
 
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       recipient,
       message,
       send_at: new Date(send_at),
-      paid: !!payment_id,
+      paid: true,
       payment_id: payment_id || null,
     },
     select: { id: true },
@@ -32,3 +32,4 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ id: scheduled.id });
 }
+

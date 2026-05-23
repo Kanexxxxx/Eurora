@@ -2,7 +2,16 @@
 
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
+
+function calcCountdownJun12() {
+  const now = new Date();
+  const year = now.getMonth() >= 5 && now.getDate() > 12 ? now.getFullYear() + 1 : now.getFullYear();
+  const target = new Date(year, 5, 12, 0, 0, 0);
+  const diffMs = target.getTime() - now.getTime();
+  const days = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+  return days;
+}
 import FloatingHearts from "@/components/effects/FloatingHearts";
 import NoiseOverlay from "@/components/effects/NoiseOverlay";
 import LiveCounter from "@/components/conversion/LiveCounter";
@@ -23,10 +32,10 @@ const FEATURES = [
   {
     emoji: "🎁",
     title: "Presentes Secretos",
-    desc: "Nossa IA descobre o presente perfeito pra ela — selecionados de TikTok, Shopee e Amazon.",
+    desc: "Você não sabe o que dar para seu namorado(a)? 250+ ideias selecionadas de Shopee, Amazon e Mercado Livre. Por apenas R$8.",
     href: "/presentes",
     color: "from-amber-500/30 to-amber-700/10",
-    badge: "Novidade 🔥",
+    badge: "R$8 🔥",
   },
   {
     emoji: "⏰",
@@ -111,7 +120,7 @@ const FAQS = [
   },
   {
     q: "É realmente seguro pagar via PIX?",
-    a: "100%. Trabalhamos com Mercado Pago, a maior processadora de pagamentos da América Latina. Seus dados são criptografados de ponta a ponta. Garantia incondicional de 7 dias.",
+    a: "100%. O pagamento e processado pelo Asaas, plataforma brasileira de pagamentos. Seus dados trafegam em ambiente seguro e a pagina e liberada apos confirmacao.",
   },
   {
     q: "Por quanto tempo a página fica no ar?",
@@ -136,6 +145,13 @@ const STATS = [
 
 export default function LandingPage() {
   const heroRef = useRef<HTMLElement>(null);
+  const [daysLeft, setDaysLeft] = useState(calcCountdownJun12());
+
+  useEffect(() => {
+    const id = setInterval(() => setDaysLeft(calcCountdownJun12()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
@@ -180,8 +196,12 @@ export default function LandingPage() {
           >
             <span className="live-dot" />
             <span className="text-xs sm:text-sm text-white/80 font-medium">
-              <span className="text-rose-300 font-bold">1.247</span> casais
-              criando agora — Dia dos Namorados em breve
+              <span className="text-rose-300 font-bold">1.247</span> casais criando agora
+              {daysLeft > 0 ? (
+                <> · Dia dos Namorados em <span className="text-amber-300 font-bold">{daysLeft} dias</span></>
+              ) : (
+                <> · <span className="text-amber-300 font-bold">Hoje é Dia dos Namorados! 💕</span></>
+              )}
             </span>
           </motion.div>
 
@@ -208,7 +228,7 @@ export default function LandingPage() {
               <span className="transition-transform group-hover:translate-x-1">→</span>
             </Link>
             <Link href="#features" className="btn-ghost-glow inline-flex items-center gap-2 text-base">
-              <span className="text-rose-300">▶</span> Ver demonstração
+              <span className="text-rose-300">▶</span> Ver como funciona
             </Link>
           </div>
 
@@ -299,45 +319,59 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-            {FEATURES.map((f, i) => (
-              <motion.div
-                key={f.title}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <Link href={f.href} className="block group h-full">
-                  <div className="card-premium h-full p-7 relative">
-                    <div
-                      className={`absolute -top-20 -right-20 w-56 h-56 bg-gradient-to-br ${f.color} rounded-full blur-3xl opacity-60 group-hover:opacity-100 transition-opacity duration-700`}
-                    />
-                    <div className="relative">
-                      <div className="flex items-start justify-between mb-5">
-                        <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform duration-500">
-                          {f.emoji}
+            {FEATURES.map((f, i) => {
+              const isPresentes = f.title === "Presentes Secretos";
+              return (
+                <motion.div
+                  key={f.title}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.08, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                  className={isPresentes ? "sm:col-span-2 lg:col-span-1" : ""}
+                >
+                  <Link href={f.href} className="block group h-full">
+                    <div className={`h-full p-7 relative rounded-[28px] border transition-all duration-300 ${
+                      isPresentes
+                        ? "bg-gradient-to-br from-amber-950/60 via-zinc-900 to-black border-amber-500/40 hover:border-amber-400/60 shadow-[0_0_40px_-10px_rgba(245,158,11,0.3)]"
+                        : "card-premium"
+                    }`}>
+                      {isPresentes && (
+                        <div className="absolute -top-3 left-6 bg-gradient-to-r from-amber-500 to-orange-400 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                          Mais pedido · só R$8
                         </div>
-                        <span className="pill pill-gold text-[10px]">
-                          {f.badge}
+                      )}
+                      <div
+                        className={`absolute -top-20 -right-20 w-56 h-56 bg-gradient-to-br ${f.color} rounded-full blur-3xl opacity-60 group-hover:opacity-100 transition-opacity duration-700`}
+                      />
+                      <div className="relative">
+                        <div className="flex items-start justify-between mb-5">
+                          <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center text-3xl group-hover:scale-110 transition-transform duration-500 ${
+                            isPresentes ? "bg-amber-500/10 border-amber-500/30" : "bg-white/5 border-white/10"
+                          }`}>
+                            {f.emoji}
+                          </div>
+                          <span className={`pill text-[10px] ${isPresentes ? "pill-gold" : "pill-gold"}`}>
+                            {f.badge}
+                          </span>
+                        </div>
+                        <h3 className="font-heading text-2xl text-white mb-3 leading-tight">
+                          {f.title}
+                        </h3>
+                        <p className="text-white/60 text-sm leading-relaxed mb-5">
+                          {f.desc}
+                        </p>
+                        <span className={`inline-flex items-center gap-2 text-sm font-medium group-hover:gap-3 transition-all ${
+                          isPresentes ? "text-amber-300" : "text-rose-300"
+                        }`}>
+                          {isPresentes ? "Ver presentes →" : "Experimentar agora →"}
                         </span>
                       </div>
-                      <h3 className="font-heading text-2xl text-white mb-3 leading-tight">
-                        {f.title}
-                      </h3>
-                      <p className="text-white/60 text-sm leading-relaxed mb-5">
-                        {f.desc}
-                      </p>
-                      <span className="inline-flex items-center gap-2 text-rose-300 text-sm font-medium group-hover:gap-3 transition-all">
-                        Experimentar agora{" "}
-                        <span className="transition-transform group-hover:translate-x-1">
-                          →
-                        </span>
-                      </span>
                     </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
+                  </Link>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>

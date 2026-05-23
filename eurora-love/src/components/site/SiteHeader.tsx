@@ -50,8 +50,22 @@ export default function SiteHeader() {
               className="flex items-center gap-2.5 group"
               aria-label="EURORA LOVE — Início"
             >
-              <span className="relative inline-flex w-8 h-8 rounded-full bg-gradient-to-br from-rose-500 to-amber-400 items-center justify-center shadow-[0_0_24px_rgba(255,45,106,0.5)]">
-                <span className="text-white text-sm animate-heart-beat">♥</span>
+              <span className="relative inline-flex shrink-0">
+                <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="hg" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stopColor="#ff2d6a"/>
+                      <stop offset="100%" stopColor="#f6a72b"/>
+                    </linearGradient>
+                    <filter id="glow">
+                      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                    </filter>
+                  </defs>
+                  <circle cx="17" cy="17" r="17" fill="url(#hg)" opacity="0.15"/>
+                  <path filter="url(#glow)" d="M17 25.5C17 25.5 7 19.3 7 13.5C7 10.5 9.5 8 12.5 8C14.2 8 15.8 8.9 17 10.2C18.2 8.9 19.8 8 21.5 8C24.5 8 27 10.5 27 13.5C27 19.3 17 25.5 17 25.5Z" fill="url(#hg)"/>
+                  <path d="M17 25.5C17 25.5 7 19.3 7 13.5C7 10.5 9.5 8 12.5 8C14.2 8 15.8 8.9 17 10.2C18.2 8.9 19.8 8 21.5 8C24.5 8 27 10.5 27 13.5C27 19.3 17 25.5 17 25.5Z" fill="url(#hg)"/>
+                </svg>
               </span>
               <span className="font-heading text-lg leading-none tracking-tight">
                 <span className="text-white">EURORA</span>{" "}

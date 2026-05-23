@@ -6,7 +6,7 @@ import FloatingHearts from "@/components/effects/FloatingHearts";
 
 const CHANNELS = [
   { id: "email", label: "E-mail", emoji: "✉️", popular: true },
-  { id: "wpp", label: "WhatsApp", emoji: "💬", note: "Link pré-formatado" },
+  { id: "wpp", label: "WhatsApp", emoji: "💬", note: "link pronto para enviar" },
 ];
 
 const TEMPLATES = [
@@ -131,9 +131,8 @@ export default function MensagemClient() {
             emocioná-la.
           </h1>
           <p className="text-white/65 text-lg max-w-2xl mx-auto">
-            Programe agora pra disparar automaticamente no Dia dos Namorados —
-            via{" "}
-            <span className="text-white font-medium">e-mail ou WhatsApp</span>.
+            Programe envio por e-mail ou gere um link de WhatsApp já preenchido
+            para mandar no momento certo.
           </p>
         </div>
       </section>
@@ -343,7 +342,7 @@ export default function MensagemClient() {
                     />
                     {channel === "wpp" && (
                       <p className="text-white/40 text-xs mt-2">
-                        Você receberá um link wa.me pré-formatado para enviar no horário escolhido.
+                        Para WhatsApp, o sistema gera o texto pronto e o link wa.me. Envio automático no WhatsApp exige API oficial da Meta.
                       </p>
                     )}
                   </div>

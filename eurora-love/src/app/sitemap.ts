@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const BASE = "https://eurora.love.br";
+const BASE = "https://eurora.site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

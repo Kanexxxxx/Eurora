@@ -1,13 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+﻿import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/server/db/prisma";
 import { Resend } from "resend";
+import { optionalEnv, requiredEnv } from "@/server/env";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(optionalEnv("RESEND_API_KEY"));
+const FROM_EMAIL = optionalEnv("RESEND_FROM_EMAIL", "oi@eurora.site");
+const APP_URL = optionalEnv("NEXT_PUBLIC_APP_URL", "https://eurora.site");
 
 export async function GET(req: NextRequest) {
   // Vercel Cron authenticates with CRON_SECRET header
   const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (authHeader !== `Bearer ${requiredEnv("CRON_SECRET")}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -28,9 +31,9 @@ export async function GET(req: NextRequest) {
     try {
       if (msg.channel === "email") {
         await resend.emails.send({
-          from: "EURORA LOVE <oi@eurora.love.br>",
+          from: `EURORA LOVE <${FROM_EMAIL}>`,
           to: msg.recipient,
-          subject: "Uma mensagem especial chegou pra você 💌",
+          subject: "Uma mensagem especial chegou pra vocÃª ðŸ’Œ",
           html: `
             <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#07050a;color:#fff5f0;padding:40px;border-radius:16px;">
               <p style="color:#ff2d6a;font-size:12px;letter-spacing:0.3em;text-transform:uppercase;margin-bottom:24px;">EURORA LOVE</p>
@@ -38,15 +41,15 @@ export async function GET(req: NextRequest) {
                 <p style="font-size:18px;line-height:1.8;white-space:pre-line;">${msg.message}</p>
               </div>
               <p style="color:rgba(255,245,240,0.4);font-size:12px;margin-top:24px;text-align:center;">
-                Criado com <a href="https://eurora.love.br" style="color:#ff2d6a;">EURORA LOVE</a>
+                Criado com <a href="${APP_URL}" style="color:#ff2d6a;">EURORA LOVE</a>
               </p>
             </div>
           `,
         });
       }
-      // WhatsApp: não há API automática sem aprovação do Meta Business.
-      // Para WhatsApp, a mensagem é armazenada e o usuário é notificado por email
-      // para enviá-la manualmente no momento certo (via link wa.me pré-formatado).
+      // WhatsApp: nÃ£o hÃ¡ API automÃ¡tica sem aprovaÃ§Ã£o do Meta Business.
+      // Para WhatsApp, a mensagem Ã© armazenada e o usuÃ¡rio Ã© notificado por email
+      // para enviÃ¡-la manualmente no momento certo (via link wa.me prÃ©-formatado).
 
       await prisma.scheduledMessage.update({
         where: { id: msg.id },
@@ -61,3 +64,4 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({ processed: pending.length, sent, failed });
 }
+

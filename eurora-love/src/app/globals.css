@@ -320,6 +320,27 @@
     animation: shimmer-text 5s linear infinite;
   }
 
+  /* Aurora lyrics — soft shimmer sweep, natural tone */
+  @keyframes lyrics-flow {
+    0%, 100% { background-position: 0% 50%; }
+    50%       { background-position: 100% 50%; }
+  }
+  .lyrics-aurora {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.45) 0%,
+      rgba(255, 210, 220, 0.80) 30%,
+      rgba(255, 255, 255, 0.60) 55%,
+      rgba(255, 210, 220, 0.75) 80%,
+      rgba(255, 255, 255, 0.45) 100%
+    );
+    background-size: 250% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: lyrics-flow 8s ease-in-out infinite;
+  }
+
   @keyframes shimmer-bg {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
@@ -480,6 +501,89 @@
 
   .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
   .safe-top { padding-top: max(1rem, env(safe-area-inset-top)); }
+
+  .btn-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.12) 50%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+  .btn-shimmer:hover::after { opacity: 1; }
+
+  .btn-cta-black-luxury  { background: linear-gradient(135deg, #e11d48, #fb7185); }
+  .btn-cta-neon-romance  { background: linear-gradient(135deg, #e11d48, #e879f9); }
+  .btn-cta-minimal-love  { background: linear-gradient(135deg, #e11d48, #fbbf24); }
+  .btn-cta-velvet-dark   { background: linear-gradient(135deg, #e11d48, #fda4af); }
+
+  /* PreviewMockup — iPhone frame classes */
+  .mockup-iphone-shell {
+    background: linear-gradient(180deg, #525252 0%, #1a1a1a 40%, #000 100%);
+    box-shadow: 0 60px 140px -30px rgba(255,45,106,.55), 0 35px 90px -30px rgba(0,0,0,.9),
+                inset 0 1px 0 rgba(255,255,255,.18), inset 0 -1px 0 rgba(255,255,255,.04);
+  }
+  .mockup-screen-border { box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+  .mockup-photo-frame   {
+    box-shadow: 0 24px 60px -20px rgba(255,255,255,.3),
+                0 0 0 0.5px rgba(255,255,255,.08);
+  }
+  .mockup-spotify-wrap  { box-shadow: 0 8px 24px -12px rgba(29,185,84,.3); }
+  .mockup-gloss-full    { background: linear-gradient(135deg, rgba(255,255,255,.04) 0%, transparent 50%); }
+  .mockup-gloss-corner  { background: linear-gradient(135deg, rgba(255,255,255,.09), transparent); }
+  .mockup-cta-primary   {
+    background: linear-gradient(135deg, #f43f5e, #fb923c);
+    box-shadow: 0 12px 28px -10px rgba(244,63,94,.8);
+  }
+  .mockup-cta-secondary { box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
+
+  /* One class per song — sets --song-color for child helpers */
+  .song-theme-0 { --song-color: #b5956e; } /* BIRDS OF A FEATHER */
+  .song-theme-1 { --song-color: #e879a4; } /* Chest Pain          */
+  .song-theme-2 { --song-color: #f9844a; } /* Eu Te Seguro        */
+  .song-theme-3 { --song-color: #5e9ef4; } /* Sailor Song         */
+  .song-theme-4 { --song-color: #8b5cf6; } /* Ma Meilleure Ennemie*/
+  .song-theme-5 { --song-color: #ef4444; } /* The Line            */
+
+  /* Helpers that consume --song-color */
+  .song-waveform-bar { background-color: var(--song-color, #ff2d6a); }
+  .song-accent-text  { color: var(--song-color, #ff2d6a); }
+
+  /* Static gradient overlay used inside the photo frame */
+  .mockup-photo-gradient {
+    background: linear-gradient(
+      180deg,
+      rgba(0,0,0,0.15) 0%,
+      rgba(0,0,0,0.05) 20%,
+      rgba(0,0,0,0.55) 65%,
+      rgba(0,0,0,0.88) 100%
+    );
+  }
+  /* Transparent gradient buttons — color synced to current song */
+  .song-btn-primary {
+    background: color-mix(in srgb, var(--song-color, #ff2d6a) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--song-color, #ff2d6a) 38%, transparent);
+    box-shadow: 0 4px 18px -6px color-mix(in srgb, var(--song-color, #ff2d6a) 28%, transparent),
+                inset 0 1px 0 color-mix(in srgb, var(--song-color, #ff2d6a) 18%, white);
+    color: var(--song-color, #ff2d6a);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    text-align: center;
+  }
+  .song-btn-secondary {
+    background: color-mix(in srgb, var(--song-color, #ff2d6a) 7%, transparent);
+    border: 1px solid color-mix(in srgb, var(--song-color, #ff2d6a) 22%, transparent);
+    color: color-mix(in srgb, var(--song-color, #ff2d6a) 80%, rgba(255,255,255,0.9));
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    text-align: center;
+  }
+  /* Play overlay button on the Spotify embed */
+  .song-play-overlay {
+    background: color-mix(in srgb, var(--song-color, #ff2d6a) 18%, rgba(0,0,0,0.6));
+    border: 1px solid color-mix(in srgb, var(--song-color, #ff2d6a) 35%, transparent);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--song-color, #ff2d6a) 25%, transparent);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
