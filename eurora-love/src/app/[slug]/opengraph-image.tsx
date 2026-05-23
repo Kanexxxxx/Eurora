@@ -16,8 +16,8 @@ export default async function OgImage({ params }: { params: Promise<{ slug: stri
 
   const names = data ? `${data.person1} & ${data.person2}` : "EURORA LOVE";
   const preview = data
-    ? data.message.slice(0, 100) + (data.message.length > 100 ? "â€¦" : "")
-    : "ExperiÃªncia digital romÃ¢ntica premium";
+    ? data.message.slice(0, 100) + (data.message.length > 100 ? "…" : "")
+    : "Experiência digital romântica premium";
 
   return new ImageResponse(
     (

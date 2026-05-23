@@ -1,6 +1,6 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/server/db/prisma";
-import { createServerClient } from "@/server/storage/supabase";
+import { createUploadKey, extensionFromMime, saveUpload } from "@/server/storage/local";
 import { coupleFieldsSchema } from "@/lib/validations";
 import { generateSlug } from "@/lib/utils/slug";
 import type { Theme, Plan } from "@prisma/client";
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for") ?? "unknown";
   if (!checkRateLimit(ip)) {
     return NextResponse.json(
-      { error: "Muitas requisiÃ§Ãµes. Tente novamente em 1 minuto." },
+      { error: "Muitas requisições. Tente novamente em 1 minuto." },
       { status: 429 }
     );
   }
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
   try {
     formData = await req.formData();
   } catch {
-    return NextResponse.json({ error: "Dados invÃ¡lidos" }, { status: 400 });
+    return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
   }
 
   const photos = formData.getAll("photos") as File[];
@@ -53,13 +53,13 @@ export async function POST(req: NextRequest) {
   for (const photo of photos) {
     if (!["image/jpeg", "image/png", "image/webp"].includes(photo.type)) {
       return NextResponse.json(
-        { error: "Formato de imagem invÃ¡lido." },
+        { error: "Formato de imagem inválido." },
         { status: 400 }
       );
     }
     if (photo.size > 5 * 1024 * 1024) {
       return NextResponse.json(
-        { error: "Foto muito grande (mÃ¡x 5MB)." },
+        { error: "Foto muito grande (máx 5MB)." },
         { status: 400 }
       );
     }
@@ -76,36 +76,35 @@ export async function POST(req: NextRequest) {
   });
   if (!fieldsCheck.success) {
     return NextResponse.json(
-      { error: "Dados invÃ¡lidos.", details: fieldsCheck.error.flatten() },
+      { error: "Dados inválidos.", details: fieldsCheck.error.flatten() },
       { status: 400 }
     );
   }
 
-  // Upload photos to Supabase Storage (Prisma doesn't handle file storage)
-  const supabase = createServerClient();
+  // Upload photos to local VPS storage (served by Nginx at /uploads).
   const photoUrls: string[] = [];
 
   for (const photo of photos) {
     const bytes = await photo.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const ext = photo.type.split("/")[1];
-    const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const ext = extensionFromMime(photo.type);
+    if (!ext) {
+      return NextResponse.json(
+        { error: "Formato de imagem invalido." },
+        { status: 400 }
+      );
+    }
 
-    const { error: uploadError } = await supabase.storage
-      .from("couple-photos")
-      .upload(filename, buffer, { contentType: photo.type, upsert: false });
-
-    if (uploadError) {
+    try {
+      const key = createUploadKey("couples", ext);
+      const publicUrl = await saveUpload(key, buffer);
+      photoUrls.push(publicUrl);
+    } catch {
       return NextResponse.json(
         { error: "Erro ao fazer upload da foto." },
         { status: 500 }
       );
     }
-
-    const { data: urlData } = supabase.storage
-      .from("couple-photos")
-      .getPublicUrl(filename);
-    photoUrls.push(urlData.publicUrl);
   }
 
   const fields = fieldsCheck.data;

@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
   if (!parsed.success)
-    return NextResponse.json({ error: "Dados invÃ¡lidos" }, { status: 400 });
+    return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
   const { name, email, cpf } = parsed.data;
 
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
           billingType: "PIX",
           value: 8,
           dueDate: todayIsoDate(),
-          description: "EURORA LOVE â€” Curadoria 250 Presentes",
+          description: “EURORA LOVE — Curadoria 250 Presentes”,
           externalReference: `presentes:${Date.now()}`,
         }),
       }

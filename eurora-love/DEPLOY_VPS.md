@@ -4,7 +4,7 @@ Checklist para colocar a EURORA LOVE em producao.
 
 ## 0. Preparar VPS sem apagar o projeto atual
 
-Este projeto usa Supabase/PostgreSQL externo, entao a VPS nao precisa instalar banco local.
+Este projeto usa PostgreSQL local na VPS e salva fotos/QR codes em disco.
 
 O script abaixo instala apenas dependencias do servidor:
 
@@ -13,6 +13,7 @@ O script abaixo instala apenas dependencias do servidor:
 - PM2
 - Nginx
 - Certbot
+- PostgreSQL
 - Git/build tools
 - regras basicas de firewall
 
@@ -41,13 +42,42 @@ cp .env ".env.backup-$(date +%Y%m%d-%H%M%S)"
 
 ## 1. Variaveis obrigatorias
 
+### PostgreSQL local
+
+Crie banco e usuario na VPS:
+
+```bash
+sudo -u postgres psql
+```
+
+Dentro do prompt do PostgreSQL:
+
+```sql
+CREATE USER eurora WITH PASSWORD 'TROQUE_POR_UMA_SENHA_FORTE';
+CREATE DATABASE eurora_love OWNER eurora;
+GRANT ALL PRIVILEGES ON DATABASE eurora_love TO eurora;
+\q
+```
+
+Guarde a senha para o `.env`.
+
+### Uploads locais
+
+Crie a pasta que vai guardar fotos e QR codes:
+
+```bash
+sudo mkdir -p /var/www/eurora/uploads
+sudo chown -R root:root /var/www/eurora/uploads
+sudo chmod -R 755 /var/www/eurora/uploads
+```
+
 Crie `.env` no servidor com:
 
 ```env
-DATABASE_URL=
-DIRECT_URL=
-NEXT_PUBLIC_SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
+DATABASE_URL=postgresql://eurora:TROQUE_POR_UMA_SENHA_FORTE@127.0.0.1:5432/eurora_love
+DIRECT_URL=postgresql://eurora:TROQUE_POR_UMA_SENHA_FORTE@127.0.0.1:5432/eurora_love
+UPLOAD_DIR=/var/www/eurora/uploads
+UPLOAD_PUBLIC_URL=https://eurora.site/uploads
 ASAAS_API_KEY=
 ASAAS_API_URL=https://api.asaas.com/v3
 ASAAS_WEBHOOK_TOKEN=
@@ -69,6 +99,7 @@ Nao coloque chaves reais no Git.
 ```bash
 npm ci
 npm run prisma:generate
+npx prisma db push
 npm run build
 ```
 
@@ -101,6 +132,13 @@ Exemplo:
 ```nginx
 server {
   server_name eurora.site www.eurora.site;
+
+  location /uploads/ {
+    alias /var/www/eurora/uploads/;
+    access_log off;
+    expires 30d;
+    add_header Cache-Control "public, max-age=2592000";
+  }
 
   location / {
     proxy_pass http://127.0.0.1:3000;
@@ -159,7 +197,38 @@ Authorization: Bearer SEU_CRON_SECRET
 
 Sugestao: rodar a cada 5 minutos.
 
-## 7. Verificacao final
+## 7. Backup local
+
+Crie pasta de backups:
+
+```bash
+sudo mkdir -p /var/backups/eurora
+```
+
+Backup manual do banco e uploads:
+
+```bash
+pg_dump "postgresql://eurora:TROQUE_POR_UMA_SENHA_FORTE@127.0.0.1:5432/eurora_love" \
+  > "/var/backups/eurora/db-$(date +%Y%m%d-%H%M%S).sql"
+
+tar -czf "/var/backups/eurora/uploads-$(date +%Y%m%d-%H%M%S).tar.gz" \
+  -C /var/www/eurora uploads
+```
+
+Cron diario sugerido:
+
+```bash
+sudo crontab -e
+```
+
+Adicionar:
+
+```cron
+15 3 * * * pg_dump "postgresql://eurora:TROQUE_POR_UMA_SENHA_FORTE@127.0.0.1:5432/eurora_love" > "/var/backups/eurora/db-$(date +\%Y\%m\%d-\%H\%M\%S).sql"
+30 3 * * * tar -czf "/var/backups/eurora/uploads-$(date +\%Y\%m\%d-\%H\%M\%S).tar.gz" -C /var/www/eurora uploads
+```
+
+## 8. Verificacao final
 
 ```bash
 npm run lint

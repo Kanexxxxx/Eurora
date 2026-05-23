@@ -63,6 +63,7 @@ export default function PresentesClient() {
   const [categoria, setCategoria] = useState("Todos");
   const [busca, setBusca] = useState("");
   const [dbLinks, setDbLinks] = useState<Produto[]>([]);
+  const [hiddenIds, setHiddenIds] = useState<number[]>([]);
   const [form, setForm] = useState({ name: "", email: "", cpf: "" });
   const [pix, setPix] = useState<{ payment_id: string; qr_code: string; copia_cola: string } | null>(null);
   const [loadingPagar, setLoadingPagar] = useState(false);
@@ -156,18 +157,19 @@ export default function PresentesClient() {
     if (step !== "unlocked") return;
     fetch("/api/presentes/links")
       .then((r) => r.json())
-      .then((links: { id: string; name: string; platform: string; url: string; categoria: string }[]) => {
-        setDbLinks(links.map((l, i) => ({
+      .then((data: { links: { id: string; name: string; platform: string; url: string; categoria: string }[]; hiddenIds: number[] }) => {
+        setDbLinks(data.links.map((l, i) => ({
           ...l,
           id: 100000 + i,
           platform: l.platform as Produto["platform"],
         })));
+        setHiddenIds(data.hiddenIds ?? []);
       })
       .catch(() => {});
   }, [step]);
 
   // Filtered products
-  const todosOsProdutos = [...PRODUTOS, ...dbLinks];
+  const todosOsProdutos = [...PRODUTOS.filter((p) => !hiddenIds.includes(p.id)), ...dbLinks];
   const produtos = todosOsProdutos.filter((p) => {
     const matchCat = categoria === "Todos" || p.categoria === categoria;
     const matchBusca = !busca || p.name.toLowerCase().includes(busca.toLowerCase());

@@ -2,7 +2,7 @@
 
 Plataforma romantica para criar paginas personalizadas de casal com fotos, musica, mensagem, QR code, presentes e ferramentas de IA.
 
-**Stack:** Next.js 16, Supabase, Prisma, Asaas, Resend, Framer Motion, Tailwind CSS v4 e TypeScript.
+**Stack:** Next.js 16, PostgreSQL local, Prisma, Asaas, Resend, Framer Motion, Tailwind CSS v4 e TypeScript.
 
 ## Desenvolvimento local
 
@@ -28,10 +28,10 @@ npm run dev
 
 | Variavel | Onde pegar |
 |---|---|
-| `DATABASE_URL` | Supabase > Project Settings > Database > Connection string pooler |
-| `DIRECT_URL` | Supabase > Project Settings > Database > Connection string direta |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase > Project Settings > API > Project URL |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase > Project Settings > API > service_role key |
+| `DATABASE_URL` | PostgreSQL local da VPS, ex: `postgresql://eurora:SENHA@127.0.0.1:5432/eurora_love` |
+| `DIRECT_URL` | Mesma conexao local usada pelo Prisma |
+| `UPLOAD_DIR` | Pasta local para fotos/QR codes, ex: `/var/www/eurora/uploads` |
+| `UPLOAD_PUBLIC_URL` | URL publica dos uploads, ex: `https://eurora.site/uploads` |
 | `ASAAS_API_KEY` | Asaas > Integracoes > Chaves de API |
 | `ASAAS_WEBHOOK_TOKEN` | Asaas > Integracoes > Webhooks > Token de autenticacao |
 | `NEXT_PUBLIC_APP_URL` | Dominio final, ex: `https://eurora.site` |
@@ -63,7 +63,7 @@ src/server
   - db/prisma.ts
   - payments/asaas.ts
   - payments/activateCouple.ts
-  - storage/supabase.ts
+  - storage/local.ts
   - env.ts
 
 src/lib
@@ -82,7 +82,7 @@ Use `DEPLOY_VPS.md` para VPS. Fluxo minimo:
 
 ```bash
 npm ci
-npx prisma migrate deploy
+npx prisma db push
 npm run build
 npm run start:prod
 ```

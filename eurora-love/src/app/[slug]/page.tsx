@@ -27,7 +27,7 @@ async function getMusicMeta(url: string | null): Promise<MusicMeta | null> {
     if (!res.ok) return null;
     const data = await res.json() as { title?: string; thumbnail_url?: string; provider_name?: string };
     return {
-      title: data.title ?? "Nossa MÃºsica",
+      title: data.title ?? "Nossa Música",
       albumArt: data.thumbnail_url ?? "",
       provider: data.provider_name,
     };
@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     select: { person1: true, person2: true, message: true },
   });
 
-  if (!couple) return { title: "PÃ¡gina nÃ£o encontrada | EURORA LOVE" };
+  if (!couple) return { title: "Página não encontrada | EURORA LOVE" };
 
   const title = `${couple.person1} & ${couple.person2} | EURORA LOVE`;
   const description = couple.message.slice(0, 160);
