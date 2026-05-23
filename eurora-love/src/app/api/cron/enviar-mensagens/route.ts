@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/server/db/prisma";
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import { optionalEnv, requiredEnv } from "@/server/env";
 
-const resend = new Resend(optionalEnv("RESEND_API_KEY"));
-const FROM = optionalEnv("RESEND_FROM_EMAIL", "oi@eurora.site");
+const GMAIL_USER = optionalEnv("GMAIL_USER", "eurora.com.br@gmail.com");
+const FROM = `EURORA LOVE <${GMAIL_USER}>`;
 const APP_URL = optionalEnv("NEXT_PUBLIC_APP_URL", "https://eurora.site");
 const ADMIN_EMAIL = "eurora.com.br@gmail.com";
+
+function createTransporter() {
+  return nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: { user: GMAIL_USER, pass: requiredEnv("GMAIL_APP_PASSWORD") },
+  });
+}
 
 function esc(s: string) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -183,34 +192,36 @@ export async function GET(req: NextRequest) {
   let sent = 0;
   let failed = 0;
 
+  const transporter = createTransporter();
+
   for (const msg of pending) {
     try {
       const notifyTo = msg.sender_email ?? ADMIN_EMAIL;
 
       if (msg.channel === "email") {
-        await resend.emails.send({
-          from: `EURORA LOVE <${FROM}>`,
+        await transporter.sendMail({
+          from: FROM,
           to: msg.recipient,
           subject: "Uma mensagem especial chegou pra você 💌",
           html: buildDirectEmail(msg.message),
         });
       } else if (msg.channel === "wpp") {
-        await resend.emails.send({
-          from: `EURORA LOVE <${FROM}>`,
+        await transporter.sendMail({
+          from: FROM,
           to: notifyTo,
           subject: "Hora de enviar no WhatsApp! 💬",
           html: buildWaReminder(msg.recipient, msg.message),
         });
       } else if (msg.channel === "telegram") {
-        await resend.emails.send({
-          from: `EURORA LOVE <${FROM}>`,
+        await transporter.sendMail({
+          from: FROM,
           to: notifyTo,
           subject: "Hora de enviar no Telegram! ✈️",
           html: buildTelegramReminder(msg.recipient, msg.message),
         });
       } else if (msg.channel === "correios") {
-        await resend.emails.send({
-          from: `EURORA LOVE <${FROM}>`,
+        await transporter.sendMail({
+          from: FROM,
           to: ADMIN_EMAIL,
           subject: `[Correios] Nova carta — ${new Date(msg.send_at).toLocaleDateString("pt-BR")}`,
           html: buildCorreiosAdmin(msg.recipient, msg.message, notifyTo, msg.send_at),
