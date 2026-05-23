@@ -55,11 +55,9 @@ export default function FloatingHearts({
             left: `${h.left}%`,
             fontSize: `${h.size}px`,
             color: h.hue === 38 ? "#f6c986" : "#ff2d6a",
-            opacity: 0.18,
+            opacity: 0.14,
             animationDuration: `${h.duration}s`,
             animationDelay: `${h.delay}s`,
-            filter: "blur(0.3px)",
-            textShadow: "0 0 12px currentColor",
           }}
         >
           {h.emoji}
