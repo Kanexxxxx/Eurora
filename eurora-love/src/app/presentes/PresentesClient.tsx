@@ -1,451 +1,437 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import FloatingHearts from "@/components/effects/FloatingHearts";
+import { PRODUTOS, CATEGORIAS, type Produto } from "@/data/presentes";
 
-type Step = "intro" | "quiz" | "loading" | "result";
+type Step = "verificando" | "locked" | "form" | "pix" | "unlocked";
 
-const QUIZ = [
-  {
-    id: "persona",
-    q: "Como você descreveria a personalidade dela?",
-    options: [
-      { value: "doce", label: "Doce, fofa, sentimental", emoji: "🥺" },
-      { value: "intensa", label: "Intensa, apaixonada, dramática", emoji: "🔥" },
-      { value: "divertida", label: "Engraçada, descolada, espontânea", emoji: "😂" },
-      { value: "elegante", label: "Elegante, sofisticada, exigente", emoji: "👑" },
-    ],
-  },
-  {
-    id: "estilo",
-    q: "Qual o estilo dela?",
-    options: [
-      { value: "minimal", label: "Minimalista, clean", emoji: "🤍" },
-      { value: "boho", label: "Boho, despojado", emoji: "🌿" },
-      { value: "glam", label: "Glam, brilho, luxo", emoji: "✨" },
-      { value: "alt", label: "Alternativo, fashion", emoji: "🖤" },
-    ],
-  },
-  {
-    id: "budget",
-    q: "Quanto você quer investir?",
-    options: [
-      { value: "50", label: "Até R$ 50", emoji: "🤍" },
-      { value: "100", label: "Até R$ 100", emoji: "💖" },
-      { value: "300", label: "Até R$ 300", emoji: "💎" },
-      { value: "999", label: "Sem limite — quero impressionar", emoji: "👑" },
-    ],
-  },
-  {
-    id: "objetivo",
-    q: "Qual a missão desse presente?",
-    options: [
-      { value: "emocionar", label: "Fazer ela chorar de emoção", emoji: "😭" },
-      { value: "surpreender", label: "Surpreender, algo único", emoji: "🎁" },
-      { value: "reconciliar", label: "Pedir desculpas / reconciliar", emoji: "🥹" },
-      { value: "viralizar", label: "Algo que ela mostre nos stories", emoji: "📱" },
-    ],
-  },
-];
+const PLATFORM_STYLE: Record<string, { bg: string; label: string }> = {
+  Amazon: { bg: "bg-orange-500", label: "Amazon" },
+  Shopee:  { bg: "bg-[#ee4d2d]",  label: "Shopee" },
+  ML:      { bg: "bg-yellow-400 text-black", label: "Mercado Livre" },
+};
 
-// Produtos reais com links de afiliados (Shopee, Amazon, Mercado Livre)
-const PRODUCTS = [
-  {
-    name: "Pulseira Personalizada com Coordenadas",
-    price: "R$ 47,90",
-    source: "Shopee",
-    emoji: "💫",
-    tag: "TikTok #1",
-    color: "from-rose-400 to-rose-600",
-    url: "https://shopee.com.br/search?keyword=pulseira+coordenadas+personalizada",
-    budget: ["50", "100"],
-    objetivo: ["emocionar", "surpreender"],
-  },
-  {
-    name: "Buquê Eterno de Rosas Encantadas",
-    price: "R$ 89,90",
-    source: "Mercado Livre",
-    emoji: "🌹",
-    tag: "Faz chorar",
-    color: "from-pink-400 to-rose-600",
-    url: "https://www.mercadolivre.com.br/busca?q=buque+rosas+eternas+encantadas",
-    budget: ["100", "300"],
-    objetivo: ["emocionar", "surpreender", "reconciliar"],
-  },
-  {
-    name: "Caixa Surpresa Personalizada com Fotos",
-    price: "R$ 64,90",
-    source: "Shopee",
-    emoji: "🎁",
-    tag: "Viral",
-    color: "from-amber-400 to-orange-500",
-    url: "https://shopee.com.br/search?keyword=caixa+surpresa+fotos+personalizada",
-    budget: ["50", "100"],
-    objetivo: ["viralizar", "surpreender"],
-  },
-  {
-    name: "Diário do Casal com Capa Personalizada",
-    price: "R$ 119,00",
-    source: "Shopee",
-    emoji: "📔",
-    tag: "Sentimental",
-    color: "from-violet-500 to-purple-700",
-    url: "https://shopee.com.br/search?keyword=diario+casal+personalizado",
-    budget: ["100", "300"],
-    objetivo: ["emocionar", "surpreender"],
-  },
-  {
-    name: "Kit Spa Aromaterapia Romântico",
-    price: "R$ 154,90",
-    source: "Amazon",
-    emoji: "🕯️",
-    tag: "Romântico",
-    color: "from-amber-300 to-rose-400",
-    url: "https://www.amazon.com.br/s?k=kit+spa+romantico+vela+aromaterapia",
-    budget: ["100", "300"],
-    objetivo: ["emocionar", "reconciliar"],
-  },
-  {
-    name: "Anel Ajustável Coração de Zircônia",
-    price: "R$ 39,90",
-    source: "Shopee",
-    emoji: "💍",
-    tag: "Clássico",
-    color: "from-rose-300 to-pink-500",
-    url: "https://shopee.com.br/search?keyword=anel+coracao+zirconia+ajustavel",
-    budget: ["50", "100"],
-    objetivo: ["emocionar", "surpreender"],
-  },
-  {
-    name: "Quadro Personalizado Mapa Estelar",
-    price: "R$ 89,00",
-    source: "Shopee",
-    emoji: "⭐",
-    tag: "Único",
-    color: "from-indigo-500 to-purple-600",
-    url: "https://shopee.com.br/search?keyword=quadro+mapa+estelar+personalizado",
-    budget: ["50", "100", "300"],
-    objetivo: ["surpreender", "emocionar"],
-  },
-  {
-    name: "Perfume La Vie Est Belle Lancôme",
-    price: "R$ 299,00",
-    source: "Amazon",
-    emoji: "🌸",
-    tag: "Premium",
-    color: "from-pink-400 to-fuchsia-600",
-    url: "https://www.amazon.com.br/s?k=la+vie+est+belle+lancome",
-    budget: ["300", "999"],
-    objetivo: ["emocionar", "surpreender"],
-  },
-  {
-    name: "Joia de Pele — Colar Personalizado",
-    price: "R$ 79,90",
-    source: "Shopee",
-    emoji: "📿",
-    tag: "Tendência",
-    color: "from-amber-400 to-yellow-600",
-    url: "https://shopee.com.br/search?keyword=colar+personalizado+nome+inicial",
-    budget: ["50", "100"],
-    objetivo: ["viralizar", "surpreender"],
-  },
-  {
-    name: "Jantar a Dois — Experiência Gastronômica",
-    price: "R$ 250,00",
-    source: "GetNinjas",
-    emoji: "🍷",
-    tag: "Experiência",
-    color: "from-red-700 to-rose-900",
-    url: "https://www.getninjas.com.br/para/jantar-romantico",
-    budget: ["300", "999"],
-    objetivo: ["emocionar", "reconciliar"],
-  },
-  {
-    name: "Airpods Pro (2ª Geração) Apple",
-    price: "R$ 1.599,00",
-    source: "Amazon",
-    emoji: "🎧",
-    tag: "Tech love",
-    color: "from-gray-400 to-gray-600",
-    url: "https://www.amazon.com.br/s?k=airpods+pro+apple",
-    budget: ["999"],
-    objetivo: ["surpreender", "viralizar"],
-  },
-  {
-    name: "Vela Perfumada Artesanal 'Nossa Noite'",
-    price: "R$ 49,90",
-    source: "Shopee",
-    emoji: "🕯️",
-    tag: "Aconchego",
-    color: "from-orange-300 to-amber-500",
-    url: "https://shopee.com.br/search?keyword=vela+perfumada+artesanal+romantica",
-    budget: ["50", "100"],
-    objetivo: ["emocionar", "reconciliar"],
-  },
-];
+const TOKEN_KEY = "presentes_token";
+
+// Preview cards shown blurred on the paywall (first 9 products)
+const PREVIEW = PRODUTOS.slice(0, 9);
+
+function ProdutoCard({ p, index }: { p: Produto; index: number }) {
+  const cat = CATEGORIAS[p.categoria];
+  const plat = PLATFORM_STYLE[p.platform] ?? { bg: "bg-gray-500", label: p.platform };
+  return (
+    <motion.a
+      href={p.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: Math.min(index * 0.025, 0.4) }}
+      className="group block rounded-2xl overflow-hidden border border-white/8 bg-white/3 hover:border-white/20 transition-all active:scale-[0.98]"
+    >
+      {/* Gradient top */}
+      <div className={`relative h-28 bg-linear-to-br ${cat?.gradient ?? "from-gray-700 to-gray-900"} flex items-center justify-center`}>
+        <span className="text-5xl drop-shadow-lg group-hover:scale-110 transition-transform duration-300">
+          {cat?.emoji ?? "🎁"}
+        </span>
+      </div>
+
+      {/* Info */}
+      <div className="p-3">
+        <div className="flex items-center gap-1.5 mb-2">
+          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded text-white ${plat.bg}`}>
+            {plat.label}
+          </span>
+          <span className="text-[9px] text-gray-500 uppercase tracking-wide truncate">
+            {cat?.label ?? p.categoria}
+          </span>
+        </div>
+        <p className="text-white text-[12px] font-medium leading-snug line-clamp-2 mb-2">
+          {p.name}
+        </p>
+        <p className="text-rose-400 text-[11px] font-semibold group-hover:text-rose-300 transition-colors">
+          Ver produto →
+        </p>
+      </div>
+    </motion.a>
+  );
+}
 
 export default function PresentesClient() {
-  const [step, setStep] = useState<Step>("intro");
-  const [qIndex, setQIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [step, setStep] = useState<Step>("verificando");
+  const [categoria, setCategoria] = useState("Todos");
+  const [busca, setBusca] = useState("");
+  const [form, setForm] = useState({ name: "", email: "", cpf: "" });
+  const [pix, setPix] = useState<{ payment_id: string; qr_code: string; copia_cola: string } | null>(null);
+  const [loadingPagar, setLoadingPagar] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [erro, setErro] = useState("");
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const progress = useMemo(
-    () => Math.round(((qIndex + 1) / QUIZ.length) * 100),
-    [qIndex]
-  );
+  // Check stored token on mount
+  useEffect(() => {
+    let cancelled = false;
 
-  const filteredProducts = useMemo(() => {
-    if (!answers.budget) return PRODUCTS.slice(0, 6);
-    return PRODUCTS.filter(
-      (p) =>
-        p.budget.includes(answers.budget) &&
-        (!answers.objetivo || p.objetivo.includes(answers.objetivo))
-    ).slice(0, 6);
-  }, [answers]);
+    const checkToken = async () => {
+      const token = localStorage.getItem(TOKEN_KEY);
 
-  const handleAnswer = (qid: string, value: string) => {
-    const updated = { ...answers, [qid]: value };
-    setAnswers(updated);
-    if (qIndex < QUIZ.length - 1) {
-      setQIndex((i) => i + 1);
-    } else {
-      setStep("loading");
-      setTimeout(() => setStep("result"), 2200);
+      if (!token) {
+        if (!cancelled) setStep("locked");
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/presentes/status?token=${encodeURIComponent(token)}`);
+        const data = await response.json() as { valid?: boolean };
+        if (!cancelled) setStep(data.valid ? "unlocked" : "locked");
+      } catch {
+        if (!cancelled) setStep("locked");
+      }
+    };
+
+    void checkToken();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const stopPolling = useCallback(() => {
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => () => stopPolling(), [stopPolling]);
+
+  const startPolling = useCallback((payment_id: string) => {
+    stopPolling();
+    pollingRef.current = setInterval(async () => {
+      try {
+        const r = await fetch(`/api/presentes/status?payment_id=${payment_id}`);
+        const d = await r.json() as { paid?: boolean; token?: string };
+        if (d.paid && d.token) {
+          localStorage.setItem(TOKEN_KEY, d.token);
+          stopPolling();
+          setStep("unlocked");
+        }
+      } catch { /* ignore */ }
+    }, 3000);
+  }, [stopPolling]);
+
+  const handlePagar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErro("");
+    setLoadingPagar(true);
+    try {
+      const r = await fetch("/api/presentes/pagar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const d = await r.json() as { error?: string; payment_id?: string; pix_qr_code?: string; pix_copia_cola?: string };
+      if (!r.ok || d.error) throw new Error(d.error ?? "Erro ao gerar PIX");
+      setPix({ payment_id: d.payment_id!, qr_code: d.pix_qr_code!, copia_cola: d.pix_copia_cola! });
+      setStep("pix");
+      startPolling(d.payment_id!);
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Erro desconhecido");
+    } finally {
+      setLoadingPagar(false);
     }
   };
 
-  return (
-    <main className="relative min-h-screen overflow-hidden">
-      <FloatingHearts count={10} />
+  const copiar = () => {
+    if (!pix) return;
+    navigator.clipboard.writeText(pix.copia_cola);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 3000);
+  };
 
-      {/* Hero */}
-      <section className="relative px-4 pt-12 pb-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <p className="pill pill-live mb-6 mx-auto">
-            <span className="live-dot" /> Curadoria personalizada
-          </p>
-          <h1 className="font-heading text-4xl sm:text-6xl font-bold text-white mb-5 tracking-tight leading-tight">
-            Nossa IA encontra o{" "}
-            <span className="text-gradient-fire">presente perfeito</span> pra
-            ela.
+  // Filtered products
+  const produtos = PRODUTOS.filter((p) => {
+    const matchCat = categoria === "Todos" || p.categoria === categoria;
+    const matchBusca = !busca || p.name.toLowerCase().includes(busca.toLowerCase());
+    return matchCat && matchBusca;
+  });
+
+  const categorias = ["Todos", ...Object.keys(CATEGORIAS)];
+
+  const inputClass =
+    "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-rose-500 transition-colors text-sm";
+
+  if (step === "verificando") {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <div className="w-10 h-10 rounded-full border-2 border-rose-500/20 border-t-rose-500 animate-spin" />
+      </main>
+    );
+  }
+
+  if (step === "unlocked") {
+    return (
+      <main className="min-h-screen px-4 pt-10 pb-16 max-w-6xl mx-auto">
+        {/* Header */}
+        <motion.div
+          className="text-center mb-10"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <p className="pill pill-gold mb-4 mx-auto">✨ Curadoria desbloqueada</p>
+          <h1 className="font-heading text-4xl sm:text-5xl text-white font-bold mb-3">
+            {PRODUTOS.length} ideias de presentes
           </h1>
-          <p className="text-white/65 text-lg max-w-2xl mx-auto">
-            Curadoria real com links diretos para{" "}
-            <span className="text-white font-medium">
-              Shopee, Amazon e Mercado Livre
-            </span>
-            . Sem genérico. Só o que faz sentido pra ela.
+          <p className="text-white/55 text-sm">
+            Clique em qualquer produto para abrir direto na loja.
           </p>
+        </motion.div>
+
+        {/* Search */}
+        <div className="mb-5 max-w-sm mx-auto">
+          <input
+            type="search"
+            placeholder="Buscar produto..."
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            className={inputClass}
+          />
         </div>
-      </section>
 
-      <AnimatePresence mode="wait">
-        {step === "intro" && (
-          <motion.section
-            key="intro"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="relative px-4 py-12"
-          >
-            <div className="max-w-4xl mx-auto text-center">
-              <h2 className="font-heading text-3xl sm:text-4xl text-white mb-3 tracking-tight">
-                <span className="text-gradient-ember">
-                  Responda 4 perguntas
-                </span>
-              </h2>
-              <p className="text-white/55 mb-10 text-sm">
-                Nossa curadoria filtra os melhores produtos com base no perfil
-                dela.
-              </p>
-
+        {/* Category filter */}
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-4 mb-6 -mx-4 px-4">
+          {categorias.map((cat) => {
+            const info = CATEGORIAS[cat];
+            return (
               <button
-                onClick={() => setStep("quiz")}
-                className="btn-premium inline-flex items-center gap-2 text-lg"
+                key={cat}
+                type="button"
+                onClick={() => setCategoria(cat)}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                  categoria === cat
+                    ? "bg-rose-500 text-white"
+                    : "bg-white/8 text-gray-400 hover:text-white hover:bg-white/12"
+                }`}
               >
-                Começar curadoria personalizada →
+                {info ? `${info.emoji} ${info.label}` : "🎁 Todos"}
               </button>
-              <p className="text-white/45 text-xs mt-3">
-                Leva 30 segundos · Totalmente grátis
-              </p>
-            </div>
-          </motion.section>
+            );
+          })}
+        </div>
+
+        {/* Count */}
+        <p className="text-gray-600 text-xs mb-5">
+          {produtos.length} produto{produtos.length !== 1 ? "s" : ""}
+          {categoria !== "Todos" ? ` em ${categoria}` : ""}
+          {busca ? ` para "${busca}"` : ""}
+        </p>
+
+        {/* Grid */}
+        {produtos.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {produtos.map((p, i) => (
+              <ProdutoCard key={p.id} p={p} index={i} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-gray-600 py-20">Nenhum produto encontrado.</p>
         )}
+      </main>
+    );
+  }
 
-        {step === "quiz" && (
-          <motion.section
-            key="quiz"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="relative px-4 py-16"
-          >
-            <div className="max-w-2xl mx-auto">
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-white/60 text-sm">
-                    Pergunta {qIndex + 1} de {QUIZ.length}
-                  </p>
-                  <p className="text-rose-300 text-sm font-semibold">
-                    {progress}%
-                  </p>
-                </div>
-                <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-gradient-to-r from-rose-500 to-amber-400"
-                    animate={{ width: `${progress}%` }}
-                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  />
-                </div>
-              </div>
+  return (
+    <main className="min-h-screen px-4 pt-10 pb-16">
+      {/* Hero */}
+      <div className="text-center mb-10 max-w-2xl mx-auto">
+        <p className="pill pill-live mb-5 mx-auto">
+          <span className="live-dot" /> Acesso único · só R$ 8
+        </p>
+        <h1 className="font-heading text-4xl sm:text-5xl text-white font-bold mb-4 leading-tight">
+          Você não sabe o que dar para{" "}
+          <span className="text-gradient-fire">seu namorado(a)?</span>
+        </h1>
+        <p className="text-white/55 text-lg">
+          250+ presentes reais separados por categoria — perfumes, joias, tech, lingerie e muito mais.
+          Desbloqueie por apenas <span className="text-white font-bold">R$ 8,00</span> e compre direto na loja.
+        </p>
+      </div>
 
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={qIndex}
-                  initial={{ opacity: 0, x: 30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -30 }}
-                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <h2 className="font-heading text-3xl sm:text-4xl text-white mb-8 tracking-tight leading-tight">
-                    {QUIZ[qIndex].q}
-                  </h2>
-
-                  <div className="grid grid-cols-1 gap-3">
-                    {QUIZ[qIndex].options.map((opt, i) => (
-                      <motion.button
-                        key={opt.value}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.08 }}
-                        whileHover={{ scale: 1.01 }}
-                        whileTap={{ scale: 0.99 }}
-                        onClick={() => handleAnswer(QUIZ[qIndex].id, opt.value)}
-                        className="card-premium px-6 py-5 text-left flex items-center gap-4 group"
-                      >
-                        <span className="text-3xl group-hover:scale-110 transition-transform">
-                          {opt.emoji}
-                        </span>
-                        <span className="text-white font-medium flex-1">
-                          {opt.label}
-                        </span>
-                        <span className="text-rose-300 opacity-0 group-hover:opacity-100 transition-opacity">
-                          →
-                        </span>
-                      </motion.button>
-                    ))}
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </motion.section>
-        )}
-
-        {step === "loading" && (
-          <motion.section
-            key="loading"
+      {/* Preview blurred + paywall */}
+      <AnimatePresence mode="wait">
+        {step === "locked" && (
+          <motion.div
+            key="locked"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="relative px-4 py-32 flex flex-col items-center justify-center min-h-[60vh]"
+            className="max-w-4xl mx-auto"
           >
             <div className="relative">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                className="w-24 h-24 rounded-full border-2 border-rose-500/20 border-t-rose-500"
-              />
-              <span className="absolute inset-0 flex items-center justify-center text-3xl animate-heart-beat">
-                ♥
-              </span>
+              {/* Blurred preview grid */}
+              <div className="grid grid-cols-3 gap-3 blur-sm pointer-events-none select-none opacity-60">
+                {PREVIEW.map((p) => {
+                  const cat = CATEGORIAS[p.categoria];
+                  return (
+                    <div key={p.id} className="rounded-2xl overflow-hidden border border-white/8">
+                      <div className={`h-24 bg-linear-to-br ${cat?.gradient ?? "from-gray-700 to-gray-900"} flex items-center justify-center text-4xl`}>
+                        {cat?.emoji ?? "🎁"}
+                      </div>
+                      <div className="p-3 bg-white/3">
+                        <div className="h-2 bg-white/10 rounded mb-2 w-16" />
+                        <div className="h-3 bg-white/15 rounded mb-1" />
+                        <div className="h-3 bg-white/10 rounded w-3/4" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Overlay */}
+              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black via-black/80 to-transparent rounded-2xl">
+                <div className="relative rounded-[28px] p-8 sm:p-10 text-center max-w-sm w-full mx-4 bg-gradient-to-br from-amber-950/80 via-zinc-900 to-black border border-amber-500/40 shadow-[0_0_60px_-10px_rgba(245,158,11,0.4)]">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-400 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider whitespace-nowrap">
+                    250+ presentes selecionados
+                  </div>
+                  <p className="text-5xl mb-4 mt-2">🎁</p>
+                  <h2 className="font-heading text-2xl text-white font-bold mb-2">
+                    Você não sabe o que dar?
+                  </h2>
+                  <p className="text-gray-400 text-sm mb-6 leading-relaxed">
+                    Perfumes, pulseiras, kits, lingerie, tech, chocolates e ideias de última hora — separados por categoria. Compre direto na loja favorita.
+                  </p>
+                  <div className="mb-6">
+                    <p className="text-gray-500 text-xs mb-1">Acesso único, para sempre</p>
+                    <p className="font-heading text-6xl font-bold text-gradient-fire leading-none">R$ 8</p>
+                    <p className="text-gray-600 text-xs mt-1">Pagamento via PIX · aprovado em 30s</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setStep("form")}
+                    className="w-full py-4 rounded-full text-white font-bold text-base bg-gradient-to-r from-amber-500 to-orange-400 hover:from-amber-400 hover:to-orange-300 shadow-[0_8px_30px_-8px_rgba(245,158,11,0.8)] hover:shadow-[0_12px_40px_-8px_rgba(245,158,11,1)] transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    Quero ver os presentes →
+                  </button>
+                  <p className="text-gray-600 text-xs mt-3">🔒 Pagamento seguro · Acesso imediato</p>
+                </div>
+              </div>
             </div>
-            <div className="mt-8 text-center max-w-sm">
-              <h3 className="font-heading text-2xl text-white mb-2">
-                Filtrando presentes…
-              </h3>
-              <p className="text-white/55 text-sm">
-                Cruzando o perfil dela com nossa curadoria
-              </p>
-            </div>
-          </motion.section>
+          </motion.div>
         )}
 
-        {step === "result" && (
-          <motion.section
-            key="result"
+        {step === "form" && (
+          <motion.div
+            key="form"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="relative px-4 py-12"
+            className="max-w-sm mx-auto"
           >
-            <div className="max-w-5xl mx-auto">
-              <div className="text-center mb-10">
-                <p className="pill pill-gold mb-5 mx-auto">
-                  ✨ Curadoria personalizada
-                </p>
-                <h2 className="font-heading text-4xl sm:text-5xl text-white mb-3 tracking-tight">
-                  {filteredProducts.length} presentes perfeitos pra ela
-                </h2>
-                <p className="text-white/65">
-                  Clique em qualquer produto para abrir direto na loja.
-                </p>
-              </div>
+            <div className="glass rounded-3xl p-8">
+              <h2 className="font-heading text-2xl text-white font-bold mb-1">
+                Seus dados para o PIX
+              </h2>
+              <p className="text-gray-500 text-sm mb-6">
+                Usamos estes dados apenas para gerar seu Pix com segurança.
+              </p>
+              <form onSubmit={handlePagar} className="space-y-4">
+                <div>
+                  <label className="text-gray-400 text-xs mb-1.5 block">Nome completo</label>
+                  <input
+                    type="text"
+                    placeholder="João Silva"
+                    value={form.name}
+                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                    className={inputClass}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-gray-400 text-xs mb-1.5 block">E-mail</label>
+                  <input
+                    type="email"
+                    placeholder="joao@email.com"
+                    value={form.email}
+                    onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                    className={inputClass}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-gray-400 text-xs mb-1.5 block">CPF (só números)</label>
+                  <input
+                    type="text"
+                    placeholder="00000000000"
+                    inputMode="numeric"
+                    maxLength={14}
+                    value={form.cpf}
+                    onChange={(e) => setForm((f) => ({ ...f, cpf: e.target.value }))}
+                    className={inputClass}
+                    required
+                  />
+                </div>
 
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
-                {filteredProducts.map((p, i) => (
-                  <motion.a
-                    key={i}
-                    href={p.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.06 }}
-                    className="card-premium overflow-hidden group block"
-                  >
-                    <div
-                      className={`aspect-square bg-gradient-to-br ${p.color} flex items-center justify-center text-6xl group-hover:scale-105 transition-transform duration-500`}
-                    >
-                      {p.emoji}
-                    </div>
-                    <div className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="pill pill-live text-[9px]">
-                          {p.tag}
-                        </span>
-                        <span className="text-white/40 text-[10px] uppercase">
-                          {p.source}
-                        </span>
-                      </div>
-                      <p className="text-white text-sm font-medium leading-tight mb-1">
-                        {p.name}
-                      </p>
-                      <p className="text-rose-300 font-bold text-base">
-                        {p.price}
-                      </p>
-                      <p className="text-white/40 text-xs mt-2 group-hover:text-rose-300 transition-colors">
-                        Ver na loja →
-                      </p>
-                    </div>
-                  </motion.a>
-                ))}
-              </div>
+                {erro && (
+                  <p className="text-red-400 text-sm text-center">{erro}</p>
+                )}
 
-              <div className="text-center">
                 <button
-                  onClick={() => {
-                    setStep("intro");
-                    setQIndex(0);
-                    setAnswers({});
-                  }}
-                  className="btn-ghost-glow"
+                  type="submit"
+                  disabled={loadingPagar}
+                  className="btn-premium w-full disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Refazer o quiz
+                  {loadingPagar ? "Gerando PIX..." : "Gerar PIX — R$ 8,00 →"}
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() => setStep("locked")}
+                  className="w-full text-gray-600 text-xs hover:text-gray-400 transition-colors py-2"
+                >
+                  ← Voltar
+                </button>
+              </form>
+            </div>
+          </motion.div>
+        )}
+
+        {step === "pix" && pix && (
+          <motion.div
+            key="pix"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="max-w-sm mx-auto"
+          >
+            <div className="glass rounded-3xl p-8 text-center">
+              <div className="bg-white rounded-2xl p-4 inline-block mb-5">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`data:image/png;base64,${pix.qr_code}`}
+                  alt="QR Code PIX"
+                  className="w-48 h-48"
+                />
+              </div>
+              <h2 className="font-heading text-xl text-white font-bold mb-1">
+                Aguardando pagamento
+              </h2>
+              <p className="text-gray-400 text-sm mb-5">
+                Escaneie o QR Code ou copie o código PIX abaixo. Os produtos aparecem automaticamente após o pagamento.
+              </p>
+              <button
+                type="button"
+                onClick={copiar}
+                className="btn-premium w-full mb-3"
+              >
+                {copied ? "✓ Copiado!" : "Copiar código PIX"}
+              </button>
+              <div className="flex items-center gap-2 justify-center">
+                <div className="w-2 h-2 bg-rose-500 rounded-full animate-ping" />
+                <p className="text-gray-500 text-xs">Verificando pagamento…</p>
               </div>
             </div>
-          </motion.section>
+          </motion.div>
         )}
       </AnimatePresence>
     </main>

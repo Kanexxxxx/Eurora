@@ -38,7 +38,7 @@ export default function PrivacidadePage() {
             <p>Coletamos apenas o necessário para prestar o serviço:</p>
             <ul>
               <li><strong>Dados de criação de página:</strong> nomes do casal, data do relacionamento, mensagem personalizada, fotos enviadas e URL de música;</li>
-              <li><strong>Dados de pagamento:</strong> apenas o ID da transação gerado pelo Mercado Pago — não armazenamos dados de cartão ou conta bancária;</li>
+              <li><strong>Dados de pagamento:</strong> apenas o ID da transação gerado pelo Asaas — não armazenamos dados de cartão ou conta bancária;</li>
               <li><strong>Dados técnicos:</strong> endereço IP (para rate limiting), tipo de navegador e logs de acesso.</li>
             </ul>
             <p>Não coletamos dados de menores de 18 anos intencionalmente.</p>
@@ -47,7 +47,7 @@ export default function PrivacidadePage() {
           <Section title="3. Como Usamos seus Dados">
             <ul>
               <li>Criar e exibir sua página de amor personalizada;</li>
-              <li>Processar pagamentos via Mercado Pago;</li>
+              <li>Processar pagamentos via Asaas;</li>
               <li>Gerar e armazenar o QR Code da sua página;</li>
               <li>Prevenir fraudes e abusos (rate limiting por IP);</li>
               <li>Cumprir obrigações legais.</li>
@@ -62,8 +62,8 @@ export default function PrivacidadePage() {
               com acesso controlado.
             </p>
             <p>
-              Pagamentos são processados integralmente pelo <strong>Mercado Pago</strong>, que é regulamentado
-              pelo Banco Central do Brasil e possui certificação PCI-DSS.
+              Pagamentos são processados integralmente pelo <strong>Asaas</strong>. Dados sensíveis de cartão
+              não são armazenados pela EURORA LOVE.
             </p>
           </Section>
 
@@ -86,8 +86,8 @@ export default function PrivacidadePage() {
             </ul>
             <p>
               Para exercer seus direitos, entre em contato:{" "}
-              <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.love.br"}`} className="text-rose-300 hover:text-rose-200">
-                {process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.love.br"}
+              <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.site"}`} className="text-rose-300 hover:text-rose-200">
+                {process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.site"}
               </a>
             </p>
           </Section>
@@ -103,7 +103,7 @@ export default function PrivacidadePage() {
             <p>A Plataforma integra com os seguintes serviços, cada um com sua própria política de privacidade:</p>
             <ul>
               <li><strong>Supabase</strong> — banco de dados e armazenamento de arquivos;</li>
-              <li><strong>Mercado Pago</strong> — processamento de pagamentos;</li>
+              <li><strong>Asaas</strong> — processamento de pagamentos;</li>
               <li><strong>Spotify / YouTube</strong> — incorporação de músicas (opcional, via link).</li>
             </ul>
           </Section>
@@ -118,8 +118,8 @@ export default function PrivacidadePage() {
           <Section title="10. Contato">
             <p>
               Para dúvidas, solicitações ou reclamações relacionadas a privacidade:{" "}
-              <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.love.br"}`} className="text-rose-300 hover:text-rose-200">
-                {process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.love.br"}
+              <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.site"}`} className="text-rose-300 hover:text-rose-200">
+                {process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.site"}
               </a>
             </p>
           </Section>

@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   title: "EURORA LOVE — A página do amor que ela nunca vai esquecer",
   description:
     "Crie uma página digital cinematográfica para a pessoa que você ama. Fotos, música, mensagem programada, QR code premium. Mais de 38.000 casais já se emocionaram.",
-  metadataBase: new URL("https://eurora.love.br"),
+  metadataBase: new URL("https://eurora.site"),
   keywords: [
     "página do amor",
     "presente dia dos namorados",
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     siteName: "EURORA LOVE",
     type: "website",
     locale: "pt_BR",
-    url: "https://eurora.love.br",
+    url: "https://eurora.site",
   },
   twitter: {
     card: "summary_large_image",

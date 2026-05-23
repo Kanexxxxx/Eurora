@@ -13,7 +13,7 @@ const PRODUCTS = [
 ];
 
 const WA = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "5511999999999";
-const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.love.br";
+const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.site";
 
 const SUPPORT = [
   { href: `mailto:${SUPPORT_EMAIL}`, label: "Contato" },
@@ -42,9 +42,16 @@ export default function SiteFooter() {
           {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
             <Link href="/" className="inline-flex items-center gap-2.5 mb-5">
-              <span className="relative inline-flex w-9 h-9 rounded-full bg-gradient-to-br from-rose-500 to-amber-400 items-center justify-center shadow-[0_0_24px_rgba(255,45,106,0.5)]">
-                <span className="text-white text-sm">♥</span>
-              </span>
+              <svg width="36" height="36" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                  <linearGradient id="hgf" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#ff2d6a"/>
+                    <stop offset="100%" stopColor="#f6a72b"/>
+                  </linearGradient>
+                </defs>
+                <circle cx="17" cy="17" r="17" fill="url(#hgf)" opacity="0.15"/>
+                <path d="M17 25.5C17 25.5 7 19.3 7 13.5C7 10.5 9.5 8 12.5 8C14.2 8 15.8 8.9 17 10.2C18.2 8.9 19.8 8 21.5 8C24.5 8 27 10.5 27 13.5C27 19.3 17 25.5 17 25.5Z" fill="url(#hgf)"/>
+              </svg>
               <span className="font-heading text-xl">
                 <span className="text-white">EURORA</span>{" "}
                 <span className="text-gradient-ember">LOVE</span>
@@ -116,7 +123,7 @@ export default function SiteFooter() {
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-white/5">
           <p className="text-white/40 text-xs text-center sm:text-left">
-            © 2026 EURORA LOVE · eurora.love.br
+            © 2026 EURORA LOVE · eurora.site
           </p>
           <div className="flex items-center gap-4 text-xs">
             <span className="flex items-center gap-1.5 text-white/40">

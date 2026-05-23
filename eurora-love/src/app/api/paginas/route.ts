@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { createServerClient } from "@/lib/supabase/server";
+﻿import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/server/db/prisma";
+import { createServerClient } from "@/server/storage/supabase";
 import { coupleFieldsSchema } from "@/lib/validations";
 import { generateSlug } from "@/lib/utils/slug";
 import type { Theme, Plan } from "@prisma/client";
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for") ?? "unknown";
   if (!checkRateLimit(ip)) {
     return NextResponse.json(
-      { error: "Muitas requisições. Tente novamente em 1 minuto." },
+      { error: "Muitas requisiÃ§Ãµes. Tente novamente em 1 minuto." },
       { status: 429 }
     );
   }
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
   try {
     formData = await req.formData();
   } catch {
-    return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
+    return NextResponse.json({ error: "Dados invÃ¡lidos" }, { status: 400 });
   }
 
   const photos = formData.getAll("photos") as File[];
@@ -53,13 +53,13 @@ export async function POST(req: NextRequest) {
   for (const photo of photos) {
     if (!["image/jpeg", "image/png", "image/webp"].includes(photo.type)) {
       return NextResponse.json(
-        { error: "Formato de imagem inválido." },
+        { error: "Formato de imagem invÃ¡lido." },
         { status: 400 }
       );
     }
     if (photo.size > 5 * 1024 * 1024) {
       return NextResponse.json(
-        { error: "Foto muito grande (máx 5MB)." },
+        { error: "Foto muito grande (mÃ¡x 5MB)." },
         { status: 400 }
       );
     }
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
   });
   if (!fieldsCheck.success) {
     return NextResponse.json(
-      { error: "Dados inválidos.", details: fieldsCheck.error.flatten() },
+      { error: "Dados invÃ¡lidos.", details: fieldsCheck.error.flatten() },
       { status: 400 }
     );
   }
@@ -131,3 +131,4 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ page_id: couple.id });
 }
+

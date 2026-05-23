@@ -1,5 +1,5 @@
-import { ImageResponse } from "next/og";
-import { prisma } from "@/lib/prisma";
+﻿import { ImageResponse } from "next/og";
+import { prisma } from "@/server/db/prisma";
 
 export const runtime = "nodejs";
 export const alt = "EURORA LOVE";
@@ -16,8 +16,8 @@ export default async function OgImage({ params }: { params: Promise<{ slug: stri
 
   const names = data ? `${data.person1} & ${data.person2}` : "EURORA LOVE";
   const preview = data
-    ? data.message.slice(0, 100) + (data.message.length > 100 ? "…" : "")
-    : "Experiência digital romântica premium";
+    ? data.message.slice(0, 100) + (data.message.length > 100 ? "â€¦" : "")
+    : "ExperiÃªncia digital romÃ¢ntica premium";
 
   return new ImageResponse(
     (
@@ -68,10 +68,11 @@ export default async function OgImage({ params }: { params: Promise<{ slug: stri
             fontSize: 18,
           }}
         >
-          eurora.love.br
+          eurora.site
         </div>
       </div>
     ),
     { width: 1200, height: 630 }
   );
 }
+

@@ -46,15 +46,15 @@ export default function TermosPage() {
 
           <Section title="3. Pagamentos e Reembolso">
             <p>
-              Os pagamentos são processados pelo <strong>Mercado Pago</strong>, plataforma regulamentada pelo
+              Os pagamentos são processados pelo <strong>Asaas</strong>, plataforma brasileira de pagamentos.
               Banco Central do Brasil. Após a confirmação do PIX, sua página é ativada instantaneamente.
             </p>
             <p>
               Garantimos reembolso integral em até <strong>7 (sete) dias</strong> corridos a partir da data do
               pagamento, sem necessidade de justificativa, conforme o Código de Defesa do Consumidor (Art. 49,
               CDC). Para solicitar, envie e-mail para{" "}
-              <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.love.br"}`} className="text-rose-300 hover:text-rose-200">
-                {process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.love.br"}
+              <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.site"}`} className="text-rose-300 hover:text-rose-200">
+                {process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.site"}
               </a>.
             </p>
           </Section>
@@ -94,7 +94,7 @@ export default function TermosPage() {
           <Section title="7. Limitação de Responsabilidade">
             <p>
               A EURORA LOVE não se responsabiliza por danos indiretos, perda de dados causada por falhas de
-              terceiros (Supabase, Mercado Pago), ou interrupções temporárias de serviço. Nossa responsabilidade
+              terceiros (Supabase, Asaas), ou interrupções temporárias de serviço. Nossa responsabilidade
               máxima é limitada ao valor pago pelo serviço.
             </p>
           </Section>
@@ -116,8 +116,8 @@ export default function TermosPage() {
           <Section title="10. Contato">
             <p>
               Dúvidas?{" "}
-              <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.love.br"}`} className="text-rose-300 hover:text-rose-200">
-                {process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.love.br"}
+              <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.site"}`} className="text-rose-300 hover:text-rose-200">
+                {process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.site"}
               </a>
             </p>
           </Section>

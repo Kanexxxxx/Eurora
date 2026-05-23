@@ -4,7 +4,7 @@ import CheckoutClient from "./CheckoutClient";
 
 export const metadata: Metadata = {
   title: "Pagamento | EURORA LOVE",
-  description: "Finalize seu pagamento via PIX.",
+  description: "Finalize seu pagamento via Pix ou cartao.",
 };
 
 export default function CheckoutPage() {

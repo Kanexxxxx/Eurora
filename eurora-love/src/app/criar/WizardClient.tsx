@@ -31,9 +31,10 @@ export default function WizardClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialPlan = (searchParams.get("plan") as Plan) || "premium";
+  const initialTheme = (searchParams.get("theme") as Theme) || "black-luxury";
 
   const [step, setStep] = useState(1);
-  const [data, setData] = useState<WizardData>({ ...defaultData, plan: initialPlan });
+  const [data, setData] = useState<WizardData>({ ...defaultData, plan: initialPlan, theme: initialTheme });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -111,7 +112,7 @@ export default function WizardClient() {
         </div>
         <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-gradient-to-r from-rose-600 to-amber-400 rounded-full"
+            className="h-full bg-linear-to-r from-rose-600 to-amber-400 rounded-full"
             animate={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
             transition={{ duration: 0.4 }}
           />
@@ -268,7 +269,7 @@ export default function WizardClient() {
                   value={data.relationship_date}
                   onChange={(e) => update("relationship_date", e.target.value)}
                   max={new Date().toISOString().split("T")[0]}
-                  className={`${inputClass} [color-scheme:dark]`}
+                  className={`${inputClass} scheme-dark`}
                 />
               </div>
             )}
@@ -286,7 +287,7 @@ export default function WizardClient() {
                     <button
                       key={theme.id}
                       onClick={() => update("theme", theme.id)}
-                      className={`relative h-24 sm:h-28 rounded-2xl bg-gradient-to-br ${theme.bg} border-2 transition-all active:scale-[0.97] ${
+                      className={`relative h-24 sm:h-28 rounded-2xl bg-linear-to-br ${theme.bg} border-2 transition-all active:scale-[0.97] ${
                         data.theme === theme.id ? `${theme.accent} scale-[1.02]` : "border-white/10"
                       }`}
                     >
@@ -340,7 +341,7 @@ export default function WizardClient() {
               <div>
                 <p className="text-xs uppercase tracking-widest text-rose-400 mb-2">Passo 8</p>
                 <h2 className="font-heading text-2xl sm:text-3xl font-bold text-white mb-2">Tudo pronto!</h2>
-                <p className="text-gray-400 text-sm mb-5">Confirme o plano e finalize com PIX.</p>
+                <p className="text-gray-400 text-sm mb-5">Confirme o plano e finalize com Pix ou cartao.</p>
                 <div className="space-y-3 mb-5">
                   {[
                     { p: "basic" as Plan, price: "R$ 19", label: "Basic", features: "5 fotos · 2 temas" },
