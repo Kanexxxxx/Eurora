@@ -10,7 +10,8 @@ export async function GET(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const url = new URL(req.url);
-  const page = Number(url.searchParams.get("page") ?? "1");
+  const rawPage = Number(url.searchParams.get("page") ?? "1");
+  const page = Number.isFinite(rawPage) && rawPage > 0 ? Math.floor(rawPage) : 1;
   const limit = 50;
   const skip = (page - 1) * limit;
 
