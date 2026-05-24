@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import FloatingHearts from "@/components/effects/FloatingHearts";
 
 const CHANNELS = [
-  { id: "email", label: "E-mail", emoji: "✉️", popular: true, desc: "Entregue na caixa de entrada" },
-  { id: "wpp", label: "WhatsApp", emoji: "💬", desc: "Lembrete com link pronto" },
-  { id: "telegram", label: "Telegram", emoji: "✈️", desc: "Aviso com texto formatado" },
-  { id: "correios", label: "Correios", emoji: "📬", desc: "Carta física em casa" },
+  { id: "email", label: "E-mail", emoji: "✉️", popular: true, desc: "Entregue na caixa de entrada", free: true },
+  { id: "wpp", label: "WhatsApp", emoji: "💬", desc: "Lembrete com link pronto", free: true },
+  { id: "telegram", label: "Telegram", emoji: "✈️", desc: "Aviso com texto formatado", free: true },
+  { id: "correios", label: "Correios", emoji: "📬", desc: "Carta física em casa · R$ 14", free: false },
 ];
 
 const TEMPLATES = [
@@ -82,6 +82,10 @@ function recipientPlaceholder(ch: string) {
   return `Nome Completo\nRua dos Amores, 123 - Apto 45\nBairro - Cidade/SP\nCEP 01001-000`;
 }
 
+function onlyDigits(v: string) {
+  return v.replace(/\D/g, "");
+}
+
 export default function MensagemClient() {
   const [step, setStep] = useState(1);
   const [channel, setChannel] = useState("email");
@@ -95,7 +99,25 @@ export default function MensagemClient() {
   const [error, setError] = useState<string | null>(null);
   const [scheduledId, setScheduledId] = useState<string | null>(null);
 
+  // Payment states (Correios)
+  const [paymentStep, setPaymentStep] = useState(false);
+  const [payerName, setPayerName] = useState("");
+  const [payerCpf, setPayerCpf] = useState("");
+  const [paymentPix, setPaymentPix] = useState<{ id: string; qr: string; cola: string } | null>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [pixCopied, setPixCopied] = useState(false);
+  const paymentPollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const template = TEMPLATES.find((t) => t.id === templateId);
+
+  const stopPaymentPolling = () => {
+    if (paymentPollingRef.current) {
+      clearInterval(paymentPollingRef.current);
+      paymentPollingRef.current = null;
+    }
+  };
+
+  useEffect(() => () => stopPaymentPolling(), []);
 
   const handleSelectTemplate = (id: string) => {
     const t = TEMPLATES.find((x) => x.id === id);
@@ -106,15 +128,9 @@ export default function MensagemClient() {
     }
   };
 
-  const handleSchedule = async () => {
-    if (!recipient || !message) return;
-    if (channel !== "email" && !senderEmail.includes("@")) {
-      setError("Informe um e-mail válido para receber o lembrete.");
-      return;
-    }
+  const scheduleMessage = async (payment_id?: string) => {
     setLoading(true);
     setError(null);
-
     try {
       const send_at = new Date(`${date}T${time}:00`).toISOString();
       const res = await fetch("/api/mensagem/agendar", {
@@ -126,16 +142,78 @@ export default function MensagemClient() {
           message,
           send_at,
           ...(channel !== "email" && senderEmail ? { sender_email: senderEmail } : {}),
+          ...(payment_id ? { payment_id } : {}),
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao agendar.");
       setScheduledId(data.id);
+      setPaymentStep(false);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Erro inesperado.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSchedule = async () => {
+    if (!recipient || !message) return;
+    if (channel !== "email" && !senderEmail.includes("@")) {
+      setError("Informe um e-mail válido para receber o lembrete.");
+      return;
+    }
+
+    if (channel === "correios") {
+      // Go to payment step first
+      setError(null);
+      setPaymentStep(true);
+      return;
+    }
+
+    await scheduleMessage();
+  };
+
+  const handleCreatePayment = async () => {
+    if (payerName.trim().length < 2) { setError("Informe seu nome completo."); return; }
+    if (onlyDigits(payerCpf).length !== 11) { setError("Informe um CPF válido (11 dígitos)."); return; }
+    if (!senderEmail.includes("@")) { setError("Informe um e-mail válido."); return; }
+
+    setPaymentLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/mensagem/pagar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: payerName, email: senderEmail, cpf: onlyDigits(payerCpf) }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao gerar PIX.");
+      setPaymentPix({ id: data.payment_id, qr: data.pix_qr_code, cola: data.pix_copia_cola });
+
+      // Start polling
+      stopPaymentPolling();
+      paymentPollingRef.current = setInterval(async () => {
+        try {
+          const r = await fetch(`/api/mensagem/pagar-status?payment_id=${data.payment_id}`);
+          const d = await r.json();
+          if (d.paid) {
+            stopPaymentPolling();
+            await scheduleMessage(data.payment_id);
+          }
+        } catch { /* ignore poll errors */ }
+      }, 3000);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Erro ao gerar pagamento.");
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  const copyPix = () => {
+    if (!paymentPix) return;
+    navigator.clipboard.writeText(paymentPix.cola);
+    setPixCopied(true);
+    setTimeout(() => setPixCopied(false), 3000);
   };
 
   const waLink =
@@ -171,18 +249,18 @@ export default function MensagemClient() {
 
       <section className="relative px-4 py-8">
         <div className="max-w-5xl mx-auto">
-          {/* Steps */}
+          {/* Steps indicator */}
           <div className="flex items-center justify-center gap-3 mb-12">
             {[1, 2, 3].map((s) => (
               <div key={s} className="flex items-center gap-3">
                 <div
                   className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
-                    step >= s
+                    step >= s || paymentStep || scheduledId
                       ? "bg-linear-to-br from-rose-500 to-amber-400 text-white shadow-[0_0_20px_rgba(255,45,106,0.4)]"
                       : "bg-white/5 text-white/40"
                   }`}
                 >
-                  {step > s ? "✓" : s}
+                  {step > s || paymentStep || scheduledId ? "✓" : s}
                 </div>
                 {s < 3 && (
                   <div
@@ -195,7 +273,7 @@ export default function MensagemClient() {
 
           <AnimatePresence mode="wait">
             {/* STEP 1 — Templates */}
-            {step === 1 && (
+            {step === 1 && !paymentStep && !scheduledId && (
               <motion.div
                 key="step1"
                 initial={{ opacity: 0, y: 20 }}
@@ -256,7 +334,7 @@ export default function MensagemClient() {
             )}
 
             {/* STEP 2 — Compose */}
-            {step === 2 && (
+            {step === 2 && !paymentStep && !scheduledId && (
               <motion.div
                 key="step2"
                 initial={{ opacity: 0, y: 20 }}
@@ -309,7 +387,7 @@ export default function MensagemClient() {
             )}
 
             {/* STEP 3 — Schedule */}
-            {step === 3 && !scheduledId && (
+            {step === 3 && !paymentStep && !scheduledId && (
               <motion.div
                 key="step3"
                 initial={{ opacity: 0, y: 20 }}
@@ -353,6 +431,11 @@ export default function MensagemClient() {
                               MELHOR
                             </span>
                           )}
+                          {!c.free && (
+                            <span className="absolute -top-2 -right-2 text-[9px] bg-amber-500 text-white px-1.5 py-0.5 rounded-full">
+                              R$ 14
+                            </span>
+                          )}
                           <span className="block text-[11px] text-white/40 mt-1 pl-8">
                             {c.desc}
                           </span>
@@ -385,11 +468,11 @@ export default function MensagemClient() {
                     )}
                   </div>
 
-                  {/* Sender e-mail — shown for non-email channels */}
+                  {/* Sender email */}
                   {channel !== "email" && (
                     <div>
                       <label className="block text-white/70 text-xs uppercase tracking-wider mb-2">
-                        Seu e-mail (para receber o lembrete)
+                        Seu e-mail {channel === "correios" ? "(para confirmação do pagamento)" : "(para receber o lembrete)"}
                       </label>
                       <input
                         value={senderEmail}
@@ -436,19 +519,36 @@ export default function MensagemClient() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl bg-amber-500/5 border border-amber-500/20 p-4 flex items-start gap-3">
-                    <span className="text-2xl">⚡</span>
-                    <div>
-                      <p className="text-amber-200 text-sm font-semibold mb-1">
-                        Timing perfeito
-                      </p>
-                      <p className="text-white/65 text-xs leading-relaxed">
-                        Mensagens às <strong>06h00</strong> do Dia dos
-                        Namorados têm 3x mais reações emocionais — ela acorda e
-                        você já está lá.
-                      </p>
+                  {/* Correios notice */}
+                  {channel === "correios" && (
+                    <div className="rounded-2xl bg-amber-500/8 border border-amber-500/25 p-4 flex items-start gap-3">
+                      <span className="text-2xl">📬</span>
+                      <div>
+                        <p className="text-amber-200 text-sm font-semibold mb-1">
+                          Carta física pelos Correios — R$ 14,00
+                        </p>
+                        <p className="text-white/60 text-xs leading-relaxed">
+                          Pagamento via PIX no próximo passo. Nossa equipe imprime e envia a carta para o endereço informado.
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {channel !== "correios" && (
+                    <div className="rounded-2xl bg-amber-500/5 border border-amber-500/20 p-4 flex items-start gap-3">
+                      <span className="text-2xl">⚡</span>
+                      <div>
+                        <p className="text-amber-200 text-sm font-semibold mb-1">
+                          Timing perfeito
+                        </p>
+                        <p className="text-white/65 text-xs leading-relaxed">
+                          Mensagens às <strong>06h00</strong> do Dia dos
+                          Namorados têm 3x mais reações emocionais — ela acorda e
+                          você já está lá.
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {error && (
@@ -467,9 +567,118 @@ export default function MensagemClient() {
                     disabled={!recipient || loading}
                     className="btn-premium disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    {loading ? "Agendando…" : "Agendar mensagem →"}
+                    {loading
+                      ? "Agendando…"
+                      : channel === "correios"
+                      ? "Ir para pagamento →"
+                      : "Agendar mensagem →"}
                   </button>
                 </div>
+              </motion.div>
+            )}
+
+            {/* PAYMENT STEP — Correios R$14 */}
+            {paymentStep && !scheduledId && (
+              <motion.div
+                key="payment"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="max-w-sm mx-auto"
+              >
+                <div className="text-center mb-8">
+                  <p className="text-[10px] uppercase tracking-widest text-amber-400 mb-2">Pagamento seguro</p>
+                  <h2 className="font-heading text-3xl text-white font-bold mb-2">
+                    Carta pelos Correios
+                  </h2>
+                  <p className="font-heading text-5xl font-bold text-gradient-fire leading-none mb-1">R$ 14</p>
+                  <p className="text-white/50 text-xs">Pagamento único via PIX</p>
+                </div>
+
+                <div className="card-premium p-6 space-y-4">
+                  {!paymentPix ? (
+                    <>
+                      <div>
+                        <label className="block text-white/70 text-xs uppercase tracking-wider mb-2">
+                          Seu nome completo
+                        </label>
+                        <input
+                          value={payerName}
+                          onChange={(e) => setPayerName(e.target.value)}
+                          placeholder="João Silva"
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-rose-400/40 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-white/70 text-xs uppercase tracking-wider mb-2">
+                          CPF (só números)
+                        </label>
+                        <input
+                          value={payerCpf}
+                          onChange={(e) => setPayerCpf(e.target.value)}
+                          placeholder="00000000000"
+                          inputMode="numeric"
+                          maxLength={14}
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-rose-400/40 text-sm"
+                        />
+                      </div>
+
+                      {error && (
+                        <p className="text-red-400 text-sm text-center">{error}</p>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={handleCreatePayment}
+                        disabled={paymentLoading}
+                        className="btn-premium w-full disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {paymentLoading ? "Gerando PIX…" : "Gerar PIX — R$ 14,00 →"}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="bg-white rounded-2xl p-4 mx-auto w-fit">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={`data:image/png;base64,${paymentPix.qr}`}
+                          alt="QR Code PIX"
+                          className="w-48 h-48"
+                        />
+                      </div>
+                      <h3 className="font-heading text-lg text-white font-bold text-center">
+                        Aguardando pagamento
+                      </h3>
+                      <p className="text-white/50 text-xs text-center">
+                        Escaneie o QR Code ou copie o código PIX. A carta será agendada automaticamente após a confirmação.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={copyPix}
+                        className="btn-premium w-full"
+                      >
+                        {pixCopied ? "✓ Copiado!" : "Copiar código PIX"}
+                      </button>
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-2 h-2 bg-rose-500 rounded-full animate-ping" />
+                        <p className="text-white/50 text-xs">Verificando pagamento…</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {!paymentPix && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPaymentStep(false);
+                      setError(null);
+                    }}
+                    className="w-full text-white/40 text-xs hover:text-white/60 transition-colors py-3 text-center"
+                  >
+                    ← Voltar
+                  </button>
+                )}
               </motion.div>
             )}
 
@@ -523,7 +732,7 @@ export default function MensagemClient() {
                   )}
                   {channel === "correios" && (
                     <>
-                      Pedido recebido! Nossa equipe vai processar e enviar a
+                      Pagamento confirmado! Nossa equipe vai processar e enviar a
                       carta para o endereço informado. Você recebe confirmação
                       em{" "}
                       <strong className="text-rose-300">{senderEmail}</strong>.
@@ -531,7 +740,6 @@ export default function MensagemClient() {
                   )}
                 </p>
 
-                {/* Quick-send buttons */}
                 {waLink && (
                   <a
                     href={waLink}
@@ -571,6 +779,10 @@ export default function MensagemClient() {
                     setMessage("");
                     setRecipient("");
                     setSenderEmail("");
+                    setPaymentStep(false);
+                    setPaymentPix(null);
+                    setPayerName("");
+                    setPayerCpf("");
                   }}
                   className="btn-ghost-glow"
                 >

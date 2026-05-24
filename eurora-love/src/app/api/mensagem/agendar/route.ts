@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/server/db/prisma";
+import { asaasRequest } from "@/server/payments/asaas";
 import { z } from "zod";
 
 const schema = z.object({
@@ -40,6 +41,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Dados inválidos." }, { status: 400 });
 
   const { channel, recipient, sender_email, message, send_at, payment_id } = parsed.data;
+
+  // Correios requires a verified payment of R$14
+  if (channel === "correios") {
+    if (!payment_id) {
+      return NextResponse.json({ error: "Pagamento obrigatório para Correios." }, { status: 402 });
+    }
+    try {
+      const payment = await asaasRequest<{ status: string }>(`/payments/${payment_id}`);
+      if (payment.status !== "CONFIRMED" && payment.status !== "RECEIVED") {
+        return NextResponse.json({ error: "Pagamento não confirmado." }, { status: 402 });
+      }
+    } catch {
+      return NextResponse.json({ error: "Não foi possível verificar o pagamento." }, { status: 502 });
+    }
+  }
 
   // Reject send_at in the past (with 5-min grace)
   const sendDate = new Date(send_at);
