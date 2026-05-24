@@ -6,6 +6,7 @@ export type Produto = {
   platform: Platform;
   url: string;
   categoria: string;
+  image?: string;
 };
 
 export type CategoriaInfo = {
@@ -51,10 +52,10 @@ export const CATEGORIAS: Record<string, CategoriaInfo> = {
 
 export const PRODUTOS: Produto[] = [
   // 1. Perfumes Femininos
-  { id: 1,  name: "Kit L'eau de Lily Dia dos Namorados", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0F8KM9K75", categoria: "Perfumes Femininos" },
+  { id: 1,  name: "Kit L'eau de Lily Dia dos Namorados", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0F8KM9K75", categoria: "Perfumes Femininos", image: "https://m.media-amazon.com/images/I/41Qg70brIVL._SL400_.jpg" },
   { id: 2,  name: "Lady Perfume 50ml Longa Duração", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0CL9DDDDW", categoria: "Perfumes Femininos" },
   { id: 3,  name: "Flores + Colar + Rosa Eterna Kit Feminino", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0F1XCF2B6", categoria: "Perfumes Femininos" },
-  { id: 4,  name: "Vela + Presente Namorada Romantico", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0CQQSVPQ6", categoria: "Perfumes Femininos" },
+  { id: 4,  name: "Vela + Presente Namorada Romantico", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0CQQSVPQ6", categoria: "Perfumes Femininos", image: "https://m.media-amazon.com/images/I/71zgjjMYdcL._SL400_.jpg" },
   { id: 5,  name: "Busca Kits Perfume Feminino Amazon", platform: "Amazon", url: "https://www.amazon.com.br/s?k=kit+perfume+feminino+presente", categoria: "Perfumes Femininos" },
 
   // 2. Perfumes Masculinos
@@ -82,7 +83,7 @@ export const PRODUTOS: Produto[] = [
   { id: 23, name: "Colar Casal Prata 925 Exclusivo", platform: "Shopee", url: "https://shopee.com.br/product/316500910/2946760275", categoria: "Colares e Correntes" },
   { id: 24, name: "Colar Feminino Prata 925 com Garantia", platform: "Shopee", url: "https://shopee.com.br/product/420488119/15421003452", categoria: "Colares e Correntes" },
   { id: 25, name: "Flor Rosa Eterna + Colar de Luxo Brilhante", platform: "Shopee", url: "https://shopee.com.br/product/350188398/18998507471", categoria: "Colares e Correntes" },
-  { id: 26, name: "Rosa Eterna + Caixa de Joias (Amazon)", platform: "Amazon", url: "https://www.amazon.com.br/dp/B09P572ZL6", categoria: "Colares e Correntes" },
+  { id: 26, name: "Rosa Eterna + Caixa de Joias (Amazon)", platform: "Amazon", url: "https://www.amazon.com.br/dp/B09P572ZL6", categoria: "Colares e Correntes", image: "https://m.media-amazon.com/images/I/51r0iQUUmGL._SL400_.jpg" },
 
   // 5. Aneis e Aliancas
   { id: 27, name: "Anel Compromisso Casal Ajustável Zircônia", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0DG2SR5HG", categoria: "Aneis e Aliancas" },
@@ -98,7 +99,7 @@ export const PRODUTOS: Produto[] = [
   { id: 35, name: "Cesta de Chocolates Romântica Presente", platform: "Shopee", url: "https://shopee.com.br/product/409884671/17840257589", categoria: "Chocolates" },
   { id: 36, name: "Kit Coração de Chocolate Presente Criativo", platform: "Shopee", url: "https://shopee.com.br/product/281818504/23195721355", categoria: "Chocolates" },
   { id: 37, name: "Cesta Especial Dia dos Namorados 20 Itens", platform: "Shopee", url: "https://shopee.com.br/product/284534732/19802569745", categoria: "Chocolates" },
-  { id: 38, name: "Cesta com Vinho + Chocolates + Taça Te Amo", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0D2741R7G", categoria: "Chocolates" },
+  { id: 38, name: "Cesta com Vinho + Chocolates + Taça Te Amo", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0D2741R7G", categoria: "Chocolates", image: "https://m.media-amazon.com/images/I/61e37kelnAL._SL400_.jpg" },
   { id: 39, name: "Kit Presente Esposa Almofada + Caneca + Ferrero", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0C5KBQ4KW", categoria: "Chocolates" },
   { id: 40, name: "Kit Presente Amor Sempre Vence Te Amo", platform: "Amazon", url: "https://www.amazon.com.br/dp/B094YNST8Y", categoria: "Chocolates" },
 
@@ -158,26 +159,26 @@ export const PRODUTOS: Produto[] = [
   { id: 81, name: "Fone Bluetooth Vermelho Presente Namorados", platform: "Amazon", url: "https://www.amazon.com.br/s?k=fone+bluetooth+presente+namorados", categoria: "Fones de Ouvido" },
 
   // 14. Caixas de Som
-  { id: 82, name: "Caixa Som Bluetooth Amplificada Portátil USB", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0B724NNS7", categoria: "Caixas de Som" },
+  { id: 82, name: "Caixa Som Bluetooth Amplificada Portátil USB", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0B724NNS7", categoria: "Caixas de Som", image: "https://m.media-amazon.com/images/I/61jd-UQffuL._SL400_.jpg" },
   { id: 83, name: "Caixas de Som Bluetooth Mais Vendidas", platform: "Amazon", url: "https://www.amazon.com.br/gp/bestsellers/electronics/16244291011", categoria: "Caixas de Som" },
   { id: 84, name: "Busca Caixa Som Presente Namorados", platform: "Amazon", url: "https://www.amazon.com.br/s?k=caixa+de+som+bluetooth+presente", categoria: "Caixas de Som" },
 
   // 15. Cameras Instantaneas
-  { id: 85, name: "Fujifilm Instax Mini 11 Azul Celeste + 10 Fotos", platform: "Amazon", url: "https://www.amazon.com.br/dp/B08TS6JXKR", categoria: "Cameras Instantaneas" },
+  { id: 85, name: "Fujifilm Instax Mini 11 Azul Celeste + 10 Fotos", platform: "Amazon", url: "https://www.amazon.com.br/dp/B08TS6JXKR", categoria: "Cameras Instantaneas", image: "https://m.media-amazon.com/images/I/814+CGPUVHL._SL400_.jpg" },
   { id: 86, name: "Fujifilm Instax Mini 12 Pacote Casamento", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0C47Q2HNF", categoria: "Cameras Instantaneas" },
   { id: 87, name: "Fujifilm Instax Mini 9 Amarelo Banana", platform: "Amazon", url: "https://www.amazon.com.br/dp/B07R4MFXK8", categoria: "Cameras Instantaneas" },
-  { id: 88, name: "Fujifilm Instax Mini 9 Azul Acqua", platform: "Amazon", url: "https://www.amazon.com.br/dp/B06Y68YRTF", categoria: "Cameras Instantaneas" },
+  { id: 88, name: "Fujifilm Instax Mini 9 Azul Acqua", platform: "Amazon", url: "https://www.amazon.com.br/dp/B06Y68YRTF", categoria: "Cameras Instantaneas", image: "https://m.media-amazon.com/images/I/5119FirQf8L._SL400_.jpg" },
   { id: 89, name: "Fujifilm Instax Wide 300 Preta", platform: "Amazon", url: "https://www.amazon.com.br/dp/B00TGOWK3Q", categoria: "Cameras Instantaneas" },
-  { id: 90, name: "Filme Instax Mini 10 Fotos Fujifilm", platform: "Amazon", url: "https://www.amazon.com.br/dp/B004U7JYS8", categoria: "Cameras Instantaneas" },
+  { id: 90, name: "Filme Instax Mini 10 Fotos Fujifilm", platform: "Amazon", url: "https://www.amazon.com.br/dp/B004U7JYS8", categoria: "Cameras Instantaneas", image: "https://m.media-amazon.com/images/I/6150gGuIcxL._SL400_.jpg" },
 
   // 16. Mini Impressoras
-  { id: 91,  name: "Impressora Fujifilm Instax Mini Link Cinza", platform: "Amazon", url: "https://www.amazon.com.br/dp/B07XYNN743", categoria: "Mini Impressoras" },
+  { id: 91,  name: "Impressora Fujifilm Instax Mini Link Cinza", platform: "Amazon", url: "https://www.amazon.com.br/dp/B07XYNN743", categoria: "Mini Impressoras", image: "https://m.media-amazon.com/images/I/71Z6qurqspS._SL400_.jpg" },
   { id: 92,  name: "Impressora Fujifilm Instax Mini Link Jeans", platform: "Amazon", url: "https://www.amazon.com.br/dp/B07XYPBKT9", categoria: "Mini Impressoras" },
-  { id: 93,  name: "Impressora FUJIFILM Instax Mini Link 2 Clay", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0B1QV6RKW", categoria: "Mini Impressoras" },
-  { id: 94,  name: "Impressora FUJIFILM Mini Link 2 Branca", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0B1NF5NBN", categoria: "Mini Impressoras" },
-  { id: 95,  name: "Impressora FUJIFILM Instax Mini Link 3 Verde", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0DB8SKHM2", categoria: "Mini Impressoras" },
-  { id: 96,  name: "Impressora FUJIFILM Instax Mini Link 3 Rosa", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0DB8T2PF2", categoria: "Mini Impressoras" },
-  { id: 97,  name: "Impressora FUJIFILM Instax Mini Link 3 Branca", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0DB8SQSRH", categoria: "Mini Impressoras" },
+  { id: 93,  name: "Impressora FUJIFILM Instax Mini Link 2 Clay", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0B1QV6RKW", categoria: "Mini Impressoras", image: "https://m.media-amazon.com/images/I/61O8zngPoPL._SL400_.jpg" },
+  { id: 94,  name: "Impressora FUJIFILM Mini Link 2 Branca", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0B1NF5NBN", categoria: "Mini Impressoras", image: "https://m.media-amazon.com/images/I/614vBd1APCL._SL400_.jpg" },
+  { id: 95,  name: "Impressora FUJIFILM Instax Mini Link 3 Verde", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0DB8SKHM2", categoria: "Mini Impressoras", image: "https://m.media-amazon.com/images/I/71Wx+q96RHL._SL400_.jpg" },
+  { id: 96,  name: "Impressora FUJIFILM Instax Mini Link 3 Rosa", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0DB8T2PF2", categoria: "Mini Impressoras", image: "https://m.media-amazon.com/images/I/712QfwLUZ-L._SL400_.jpg" },
+  { id: 97,  name: "Impressora FUJIFILM Instax Mini Link 3 Branca", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0DB8SQSRH", categoria: "Mini Impressoras", image: "https://m.media-amazon.com/images/I/717aOZjQWxL._SL400_.jpg" },
   { id: 98,  name: "Impressora Instax Mini Link 2 + 40 Filmes", platform: "Amazon", url: "https://www.amazon.com.br/dp/B07ZHNRB3W", categoria: "Mini Impressoras" },
   { id: 99,  name: "Álbum Scrapbook Polaroid DIY Instax Presente", platform: "Amazon", url: "https://www.amazon.com.br/dp/B07KQ5PQ4W", categoria: "Mini Impressoras" },
 
@@ -207,22 +208,22 @@ export const PRODUTOS: Produto[] = [
 
   // 20. Velas Aromaticas
   { id: 118, name: "Vela Dia dos Namorados Rosa 3 Pavios 400ml", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0BG13DZX6", categoria: "Velas Aromaticas" },
-  { id: 119, name: "12 Velas Aromáticas Morango Namorados", platform: "Amazon", url: "https://www.amazon.com.br/dp/B07S8CY3M6", categoria: "Velas Aromaticas" },
+  { id: 119, name: "12 Velas Aromáticas Morango Namorados", platform: "Amazon", url: "https://www.amazon.com.br/dp/B07S8CY3M6", categoria: "Velas Aromaticas", image: "https://m.media-amazon.com/images/I/71k3Xi00p1L._SL400_.jpg" },
   { id: 120, name: "Vela Amor Romântico 2 Peças Coração Cera Soja", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0DK3VZMVK", categoria: "Velas Aromaticas" },
   { id: 121, name: "Velas Casal Baunilha + Lavanda 295ml", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0BPX6KMYF", categoria: "Velas Aromaticas" },
   { id: 122, name: "Vela Perfumada Morango 3 Pavios 410ml", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0BG166GNB", categoria: "Velas Aromaticas" },
-  { id: 123, name: "Velas Lavanda Presentes Casamento Casal", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0D8PJY7FY", categoria: "Velas Aromaticas" },
+  { id: 123, name: "Velas Lavanda Presentes Casamento Casal", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0D8PJY7FY", categoria: "Velas Aromaticas", image: "https://m.media-amazon.com/images/I/71HfYcmzhxL._SL400_.jpg" },
   { id: 124, name: "Castiçal Coração Romântico Jantar", platform: "Amazon", url: "https://www.amazon.com.br/dp/B09Z71DQ48", categoria: "Velas Aromaticas" },
   { id: 125, name: "Vela Baunilha Lavanda 255g Presente Casal", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0CJJJ9VT4", categoria: "Velas Aromaticas" },
   { id: 126, name: "Mini Vela Aromática Lembrancinha Casamento", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0CMMW9S3Z", categoria: "Velas Aromaticas" },
   { id: 127, name: "Decoração Vela Presente Casal Apaixonado", platform: "Amazon", url: "https://www.amazon.com.br/dp/B09M9Z1L7Q", categoria: "Velas Aromaticas" },
 
   // 21. Kits de Vinho
-  { id: 128, name: "Cesta Vinho + Chocolates + Taça Te Amo", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0D2741R7G", categoria: "Kits de Vinho" },
+  { id: 128, name: "Cesta Vinho + Chocolates + Taça Te Amo", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0D2741R7G", categoria: "Kits de Vinho", image: "https://m.media-amazon.com/images/I/61e37kelnAL._SL400_.jpg" },
   { id: 129, name: "Taça de Vinho Vidro 340ml Personalizada", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0D2DT435N", categoria: "Kits de Vinho" },
-  { id: 130, name: "Saco Garrafa Vinho Presente Namorados", platform: "Amazon", url: "https://www.amazon.com.br/dp/B09NZD5XN9", categoria: "Kits de Vinho" },
+  { id: 130, name: "Saco Garrafa Vinho Presente Namorados", platform: "Amazon", url: "https://www.amazon.com.br/dp/B09NZD5XN9", categoria: "Kits de Vinho", image: "https://m.media-amazon.com/images/I/51DJvn6Zf4L._SL400_.jpg" },
   { id: 131, name: "Conjunto Taça Vinho e Uísque Casal COOL AF", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0987YPYD6", categoria: "Kits de Vinho" },
-  { id: 132, name: "Taça Vinho Personalizada com Inicial A-Z", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0D79DHHKM", categoria: "Kits de Vinho" },
+  { id: 132, name: "Taça Vinho Personalizada com Inicial A-Z", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0D79DHHKM", categoria: "Kits de Vinho", image: "https://m.media-amazon.com/images/I/61qrP5UFVjL._SL400_.jpg" },
   { id: 133, name: "Busca Kit Vinho Taça Romântico Amazon", platform: "Amazon", url: "https://www.amazon.com.br/s?k=kit+vinho+taca+presente+namorados", categoria: "Kits de Vinho" },
 
   // 22. Carteiras Masculinas
@@ -231,7 +232,7 @@ export const PRODUTOS: Produto[] = [
   { id: 136, name: "Colaxi Carteira Couro Masculina Bifold", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0CXXZCFFD", categoria: "Carteiras Masculinas" },
   { id: 137, name: "Carteira Minimalista 2 Dobras Couro RFID", platform: "Amazon", url: "https://www.amazon.com.br/dp/B08YY6SVMQ", categoria: "Carteiras Masculinas" },
   { id: 138, name: "SYGUNAR Carteira Masculina Personalizada", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0DPLKNZZC", categoria: "Carteiras Masculinas" },
-  { id: 139, name: "Kullder Carteira Masculina Couro Crazy Horse", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0DPHYMPFL", categoria: "Carteiras Masculinas" },
+  { id: 139, name: "Kullder Carteira Masculina Couro Crazy Horse", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0DPHYMPFL", categoria: "Carteiras Masculinas", image: "https://m.media-amazon.com/images/I/71+7paoTSjL._SL400_.jpg" },
   { id: 140, name: "Carteira Masculina Couro Legítimo Ziper", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0D7QV44ZV", categoria: "Carteiras Masculinas" },
   { id: 141, name: "Carteira Masculina Couro Ziper Adaskala", platform: "Amazon", url: "https://www.amazon.com.br/dp/B08YR7MT15", categoria: "Carteiras Masculinas" },
 
@@ -254,7 +255,7 @@ export const PRODUTOS: Produto[] = [
   { id: 155, name: "Caneca Personalizada Dia dos Namorados Casal", platform: "Shopee", url: "https://shopee.com.br/product/227942978/6847353830", categoria: "Canecas" },
   { id: 156, name: "Caneca Personalizada com Foto e Frases", platform: "Shopee", url: "https://shopee.com.br/product/433857953/21102717728", categoria: "Canecas" },
   { id: 157, name: "Caneca Casal que Treina Junto", platform: "Shopee", url: "https://shopee.com.br/product/729193299/22398518943", categoria: "Canecas" },
-  { id: 158, name: "Kit 2 Canecas Personalizadas Acrílico Casal", platform: "Amazon", url: "https://www.amazon.com.br/dp/B095J3GJZP", categoria: "Canecas" },
+  { id: 158, name: "Kit 2 Canecas Personalizadas Acrílico Casal", platform: "Amazon", url: "https://www.amazon.com.br/dp/B095J3GJZP", categoria: "Canecas", image: "https://m.media-amazon.com/images/I/51qE5+c-kCS._SL400_.jpg" },
   { id: 159, name: "Caneca Flork Casal Fitness Branca", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0C731BKYB", categoria: "Canecas" },
   { id: 160, name: "Caneca Casal Player 1 e 2 Presente Geek", platform: "Amazon", url: "https://www.amazon.com.br/dp/B098R3QLTH", categoria: "Canecas" },
   { id: 161, name: "Caneca Love Amor Flores Romântico", platform: "Amazon", url: "https://www.amazon.com.br/dp/B08CT41YPT", categoria: "Canecas" },
@@ -300,8 +301,8 @@ export const PRODUTOS: Produto[] = [
 
   // 29. Caixas Surpresa
   { id: 193, name: "AUGSUN Caixa Surpresa Explosão Dinheiro Rosa", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0CP36PHW8", categoria: "Caixas Surpresa" },
-  { id: 194, name: "Caixa de Presente Surpresa Pop-Up Explosão", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0CQK5BC5K", categoria: "Caixas Surpresa" },
-  { id: 195, name: "Kit Romântico Surpresa Velas + Pétalas + Balões", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0D6S1DWGR", categoria: "Caixas Surpresa" },
+  { id: 194, name: "Caixa de Presente Surpresa Pop-Up Explosão", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0CQK5BC5K", categoria: "Caixas Surpresa", image: "https://m.media-amazon.com/images/I/71aiTPx8mgL._SL400_.jpg" },
+  { id: 195, name: "Kit Romântico Surpresa Velas + Pétalas + Balões", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0D6S1DWGR", categoria: "Caixas Surpresa", image: "https://m.media-amazon.com/images/I/61W3fjk9raL._SL400_.jpg" },
   { id: 196, name: "Chiazllta 4 Peças Caixa Dinheiro com Cartão", platform: "Amazon", url: "https://www.amazon.com.br/dp/B0CN8ZJ146", categoria: "Caixas Surpresa" },
 
   // 30. Difusores

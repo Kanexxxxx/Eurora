@@ -30,11 +30,20 @@ function ProdutoCard({ p, index }: { p: Produto; index: number }) {
       transition={{ delay: Math.min(index * 0.025, 0.4) }}
       className="group block rounded-2xl overflow-hidden border border-white/8 bg-white/3 hover:border-white/20 transition-all active:scale-[0.98]"
     >
-      {/* Gradient top */}
-      <div className={`relative h-28 bg-linear-to-br ${cat?.gradient ?? "from-gray-700 to-gray-900"} flex items-center justify-center`}>
-        <span className="text-5xl drop-shadow-lg group-hover:scale-110 transition-transform duration-300">
-          {cat?.emoji ?? "🎁"}
-        </span>
+      {/* Product image or gradient fallback */}
+      <div className={`relative h-28 overflow-hidden ${p.image ? "" : `bg-linear-to-br ${cat?.gradient ?? "from-gray-700 to-gray-900"}`} flex items-center justify-center`}>
+        {p.image ? (
+          <img
+            src={p.image}
+            alt={p.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            loading="lazy"
+          />
+        ) : (
+          <span className="text-5xl drop-shadow-lg group-hover:scale-110 transition-transform duration-300">
+            {cat?.emoji ?? "🎁"}
+          </span>
+        )}
       </div>
 
       {/* Info */}
