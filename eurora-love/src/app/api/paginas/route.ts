@@ -27,7 +27,7 @@ const THEME_MAP: Record<string, Theme> = {
 };
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for") ?? "unknown";
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   if (!checkRateLimit(ip)) {
     return NextResponse.json(
       { error: "Muitas requisições. Tente novamente em 1 minuto." },

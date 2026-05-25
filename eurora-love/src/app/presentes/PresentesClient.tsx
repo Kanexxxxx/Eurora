@@ -20,6 +20,19 @@ const PREVIEW = PRODUTOS.slice(0, 9);
 function ProdutoCard({ p, index }: { p: Produto; index: number }) {
   const cat = CATEGORIAS[p.categoria];
   const plat = PLATFORM_STYLE[p.platform] ?? { bg: "bg-gray-500", label: p.platform };
+  const [imgSrc, setImgSrc] = useState<string | null>(p.image ?? null);
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    if (imgSrc || !p.asin) return;
+    fetch(`/api/presentes/imagem?asin=${p.asin}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { url?: string } | null) => { if (d?.url) setImgSrc(d.url); })
+      .catch(() => {});
+  }, [p.asin, imgSrc]);
+
+  const showImg = imgSrc && !imgError;
+
   return (
     <motion.a
       href={p.url}
@@ -31,13 +44,14 @@ function ProdutoCard({ p, index }: { p: Produto; index: number }) {
       className="group block rounded-2xl overflow-hidden border border-white/8 bg-white/3 hover:border-white/20 transition-all active:scale-[0.98]"
     >
       {/* Product image or gradient fallback */}
-      <div className={`relative h-28 overflow-hidden ${p.image ? "" : `bg-linear-to-br ${cat?.gradient ?? "from-gray-700 to-gray-900"}`} flex items-center justify-center`}>
-        {p.image ? (
+      <div className={`relative h-28 overflow-hidden ${showImg ? "" : `bg-linear-to-br ${cat?.gradient ?? "from-gray-700 to-gray-900"}`} flex items-center justify-center`}>
+        {showImg ? (
           <img
-            src={p.image}
+            src={imgSrc}
             alt={p.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
+            onError={() => setImgError(true)}
           />
         ) : (
           <span className="text-5xl drop-shadow-lg group-hover:scale-110 transition-transform duration-300">
@@ -59,7 +73,7 @@ function ProdutoCard({ p, index }: { p: Produto; index: number }) {
         <p className="text-white text-[12px] font-medium leading-snug line-clamp-2 mb-2">
           {p.name}
         </p>
-        <p className="text-rose-400 text-[11px] font-semibold group-hover:text-rose-300 transition-colors">
+        <p className="text-[#DCBA98] text-[11px] font-semibold group-hover:text-[#E8D5B7] transition-colors">
           Ver produto →
         </p>
       </div>
@@ -281,7 +295,7 @@ export default function PresentesClient() {
           <span className="text-gradient-fire">seu namorado(a)?</span>
         </h1>
         <p className="text-white/55 text-lg">
-          250+ presentes reais separados por categoria — perfumes, joias, tech, lingerie e muito mais.
+          Presentes reais selecionados — kits, joias, skincare, tech e muito mais.
           Desbloqueie por apenas <span className="text-white font-bold">R$ 8,00</span> e compre direto na loja.
         </p>
       </div>
@@ -320,14 +334,14 @@ export default function PresentesClient() {
               <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black via-black/80 to-transparent rounded-2xl">
                 <div className="relative rounded-[28px] p-8 sm:p-10 text-center max-w-sm w-full mx-4 bg-gradient-to-br from-amber-950/80 via-zinc-900 to-black border border-amber-500/40 shadow-[0_0_60px_-10px_rgba(245,158,11,0.4)]">
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-400 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider whitespace-nowrap">
-                    250+ presentes selecionados
+                    {PRODUTOS.length} presentes selecionados
                   </div>
                   <p className="text-5xl mb-4 mt-2">🎁</p>
                   <h2 className="font-heading text-2xl text-white font-bold mb-2">
                     Você não sabe o que dar?
                   </h2>
                   <p className="text-gray-400 text-sm mb-6 leading-relaxed">
-                    Perfumes, pulseiras, kits, lingerie, tech, chocolates e ideias de última hora — separados por categoria. Compre direto na loja favorita.
+                    Kits, joias, skincare, maquiagem, tech e ideias criativas — separados por categoria. Compre direto na Amazon com um clique.
                   </p>
                   <div className="mb-6">
                     <p className="text-gray-500 text-xs mb-1">Acesso único, para sempre</p>

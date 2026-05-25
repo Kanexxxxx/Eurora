@@ -40,6 +40,10 @@ jobs:
             npm ci
             npm run prisma:generate
             npx prisma db push
+
+            # Remove DB product links — catalog is managed via src/data/presentes.ts
+            echo 'DELETE FROM "PresenteLink"; DELETE FROM "HiddenProduto";' | npx prisma db execute --stdin
+
             npm run build
 
             # Prepare standalone deployment

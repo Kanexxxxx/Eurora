@@ -36,7 +36,7 @@ type PaymentResponse = {
 };
 
 const inputClass =
-  "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-rose-500 transition-colors";
+  "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#C8917A] transition-colors";
 
 const initialPayer: PayerData = {
   name: "",
@@ -185,7 +185,7 @@ export default function CheckoutClient() {
         <div className="grid lg:grid-cols-[1fr_380px] gap-8">
           <section>
             <div className="mb-7">
-              <p className="text-xs uppercase tracking-widest text-rose-400 mb-2">
+              <p className="text-xs uppercase tracking-widest text-[#DCBA98] mb-2">
                 Pagamento seguro
               </p>
               <h1 className="font-heading text-3xl sm:text-4xl font-bold text-white mb-2">
@@ -207,7 +207,7 @@ export default function CheckoutClient() {
                 }}
                 className={`p-4 rounded-2xl border-2 text-left transition-all ${
                   method === "pix"
-                    ? "border-rose-500 bg-rose-950/25"
+                    ? "border-[#C8917A] bg-[#C8917A]/8"
                     : "border-white/10 bg-white/3"
                 }`}
               >
@@ -225,7 +225,7 @@ export default function CheckoutClient() {
                 }}
                 className={`p-4 rounded-2xl border-2 text-left transition-all ${
                   method === "credit_card"
-                    ? "border-rose-500 bg-rose-950/25"
+                    ? "border-[#C8917A] bg-[#C8917A]/8"
                     : "border-white/10 bg-white/3"
                 }`}
               >
@@ -361,7 +361,7 @@ export default function CheckoutClient() {
           </section>
 
           <aside className="glass-dark rounded-3xl p-5 sm:p-6 h-fit">
-            <p className="text-xs uppercase tracking-widest text-rose-400 mb-2">
+            <p className="text-xs uppercase tracking-widest text-[#DCBA98] mb-2">
               Resumo
             </p>
             <div className="flex items-start justify-between gap-4 mb-5">
@@ -410,7 +410,7 @@ export default function CheckoutClient() {
                   />
                   <button
                     onClick={copyToClipboard}
-                    className="w-full py-3 bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold rounded-xl transition-all"
+                    className="w-full py-3 bg-[#C8917A] hover:bg-[#A8705C] text-white text-sm font-semibold rounded-xl transition-all"
                   >
                     {copied ? "Copiado!" : "Copiar codigo Pix"}
                   </button>
