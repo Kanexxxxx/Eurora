@@ -7,6 +7,7 @@ export type Produto = {
   url: string;
   categoria: string;
   image?: string;
+  asin?: string;
 };
 
 export type CategoriaInfo = {
@@ -51,17 +52,18 @@ export const CATEGORIAS: Record<string, CategoriaInfo> = {
 };
 
 export const PRODUTOS: Produto[] = [
-  { id: 1,  name: "Caixa Surpresa com Rosa Artificial Namorados",   platform: "Amazon", url: "https://amzn.to/49ccCh6",  categoria: "Caixas Surpresa" },
-  { id: 2,  name: "Ursinho de Pelúcia Vermelho Presente",           platform: "Amazon", url: "https://amzn.to/4v4Wq9M",  categoria: "Ursos e Pelucias" },
-  { id: 3,  name: "Flores Artificiais Decorativas Presente",        platform: "Amazon", url: "https://amzn.to/4v8Vbqc",  categoria: "Presentes em Geral" },
-  { id: 4,  name: "Almofada Porta-Pipoca Presente Namorados",       platform: "Amazon", url: "https://amzn.to/4nJh9O3",  categoria: "Almofadas" },
-  { id: 5,  name: "Embalagem Romântica Perfumada Transparente",     platform: "Amazon", url: "https://amzn.to/4dqPuhl",  categoria: "Caixas Surpresa" },
-  { id: 6,  name: "Kit Presente Masculino com Carteira",            platform: "Amazon", url: "https://amzn.to/4f3oQMC",  categoria: "Kits Masculinos" },
-  { id: 7,  name: "Conjunto Chaveiros de Casal Esportivo",          platform: "Amazon", url: "https://amzn.to/4wKBmH7",  categoria: "Pulseiras de Casal" },
-  { id: 8,  name: "Luminária Astronauta LED Decoração Presente",    platform: "Amazon", url: "https://amzn.to/3RsMecC",  categoria: "Quadros Decorativos" },
-  { id: 9,  name: "Karaokê Portátil Bluetooth 2 Microfones",        platform: "Amazon", url: "https://amzn.to/4dEMSLD",  categoria: "Caixas de Som" },
-  { id: 10, name: "Kit Mini Escalda Pés + Sabonete + Massageador",  platform: "Amazon", url: "https://amzn.to/4dAhDBm",  categoria: "Kits de Spa" },
-  { id: 11, name: "Kit Maquiagem Portátil Completo",                platform: "Amazon", url: "https://amzn.to/4uyFKb0",  categoria: "Maquiagem" },
-  { id: 12, name: "Sérum Vitamina C 10% Principia",                 platform: "Amazon", url: "https://amzn.to/4nN7FBt",  categoria: "Skincare" },
-  { id: 13, name: "Mix Sérum Niacinamida + Ácidos Glicólico",       platform: "Amazon", url: "https://amzn.to/4uotmdl",  categoria: "Skincare" },
+  { id: 1,  name: "Caixa Surpresa com Rosa Artificial Namorados",   platform: "Amazon", url: "https://amzn.to/49ccCh6",  categoria: "Caixas Surpresa",    asin: "B0BR5GJQ6Y" },
+  { id: 2,  name: "Ursinho de Pelúcia Vermelho Presente",           platform: "Amazon", url: "https://amzn.to/4v4Wq9M",  categoria: "Ursos e Pelucias",   asin: "B0GNDD1BST" },
+  { id: 3,  name: "Flores Artificiais Decorativas Presente",        platform: "Amazon", url: "https://amzn.to/4v8Vbqc",  categoria: "Presentes em Geral", asin: "B0GWPCPKLJ" },
+  { id: 4,  name: "Almofada Porta-Pipoca Presente Namorados",       platform: "Amazon", url: "https://amzn.to/4nJh9O3",  categoria: "Almofadas",          asin: "B09RTP8GZS" },
+  { id: 5,  name: "Embalagem Romântica Perfumada Transparente",     platform: "Amazon", url: "https://amzn.to/4dqPuhl",  categoria: "Caixas Surpresa",    asin: "B0GYTH1WVN" },
+  { id: 6,  name: "Kit Presente Masculino com Carteira",            platform: "Amazon", url: "https://amzn.to/4f3oQMC",  categoria: "Kits Masculinos",    asin: "B0GY5RLXW8" },
+  { id: 7,  name: "Conjunto Chaveiros de Casal Esportivo",          platform: "Amazon", url: "https://amzn.to/4wKBmH7",  categoria: "Pulseiras de Casal", asin: "B0GZMD687R" },
+  { id: 8,  name: "Luminária Astronauta LED Decoração Presente",    platform: "Amazon", url: "https://amzn.to/3RsMecC",  categoria: "Quadros Decorativos",asin: "B0DT2DS4DW" },
+  { id: 9,  name: "Karaokê Portátil Bluetooth 2 Microfones",        platform: "Amazon", url: "https://amzn.to/4dEMSLD",  categoria: "Caixas de Som",      asin: "B0DXS3TT3H" },
+  { id: 10, name: "Kit Mini Escalda Pés + Sabonete + Massageador",  platform: "Amazon", url: "https://amzn.to/4dAhDBm",  categoria: "Kits de Spa",        asin: "B0FWZ2LHDZ" },
+  { id: 11, name: "Kit Maquiagem Portátil Completo",                platform: "Amazon", url: "https://amzn.to/4uyFKb0",  categoria: "Maquiagem",          asin: "B0FRNKX28D" },
+  { id: 12, name: "Sérum Vitamina C 10% Principia",                 platform: "Amazon", url: "https://amzn.to/4nN7FBt",  categoria: "Skincare",           asin: "B09WC8Q5H3" },
+  { id: 13, name: "Mix Sérum Niacinamida + Ácidos Glicólico",       platform: "Amazon", url: "https://amzn.to/4uotmdl",  categoria: "Skincare",           asin: "B0939SHBP8" },
+  { id: 14, name: "Conjunto Maquiagem Profissional Completo",       platform: "Amazon", url: "https://amzn.to/3RtvFgP",  categoria: "Maquiagem",          asin: "B0FJKYZHYF" },
 ];
