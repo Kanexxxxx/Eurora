@@ -488,6 +488,80 @@
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+  /* ── Love-page warm romantic palette — premium, not neon/adult ── */
+  .text-gradient-rosegold {
+    background: linear-gradient(135deg, #FFF8F0 0%, #DCBA98 40%, #C8917A 70%, #D4AF70 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+  }
+  .text-gradient-warm-ember {
+    background: linear-gradient(135deg, #D4AF70 0%, #C8917A 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+  }
+  .lyrics-warm {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 248, 240, 0.52) 0%,
+      rgba(220, 186, 152, 0.88) 30%,
+      rgba(255, 248, 240, 0.62) 55%,
+      rgba(212, 175, 112, 0.82) 80%,
+      rgba(255, 248, 240, 0.52) 100%
+    );
+    background-size: 250% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: lyrics-flow 8s ease-in-out infinite;
+  }
+  .glass-premium-warm {
+    background: linear-gradient(
+      135deg,
+      rgba(200, 145, 122, 0.07) 0%,
+      rgba(255, 248, 240, 0.03) 50%,
+      rgba(212, 175, 112, 0.06) 100%
+    );
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 248, 240, 0.07),
+      0 30px 80px -30px rgba(0, 0, 0, 0.55);
+  }
+  .btn-rosegold {
+    position: relative;
+    background: linear-gradient(135deg, #C8917A 0%, #D4AF70 100%);
+    box-shadow:
+      0 10px 40px -10px rgba(200, 145, 122, 0.55),
+      0 0 0 1px rgba(255, 255, 255, 0.10) inset,
+      0 1px 0 rgba(255, 255, 255, 0.18) inset;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .btn-rosegold:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow:
+      0 20px 60px -10px rgba(200, 145, 122, 0.70),
+      0 0 0 1px rgba(255, 255, 255, 0.14) inset;
+  }
+  .btn-rosegold:active { transform: translateY(0) scale(0.98); }
+  .btn-ghost-warm {
+    background: rgba(212, 175, 112, 0.06);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(212, 175, 112, 0.18);
+    color: white;
+    transition: all 0.3s ease;
+  }
+  .btn-ghost-warm:hover {
+    background: rgba(212, 175, 112, 0.10);
+    border-color: rgba(200, 145, 122, 0.35);
+    box-shadow: 0 0 30px rgba(200, 145, 122, 0.12);
+  }
+
   .mask-fade-x {
     mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
     -webkit-mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);

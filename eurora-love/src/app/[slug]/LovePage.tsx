@@ -1,15 +1,15 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import type { Couple, Theme } from "@/lib/types";
 import type { MusicMeta } from "./page";
 
 const THEME_STYLES: Record<Theme, { bg: string; accent: string; text: string; accentHex: string; glowRgb: string }> = {
-  "black-luxury": { bg: "bg-black",       accent: "text-rose-400",    text: "text-white", accentHex: "#fb7185", glowRgb: "251,113,133" },
-  "neon-romance": { bg: "bg-[#0a001a]",   accent: "text-fuchsia-400", text: "text-white", accentHex: "#e879f9", glowRgb: "232,121,249" },
-  "minimal-love": { bg: "bg-[#0d0d0b]",   accent: "text-amber-400",   text: "text-white", accentHex: "#fbbf24", glowRgb: "251,191,36"  },
-  "velvet-dark":  { bg: "bg-[#0d0005]",   accent: "text-rose-300",    text: "text-white", accentHex: "#fda4af", glowRgb: "253,164,175" },
+  "black-luxury": { bg: "bg-[#080506]",  accent: "text-[#C8917A]", text: "text-[#FFF8F0]", accentHex: "#C8917A", glowRgb: "200,145,122" },
+  "neon-romance": { bg: "bg-[#060410]",  accent: "text-[#C4A5D4]", text: "text-[#FFF8F0]", accentHex: "#C4A5D4", glowRgb: "196,165,212" },
+  "minimal-love": { bg: "bg-[#080604]",  accent: "text-[#D4AF70]", text: "text-[#FFF8F0]", accentHex: "#D4AF70", glowRgb: "212,175,112" },
+  "velvet-dark":  { bg: "bg-[#060408]",  accent: "text-[#C8917A]", text: "text-[#FFF8F0]", accentHex: "#C8917A", glowRgb: "200,145,122" },
 };
 
 const WAVEFORM = [4, 9, 6, 13, 5, 11, 7, 12, 4, 10];
@@ -25,7 +25,7 @@ function buildHeroPoems(message: string) {
   return custom ? [custom, ...DEFAULT_HERO_POEMS.slice(0, 2)] : DEFAULT_HERO_POEMS;
 }
 
-const SPOTIFY_TYPES = ["track","album","playlist","episode","show"] as const;
+const SPOTIFY_TYPES = ["track", "album", "playlist", "episode", "show"] as const;
 
 function getMusicEmbed(url?: string | null): { src: string; type: "spotify" | "youtube" } | null {
   if (!url) return null;
@@ -33,7 +33,6 @@ function getMusicEmbed(url?: string | null): { src: string; type: "spotify" | "y
     const p = new URL(url);
     if (p.hostname.includes("spotify.com")) {
       const parts = p.pathname.split("/").filter(Boolean);
-      // find the first segment that is a known Spotify content type (handles intl-pt/ locale prefixes)
       const typeIdx = parts.findIndex(seg => (SPOTIFY_TYPES as readonly string[]).includes(seg));
       if (typeIdx === -1 || typeIdx + 1 >= parts.length) return null;
       const type = parts[typeIdx] as typeof SPOTIFY_TYPES[number];
@@ -69,11 +68,11 @@ function getDominantAlbumColor(src: string, fallback: string, onColor: (c: strin
       if (!ctx) return onColor(fallback);
       ctx.drawImage(img, 0, 0, size, size);
       const { data } = ctx.getImageData(0, 0, size, size);
-      let best = { score: -1, r: 255, g: 45, b: 106 };
+      let best = { score: -1, r: 200, g: 145, b: 122 };
       for (let i = 0; i < data.length; i += 16) {
-        const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+        const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
         if (a < 180) continue;
-        const max = Math.max(r,g,b), min = Math.min(r,g,b);
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
         const sat = max - min, bri = max;
         if (bri < 45 || bri > 245 || sat < 24) continue;
         const score = sat * 1.8 + bri * 0.35;
@@ -112,7 +111,7 @@ function HeroPoemOverlay({ poems }: { poems: string[] }) {
       <AnimatePresence mode="wait">
         {visible && (
           <motion.p key={idx}
-            className="mx-auto max-w-75 font-heading text-[15px] font-semibold italic leading-relaxed lyrics-aurora drop-shadow-[0_3px_18px_rgba(0,0,0,0.95)]"
+            className="mx-auto max-w-75 font-heading text-[15px] font-semibold italic leading-relaxed lyrics-warm drop-shadow-[0_3px_18px_rgba(0,0,0,0.95)]"
             initial={{ opacity: 0, y: 18, filter: "blur(8px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             exit={{ opacity: 0, y: -12, filter: "blur(8px)" }}
@@ -149,12 +148,15 @@ function calcNextAnn(d: string) {
   };
 }
 
+const GALLERY_ITEM_W = 182; // 170px wide + 12px gap
+
 interface Props { couple: Couple; musicMeta?: MusicMeta | null; }
 
 export default function LovePage({ couple, musicMeta }: Props) {
   const styles = THEME_STYLES[couple.theme];
   const [copied, setCopied] = useState(false);
   const [heroIdx, setHeroIdx] = useState(0);
+  const [galleryIdx, setGalleryIdx] = useState(0);
   const [clock, setClock] = useState("");
   const [together, setTogether] = useState({ days: 0, years: 0, months: 0 });
   const [nextAnn, setNextAnn] = useState({ days: 0, label: "" });
@@ -162,7 +164,6 @@ export default function LovePage({ couple, musicMeta }: Props) {
   const [albumColor, setAlbumColor] = useState(styles.accentHex);
 
   const gallery = couple.photo_urls.length > 1 ? couple.photo_urls.slice(1) : [];
-  const galleryRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (couple.photo_urls.length <= 1) return;
@@ -186,14 +187,10 @@ export default function LovePage({ couple, musicMeta }: Props) {
     getDominantAlbumColor(musicMeta.albumArt, styles.accentHex, setAlbumColor);
   }, [musicMeta?.albumArt, styles.accentHex]);
 
+  // Gallery auto-advance using Framer Motion translate — no scroll-snap conflict
   useEffect(() => {
     if (gallery.length <= 1) return;
-    const ITEM_W = 170 + 12; // photo width + gap-3 (12px)
-    let idx = 0;
-    const id = setInterval(() => {
-      idx = (idx + 1) % gallery.length;
-      galleryRef.current?.scrollTo({ left: idx * ITEM_W, behavior: idx === 0 ? "instant" : "smooth" });
-    }, 3000);
+    const id = setInterval(() => setGalleryIdx(i => (i + 1) % gallery.length), 3500);
     return () => clearInterval(id);
   }, [gallery.length]);
 
@@ -205,7 +202,6 @@ export default function LovePage({ couple, musicMeta }: Props) {
 
   const sinceLabel = formatSince(couple.relationship_date);
   const heroPoems = buildHeroPoems(couple.message);
-  // Prefer server-resolved embed URL (handles all Spotify URL formats), fall back to client parser
   const serverEmbed = musicMeta?.embedUrl
     ? { src: musicMeta.embedUrl, type: musicMeta.embedType ?? "spotify" as const }
     : null;
@@ -213,10 +209,10 @@ export default function LovePage({ couple, musicMeta }: Props) {
   const hasMeta = !!(musicMeta?.albumArt);
 
   return (
-    <div className={`min-h-screen ${styles.bg} ${styles.text} sm:bg-[#04020a] sm:flex sm:items-center sm:justify-center sm:py-10 sm:px-4`}>
+    <div className={`min-h-screen ${styles.bg} ${styles.text} sm:bg-[#03020a] sm:flex sm:items-center sm:justify-center sm:py-10 sm:px-4`}>
       <div
         className={`relative w-full min-h-screen sm:min-h-0 ${styles.bg} sm:max-w-97.5 sm:rounded-[52px] sm:overflow-hidden sm:border sm:border-white/10`}
-        style={{ boxShadow: `0 60px 120px rgba(0,0,0,.95), 0 0 90px rgba(${styles.glowRgb},.16)` }}
+        style={{ boxShadow: `0 60px 120px rgba(0,0,0,.95), 0 0 90px rgba(${styles.glowRgb},.12)` }}
       >
 
         {/* ── Intro overlay ── */}
@@ -230,11 +226,11 @@ export default function LovePage({ couple, musicMeta }: Props) {
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
             Para você,
           </motion.p>
-          <motion.p className="font-heading text-3xl font-bold text-gradient-rose text-center px-6"
+          <motion.p className="font-heading text-3xl font-bold text-gradient-rosegold text-center px-6"
             initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.6, delay: 0.2 }}>
             {couple.person1} & {couple.person2}
           </motion.p>
-          <motion.span className="text-3xl animate-heart-beat" style={{ display: "inline-block" }}>❤️</motion.span>
+          <motion.span className="text-3xl animate-heart-beat" style={{ display: "inline-block" }}>🤍</motion.span>
         </motion.div>
 
         <main className="relative max-w-sm mx-auto sm:max-w-none">
@@ -251,7 +247,7 @@ export default function LovePage({ couple, musicMeta }: Props) {
                   transition={{ opacity: { duration: 1.4, ease: "easeInOut" }, scale: { duration: 6, ease: "linear" } }} />
               </AnimatePresence>
             ) : (
-              <div className="absolute inset-0 bg-linear-to-br from-gray-900 to-gray-800" />
+              <div className="absolute inset-0 bg-linear-to-br from-[#1a0e14] to-[#0a060a]" />
             )}
 
             <div className="absolute inset-0 bg-linear-to-t from-black via-black/10 to-transparent" />
@@ -268,7 +264,7 @@ export default function LovePage({ couple, musicMeta }: Props) {
             {hasMeta && (
               <motion.button type="button" onClick={() => setMusicExpanded(v => !v)} aria-expanded={musicExpanded}
                 className="absolute top-4 left-1/2 z-20 flex h-8 min-w-33 -translate-x-1/2 items-center gap-2 rounded-full border border-white/10 bg-black/90 px-2 backdrop-blur-md"
-                style={{ boxShadow: `0 10px 26px rgba(0,0,0,.6), 0 0 22px color-mix(in srgb, ${albumColor} 30%, transparent)` }}
+                style={{ boxShadow: `0 10px 26px rgba(0,0,0,.6), 0 0 22px color-mix(in srgb, ${albumColor} 22%, transparent)` }}
                 initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2 }}>
                 <IslandCover src={musicMeta!.albumArt} title={musicMeta!.title} />
                 <span className="max-w-21.5 truncate text-[10px] font-semibold text-white/90">{musicMeta!.title}</span>
@@ -295,7 +291,7 @@ export default function LovePage({ couple, musicMeta }: Props) {
 
             <HeroPoemOverlay poems={heroPoems} />
 
-            {/* Names — Fraunces italic, gradient */}
+            {/* Names */}
             <motion.div className="absolute bottom-0 inset-x-0 px-6 pb-8"
               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 2 }}>
               <p className="text-[11px] uppercase tracking-[0.28em] text-white/50 mb-2 font-medium">{sinceLabel}</p>
@@ -310,32 +306,33 @@ export default function LovePage({ couple, musicMeta }: Props) {
           {/* ── Content ── */}
           <div className="relative px-5 pt-8 pb-10 space-y-7">
 
-            {/* Subtle top glow orb */}
-            <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-32 rounded-full blur-3xl opacity-15"
+            {/* Subtle glow orb */}
+            <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-32 rounded-full blur-3xl opacity-10"
               style={{ background: `radial-gradient(ellipse, ${styles.accentHex}, transparent 70%)` }} />
 
-            {/* Dot grid texture */}
-            <div className="pointer-events-none absolute inset-0 bg-dot-grid opacity-20" />
+            {/* Warm champagne dot grid */}
+            <div className="pointer-events-none absolute inset-0 opacity-15"
+              style={{ backgroundImage: "radial-gradient(rgba(220,186,152,0.12) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
 
             {/* ── Stats strip ── */}
             <motion.div className="relative flex items-center justify-center py-2"
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.2 }}>
               <div className="flex-1 text-center">
-                <p className="font-heading text-[26px] font-bold text-gradient-rose">
+                <p className="font-heading text-[26px] font-bold text-gradient-rosegold">
                   {together.years > 0 ? `${together.years}a` : `${together.months}m`}
                 </p>
                 <p className="text-white/35 text-[10px] uppercase tracking-[0.2em] mt-0.5">juntos</p>
               </div>
               <div className="w-px h-10 bg-white/10 shrink-0" />
               <div className="flex-1 text-center">
-                <p className="font-heading text-[26px] font-bold text-gradient-rose">
+                <p className="font-heading text-[26px] font-bold text-gradient-rosegold">
                   {together.days.toLocaleString("pt-BR")}
                 </p>
                 <p className="text-white/35 text-[10px] uppercase tracking-[0.2em] mt-0.5">dias</p>
               </div>
               <div className="w-px h-10 bg-white/10 shrink-0" />
               <div className="flex-1 text-center">
-                <p className="font-heading text-[26px] font-bold text-gradient-rose">{nextAnn.days}d</p>
+                <p className="font-heading text-[26px] font-bold text-gradient-rosegold">{nextAnn.days}d</p>
                 <p className="text-white/35 text-[10px] uppercase tracking-[0.2em] mt-0.5">p/ aniv.</p>
               </div>
             </motion.div>
@@ -343,7 +340,7 @@ export default function LovePage({ couple, musicMeta }: Props) {
             {/* ── Quote ── */}
             {couple.message && (
               <motion.p
-                className="font-heading text-[15px] font-semibold italic leading-relaxed lyrics-aurora text-center px-3"
+                className="font-heading text-[15px] font-semibold italic leading-relaxed lyrics-warm text-center px-3"
                 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.3 }}>
                 &ldquo;{couple.message}&rdquo;
               </motion.p>
@@ -352,21 +349,32 @@ export default function LovePage({ couple, musicMeta }: Props) {
             {/* ── Gallery ── */}
             {gallery.length > 0 && (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.4 }}>
-                <p className="text-[10px] uppercase tracking-[0.3em] text-gradient-ember mb-3 font-semibold">
+                <p className="text-[10px] uppercase tracking-[0.3em] text-gradient-warm-ember mb-3 font-semibold">
                   Melhores Momentos
                 </p>
-                <div ref={galleryRef} className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory no-scrollbar -mx-5 px-5">
-                  {gallery.map((url, i) => (
-                    <motion.div key={url}
-                      className="shrink-0 snap-start relative overflow-hidden rounded-2xl shadow-xl"
-                      style={{ width: 170, height: 226, rotate: i % 2 === 0 ? -1.5 : 1.5 }}
-                      initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 2.45 + i * 0.07 }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={url} alt={`Momento ${i + 1}`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
-                      <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent" />
-                    </motion.div>
-                  ))}
+                {/* Framer Motion x-slide — replaces scrollTo+snap-mandatory (was causing stuck scroll) */}
+                <div className="overflow-hidden -mx-5">
+                  <motion.div
+                    className="flex gap-3 pl-5"
+                    animate={{ x: -(galleryIdx * GALLERY_ITEM_W) }}
+                    transition={
+                      galleryIdx === 0
+                        ? { duration: 0 }
+                        : { duration: 1.1, ease: [0.25, 0.46, 0.45, 0.94] }
+                    }
+                  >
+                    {gallery.map((url, i) => (
+                      <motion.div key={url}
+                        className="shrink-0 relative overflow-hidden rounded-2xl shadow-xl"
+                        style={{ width: 170, height: 226, rotate: i % 2 === 0 ? -1.5 : 1.5 }}
+                        initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 2.45 + i * 0.07 }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={url} alt={`Momento ${i + 1}`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                        <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent" />
+                      </motion.div>
+                    ))}
+                  </motion.div>
                 </div>
               </motion.div>
             )}
@@ -375,7 +383,6 @@ export default function LovePage({ couple, musicMeta }: Props) {
             {couple.music_url && (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.5 }}
                 className="rounded-3xl overflow-hidden">
-
                 {musicEmbed?.type === "spotify" && (
                   <iframe title="Nossa música" src={musicEmbed.src} width="100%" height="152"
                     allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
@@ -400,10 +407,10 @@ export default function LovePage({ couple, musicMeta }: Props) {
 
             {/* ── QR Code ── */}
             {couple.qr_code_url && (
-              <motion.div className="glass-premium rounded-3xl p-6 text-center"
-                style={{ border: `1px solid rgba(${styles.glowRgb}, 0.25)`, boxShadow: `0 0 50px rgba(${styles.glowRgb}, 0.08)` }}
+              <motion.div className="glass-premium-warm rounded-3xl p-6 text-center"
+                style={{ border: `1px solid rgba(${styles.glowRgb}, 0.20)`, boxShadow: `0 0 50px rgba(${styles.glowRgb}, 0.06)` }}
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.7 }}>
-                <p className="text-[9px] uppercase tracking-[0.4em] text-gradient-rose font-semibold mb-4">
+                <p className="text-[9px] uppercase tracking-[0.4em] text-gradient-rosegold font-semibold mb-4">
                   Escaneie o amor 💌
                 </p>
                 <div className="bg-white rounded-2xl p-4 inline-block mb-3 shadow-lg">
@@ -418,11 +425,11 @@ export default function LovePage({ couple, musicMeta }: Props) {
             <motion.div className="flex flex-col gap-3 pt-1"
               initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.8 }}>
               <Link href={`/criar?theme=${couple.theme}`}
-                className="btn-shimmer btn-premium relative flex min-h-13 w-full items-center justify-center rounded-full px-4 text-center">
+                className="btn-shimmer btn-rosegold relative flex min-h-13 w-full items-center justify-center rounded-full px-4 text-center">
                 <span className="font-heading text-[14px] font-bold text-white">Crie a sua também ✨</span>
               </Link>
               <Link href="/presentes"
-                className="btn-ghost-glow flex min-h-13 w-full items-center justify-center rounded-full px-4 text-center">
+                className="btn-ghost-warm flex min-h-13 w-full items-center justify-center rounded-full px-4 text-center">
                 <span className="font-heading text-[14px] font-bold text-white">Ver presentes para casal 🎁</span>
               </Link>
             </motion.div>
@@ -433,7 +440,7 @@ export default function LovePage({ couple, musicMeta }: Props) {
               <p className="text-white/20 text-[9px] uppercase tracking-[0.35em] mb-4 font-semibold">Compartilhe esse amor</p>
               <div className="flex gap-8 justify-center">
                 <button type="button" onClick={copy} className="flex flex-col items-center gap-2 group">
-                  <div className="w-12 h-12 rounded-full glass border border-white/10 flex items-center justify-center text-xl group-hover:border-white/20 group-active:scale-90 transition-all">
+                  <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xl group-hover:border-white/20 group-active:scale-90 transition-all">
                     {copied ? "✓" : "🔗"}
                   </div>
                   <span className="text-white/30 text-[10px] font-heading">{copied ? "Copiado!" : "Copiar link"}</span>
@@ -450,7 +457,7 @@ export default function LovePage({ couple, musicMeta }: Props) {
 
             <p className="text-center text-white/12 text-[9px] tracking-[0.35em] uppercase pt-2 pb-2 font-heading">
               Criado com amor ·{" "}
-              <Link href="/" className="text-gradient-rose opacity-50 hover:opacity-80 transition-opacity">EURORA LOVE</Link>
+              <Link href="/" className="text-gradient-rosegold opacity-50 hover:opacity-80 transition-opacity">EURORA LOVE</Link>
             </p>
           </div>
         </main>
