@@ -25,14 +25,20 @@ function buildHeroPoems(message: string) {
   return custom ? [custom, ...DEFAULT_HERO_POEMS.slice(0, 2)] : DEFAULT_HERO_POEMS;
 }
 
+const SPOTIFY_TYPES = ["track","album","playlist","episode","show"] as const;
+
 function getMusicEmbed(url?: string | null): { src: string; type: "spotify" | "youtube" } | null {
   if (!url) return null;
   try {
     const p = new URL(url);
     if (p.hostname.includes("spotify.com")) {
       const parts = p.pathname.split("/").filter(Boolean);
-      const [type, id] = parts;
-      if (!type || !id || !["track","album","playlist","episode","show"].includes(type)) return null;
+      // find the first segment that is a known Spotify content type (handles intl-pt/ locale prefixes)
+      const typeIdx = parts.findIndex(seg => (SPOTIFY_TYPES as readonly string[]).includes(seg));
+      if (typeIdx === -1 || typeIdx + 1 >= parts.length) return null;
+      const type = parts[typeIdx] as typeof SPOTIFY_TYPES[number];
+      const id = parts[typeIdx + 1].split("?")[0];
+      if (!id) return null;
       return { src: `https://open.spotify.com/embed/${type}/${id}?autoplay=1&theme=0`, type: "spotify" };
     }
     if (p.hostname.includes("youtube.com") || p.hostname.includes("youtu.be")) {
@@ -82,12 +88,12 @@ function getDominantAlbumColor(src: string, fallback: string, onColor: (c: strin
 function IslandCover({ src, title }: { src: string; title: string }) {
   const [failed, setFailed] = useState(false);
   if (failed) return (
-    <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[7px] bg-white/10 text-[12px]">♪</span>
+    <span className="flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-[7px] bg-white/10 text-[12px]">♪</span>
   );
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img src={src} alt={`Capa de ${title}`}
-      className="h-[22px] w-[22px] shrink-0 rounded-[7px] object-cover"
+      className="h-5.5 w-5.5 shrink-0 rounded-[7px] object-cover"
       crossOrigin="anonymous" referrerPolicy="no-referrer"
       onError={() => setFailed(true)} />
   );
@@ -106,7 +112,7 @@ function HeroPoemOverlay({ poems }: { poems: string[] }) {
       <AnimatePresence mode="wait">
         {visible && (
           <motion.p key={idx}
-            className="mx-auto max-w-[300px] font-heading text-[15px] font-semibold italic leading-relaxed lyrics-aurora drop-shadow-[0_3px_18px_rgba(0,0,0,0.95)]"
+            className="mx-auto max-w-75 font-heading text-[15px] font-semibold italic leading-relaxed lyrics-aurora drop-shadow-[0_3px_18px_rgba(0,0,0,0.95)]"
             initial={{ opacity: 0, y: 18, filter: "blur(8px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             exit={{ opacity: 0, y: -12, filter: "blur(8px)" }}
