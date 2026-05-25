@@ -488,6 +488,11 @@
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+  @keyframes gallery-scroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
   /* ── Love-page warm romantic palette — premium, not neon/adult ── */
   .text-gradient-rosegold {
     background: linear-gradient(135deg, #FFF8F0 0%, #DCBA98 40%, #C8917A 70%, #D4AF70 100%);

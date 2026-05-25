@@ -156,7 +156,6 @@ export default function LovePage({ couple, musicMeta }: Props) {
   const styles = THEME_STYLES[couple.theme];
   const [copied, setCopied] = useState(false);
   const [heroIdx, setHeroIdx] = useState(0);
-  const [galleryIdx, setGalleryIdx] = useState(0);
   const [clock, setClock] = useState("");
   const [together, setTogether] = useState({ days: 0, years: 0, months: 0 });
   const [nextAnn, setNextAnn] = useState({ days: 0, label: "" });
@@ -187,12 +186,6 @@ export default function LovePage({ couple, musicMeta }: Props) {
     getDominantAlbumColor(musicMeta.albumArt, styles.accentHex, setAlbumColor);
   }, [musicMeta?.albumArt, styles.accentHex]);
 
-  // Gallery auto-advance using Framer Motion translate — no scroll-snap conflict
-  useEffect(() => {
-    if (gallery.length <= 1) return;
-    const id = setInterval(() => setGalleryIdx(i => (i + 1) % gallery.length), 3500);
-    return () => clearInterval(id);
-  }, [gallery.length]);
 
   const copy = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -352,29 +345,31 @@ export default function LovePage({ couple, musicMeta }: Props) {
                 <p className="text-[10px] uppercase tracking-[0.3em] text-gradient-warm-ember mb-3 font-semibold">
                   Melhores Momentos
                 </p>
-                {/* Framer Motion x-slide — replaces scrollTo+snap-mandatory (was causing stuck scroll) */}
-                <div className="overflow-hidden -mx-5">
-                  <motion.div
-                    className="flex gap-3 pl-5"
-                    animate={{ x: -(galleryIdx * GALLERY_ITEM_W) }}
-                    transition={
-                      galleryIdx === 0
-                        ? { duration: 0 }
-                        : { duration: 1.1, ease: [0.25, 0.46, 0.45, 0.94] }
-                    }
+                {/* CSS marquee — GPU-driven, no JS, no snap conflict, perfect loop */}
+                <div
+                  className="overflow-hidden -mx-5"
+                  style={{
+                    maskImage: "linear-gradient(90deg, transparent, black 6%, black 94%, transparent)",
+                    WebkitMaskImage: "linear-gradient(90deg, transparent, black 6%, black 94%, transparent)",
+                  }}
+                >
+                  <div
+                    className="flex gap-3"
+                    style={gallery.length > 1 ? {
+                      animation: `gallery-scroll ${Math.round((gallery.length * GALLERY_ITEM_W) / 30)}s linear infinite`,
+                      width: `${gallery.length * 2 * GALLERY_ITEM_W}px`,
+                    } : { paddingLeft: "1.25rem", paddingRight: "1.25rem" }}
                   >
-                    {gallery.map((url, i) => (
-                      <motion.div key={url}
+                    {(gallery.length > 1 ? [...gallery, ...gallery] : gallery).map((url, i) => (
+                      <div key={`${url}-${i}`}
                         className="shrink-0 relative overflow-hidden rounded-2xl shadow-xl"
-                        style={{ width: 170, height: 226, rotate: i % 2 === 0 ? -1.5 : 1.5 }}
-                        initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 2.45 + i * 0.07 }}>
+                        style={{ width: 170, height: 226, transform: `rotate(${i % 2 === 0 ? -1.5 : 1.5}deg)` }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={url} alt={`Momento ${i + 1}`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                        <img src={url} alt={`Momento ${(i % gallery.length) + 1}`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                         <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent" />
-                      </motion.div>
+                      </div>
                     ))}
-                  </motion.div>
+                  </div>
                 </div>
               </motion.div>
             )}
