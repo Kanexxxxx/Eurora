@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import type { Couple, Theme } from "@/lib/types";
@@ -162,6 +162,7 @@ export default function LovePage({ couple, musicMeta }: Props) {
   const [albumColor, setAlbumColor] = useState(styles.accentHex);
 
   const gallery = couple.photo_urls.length > 1 ? couple.photo_urls.slice(1) : [];
+  const galleryRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (couple.photo_urls.length <= 1) return;
@@ -184,6 +185,17 @@ export default function LovePage({ couple, musicMeta }: Props) {
     if (!musicMeta?.albumArt) return;
     getDominantAlbumColor(musicMeta.albumArt, styles.accentHex, setAlbumColor);
   }, [musicMeta?.albumArt, styles.accentHex]);
+
+  useEffect(() => {
+    if (gallery.length <= 1) return;
+    const ITEM_W = 170 + 12; // photo width + gap-3 (12px)
+    let idx = 0;
+    const id = setInterval(() => {
+      idx = (idx + 1) % gallery.length;
+      galleryRef.current?.scrollTo({ left: idx * ITEM_W, behavior: idx === 0 ? "instant" : "smooth" });
+    }, 3000);
+    return () => clearInterval(id);
+  }, [gallery.length]);
 
   const copy = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -343,7 +355,7 @@ export default function LovePage({ couple, musicMeta }: Props) {
                 <p className="text-[10px] uppercase tracking-[0.3em] text-gradient-ember mb-3 font-semibold">
                   Melhores Momentos
                 </p>
-                <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory no-scrollbar -mx-5 px-5">
+                <div ref={galleryRef} className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory no-scrollbar -mx-5 px-5">
                   {gallery.map((url, i) => (
                     <motion.div key={url}
                       className="shrink-0 snap-start relative overflow-hidden rounded-2xl shadow-xl"
