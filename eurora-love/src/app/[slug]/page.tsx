@@ -28,8 +28,13 @@ async function getMusicMeta(url: string | null): Promise<MusicMeta | null> {
       embedType = "youtube";
     }
     if (!endpoint) return null;
-    const res = await fetch(endpoint, { next: { revalidate: 86400 } });
+
+    const res = await fetch(endpoint, {
+      next: { revalidate: 86400 },
+      signal: AbortSignal.timeout(4000),
+    });
     if (!res.ok) return null;
+
     const data = await res.json() as { title?: string; thumbnail_url?: string; provider_name?: string; html?: string };
 
     // Extract embed src from oEmbed HTML (handles locale prefixes & short links)
@@ -37,7 +42,6 @@ async function getMusicMeta(url: string | null): Promise<MusicMeta | null> {
     if (data.html) {
       const m = data.html.match(/src="([^"]+)"/);
       if (m?.[1]) {
-        // Ensure autoplay for Spotify embeds
         embedUrl = embedType === "spotify" && !m[1].includes("autoplay")
           ? m[1] + (m[1].includes("?") ? "&" : "?") + "autoplay=1&theme=0"
           : m[1];
