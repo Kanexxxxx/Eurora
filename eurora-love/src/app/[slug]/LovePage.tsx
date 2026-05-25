@@ -193,7 +193,11 @@ export default function LovePage({ couple, musicMeta }: Props) {
 
   const sinceLabel = formatSince(couple.relationship_date);
   const heroPoems = buildHeroPoems(couple.message);
-  const musicEmbed = getMusicEmbed(couple.music_url);
+  // Prefer server-resolved embed URL (handles all Spotify URL formats), fall back to client parser
+  const serverEmbed = musicMeta?.embedUrl
+    ? { src: musicMeta.embedUrl, type: musicMeta.embedType ?? "spotify" as const }
+    : null;
+  const musicEmbed = serverEmbed ?? getMusicEmbed(couple.music_url);
   const hasMeta = !!(musicMeta?.albumArt);
 
   return (

@@ -11,25 +11,45 @@ export interface MusicMeta {
   title: string;
   albumArt: string;
   provider?: string;
+  embedUrl?: string;
+  embedType?: "spotify" | "youtube";
 }
 
 async function getMusicMeta(url: string | null): Promise<MusicMeta | null> {
   if (!url) return null;
   try {
     let endpoint: string | null = null;
-    if (url.includes("spotify.com")) {
+    let embedType: "spotify" | "youtube" | undefined;
+    if (url.includes("spotify.com") || url.includes("spotify.link")) {
       endpoint = `https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`;
+      embedType = "spotify";
     } else if (url.includes("youtube.com") || url.includes("youtu.be")) {
       endpoint = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
+      embedType = "youtube";
     }
     if (!endpoint) return null;
     const res = await fetch(endpoint, { next: { revalidate: 86400 } });
     if (!res.ok) return null;
-    const data = await res.json() as { title?: string; thumbnail_url?: string; provider_name?: string };
+    const data = await res.json() as { title?: string; thumbnail_url?: string; provider_name?: string; html?: string };
+
+    // Extract embed src from oEmbed HTML (handles locale prefixes & short links)
+    let embedUrl: string | undefined;
+    if (data.html) {
+      const m = data.html.match(/src="([^"]+)"/);
+      if (m?.[1]) {
+        // Ensure autoplay for Spotify embeds
+        embedUrl = embedType === "spotify" && !m[1].includes("autoplay")
+          ? m[1] + (m[1].includes("?") ? "&" : "?") + "autoplay=1&theme=0"
+          : m[1];
+      }
+    }
+
     return {
       title: data.title ?? "Nossa Música",
       albumArt: data.thumbnail_url ?? "",
       provider: data.provider_name,
+      embedUrl,
+      embedType,
     };
   } catch {
     return null;
