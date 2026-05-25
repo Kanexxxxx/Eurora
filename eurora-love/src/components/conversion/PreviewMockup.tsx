@@ -247,17 +247,17 @@ export default function PreviewMockup({}: Props) {
       style={{ perspective: 1600 }}
     >
       {/* Ambient glow */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute left-1/2 top-1/2 h-[120%] w-[120%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-rose-600/30 blur-[120px]" />
-        <div className="absolute left-[10%] top-[15%] h-48 w-48 rounded-full bg-amber-400/15 blur-[90px]" />
-        <div className="absolute right-[10%] bottom-[15%] h-48 w-48 rounded-full bg-fuchsia-600/10 blur-[90px]" />
+      <div className="pointer-events-none absolute inset-0 -z-10 hidden sm:block">
+        <div className="absolute left-1/2 top-1/2 h-[120%] w-[120%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-rose-600/20 blur-[80px]" />
+        <div className="absolute left-[10%] top-[15%] h-40 w-40 rounded-full bg-amber-400/10 blur-[60px]" />
+        <div className="absolute right-[10%] bottom-[15%] h-40 w-40 rounded-full bg-fuchsia-600/8 blur-[60px]" />
       </div>
 
       <motion.div
         animate={{ rotateX: [0, -1.5, 0], rotateY: [0, 2.5, 0] }}
-        transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
+        transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
         className="relative"
-        style={{ transformStyle: "preserve-3d" }}
+        style={{ transformStyle: "preserve-3d", willChange: "transform" }}
       >
         {/* Phone shell */}
         <div className="mockup-iphone-shell relative mx-auto aspect-[9/19.2] w-75 rounded-[54px] p-[2.5px] sm:w-85">

@@ -1,3 +1,10 @@
+# Segredos — NUNCA subir
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
 # Claude Code (configurações locais — não subir)
 .claude/
 

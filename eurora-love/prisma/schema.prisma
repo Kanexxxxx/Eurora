@@ -35,6 +35,8 @@ model Couple {
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
 
+  @@index([paid])
+  @@index([created_at])
   @@map("couples")
 }
 
@@ -51,6 +53,8 @@ model ScheduledMessage {
   payment_id   String?
   created_at   DateTime  @default(now())
 
+  @@index([sent, paid, send_at])
+  @@index([created_at])
   @@map("scheduled_messages")
 }
 

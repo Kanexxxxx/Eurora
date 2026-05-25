@@ -1,8 +1,9 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 function calcCountdownJun12() {
   const now = new Date();
@@ -12,13 +13,14 @@ function calcCountdownJun12() {
   const days = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
   return days;
 }
-import FloatingHearts from "@/components/effects/FloatingHearts";
-import NoiseOverlay from "@/components/effects/NoiseOverlay";
-import LiveCounter from "@/components/conversion/LiveCounter";
-import FakeNotifications from "@/components/conversion/FakeNotifications";
+
+const FloatingHearts = dynamic(() => import("@/components/effects/FloatingHearts"), { ssr: false });
+const NoiseOverlay = dynamic(() => import("@/components/effects/NoiseOverlay"), { ssr: false });
+const LiveCounter = dynamic(() => import("@/components/conversion/LiveCounter"), { ssr: false });
+const FakeNotifications = dynamic(() => import("@/components/conversion/FakeNotifications"), { ssr: false });
+const PreviewMockup = dynamic(() => import("@/components/conversion/PreviewMockup"), { ssr: false });
 import UrgencyBar from "@/components/conversion/UrgencyBar";
 import TrustStrip from "@/components/conversion/TrustStrip";
-import PreviewMockup from "@/components/conversion/PreviewMockup";
 
 const FEATURES = [
   {
@@ -144,7 +146,6 @@ const STATS = [
 ];
 
 export default function LandingPage() {
-  const heroRef = useRef<HTMLElement>(null);
   const [daysLeft, setDaysLeft] = useState(calcCountdownJun12());
 
   useEffect(() => {
@@ -152,34 +153,21 @@ export default function LandingPage() {
     return () => clearInterval(id);
   }, []);
 
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  });
-  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
-
   return (
     <main className="relative overflow-hidden">
       <UrgencyBar />
       <NoiseOverlay />
-      <FloatingHearts count={16} />
+      <FloatingHearts count={8} />
       <FakeNotifications />
 
       {/* ====================== HERO ====================== */}
-      <section
-        ref={heroRef}
-        className="relative min-h-[100svh] flex flex-col items-center justify-center px-4 pt-16 pb-20"
-      >
+      <section className="relative min-h-svh flex flex-col items-center justify-center px-4 pt-16 pb-20">
         {/* Cinematic background */}
-        <motion.div
-          style={{ y: heroY, opacity: heroOpacity }}
-          className="absolute inset-0 overflow-hidden pointer-events-none"
-        >
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-rose-600/20 rounded-full blur-[140px] animate-glow-pulse" />
-          <div className="absolute -top-32 right-0 w-[500px] h-[500px] bg-amber-400/10 rounded-full blur-[120px]" />
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-fuchsia-500/10 rounded-full blur-[100px]" />
-        </motion.div>
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-125 h-125 sm:w-175 sm:h-175 bg-rose-600/15 rounded-full blur-[80px] sm:blur-[120px] animate-glow-pulse" />
+          <div className="absolute -top-32 right-0 w-75 h-75 bg-amber-400/8 rounded-full blur-[80px] hidden sm:block" />
+          <div className="absolute bottom-0 left-0 w-62.5 h-62.5 bg-fuchsia-500/8 rounded-full blur-[70px] hidden sm:block" />
+        </div>
 
         <motion.div
           className="relative z-10 text-center max-w-5xl mx-auto"
