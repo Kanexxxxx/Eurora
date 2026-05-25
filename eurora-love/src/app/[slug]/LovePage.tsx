@@ -349,30 +349,15 @@ export default function LovePage({ couple, musicMeta }: Props) {
               </motion.div>
             )}
 
-            {/* ── Music card ── */}
+            {/* ── Music ── */}
             {couple.music_url && (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.5 }}
-                className="rounded-3xl overflow-hidden glass-premium"
-                style={{ boxShadow: `0 0 50px rgba(${styles.glowRgb}, 0.1)` }}>
+                className="rounded-3xl overflow-hidden">
 
-                {/* Label + waveform header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
-                  <p className="text-[9px] uppercase tracking-[0.4em] text-gradient-rose font-semibold">Nossa Música</p>
-                  <div className="flex items-end gap-0.5 h-3">
-                    {WAVEFORM.slice(0, 7).map((h, i) => (
-                      <motion.span key={i} className="w-0.5 rounded-full"
-                        animate={{ height: [h * 0.3, h * 0.9, h * 0.45] }}
-                        transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.07, ease: "easeInOut" }}
-                        style={{ minHeight: 2, maxHeight: 12, backgroundColor: albumColor }} />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Embed */}
                 {musicEmbed?.type === "spotify" && (
-                  <iframe title="Nossa música" src={musicEmbed.src} width="100%" height="80"
+                  <iframe title="Nossa música" src={musicEmbed.src} width="100%" height="152"
                     allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    className="block" />
+                    className="block rounded-3xl" />
                 )}
                 {musicEmbed?.type === "youtube" && (
                   <div className="aspect-video w-full">
@@ -383,7 +368,7 @@ export default function LovePage({ couple, musicMeta }: Props) {
                 )}
                 {!musicEmbed && (
                   <a href={couple.music_url} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-5 hover:bg-white/5 transition-all">
+                    className="flex items-center gap-3 p-5 glass rounded-3xl hover:bg-white/5 transition-all">
                     <span className="text-2xl">🎵</span>
                     <span className="text-gray-300 text-sm font-heading">Ouvir nossa música</span>
                   </a>
