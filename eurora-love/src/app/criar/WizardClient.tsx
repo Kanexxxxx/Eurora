@@ -5,10 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type { WizardData, Theme, Plan } from "@/lib/types";
 
 const THEMES: { id: Theme; name: string; description: string; bg: string; accent: string }[] = [
-  { id: "black-luxury", name: "Black Luxury", description: "Sofisticado e elegante", bg: "from-zinc-900 to-black", accent: "border-rose-600" },
+  { id: "black-luxury", name: "Black Luxury", description: "Sofisticado e elegante", bg: "from-zinc-900 to-black", accent: "border-[#C8917A]" },
   { id: "neon-romance", name: "Neon Romance", description: "Intenso e apaixonado", bg: "from-purple-950 to-black", accent: "border-fuchsia-500" },
   { id: "minimal-love", name: "Minimal Love", description: "Limpo e atemporal", bg: "from-stone-900 to-black", accent: "border-amber-400" },
-  { id: "velvet-dark", name: "Velvet Dark", description: "Suave e romântico", bg: "from-rose-950 to-black", accent: "border-rose-400" },
+  { id: "velvet-dark", name: "Velvet Dark", description: "Suave e romântico", bg: "from-rose-950 to-black", accent: "border-[#C8917A]" },
 ];
 
 const TOTAL_STEPS = 8;
@@ -25,7 +25,7 @@ const defaultData: WizardData = {
   plan: "premium",
 };
 
-const inputClass = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-rose-600 transition-colors";
+const inputClass = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#C8917A] transition-colors";
 
 export default function WizardClient() {
   const router = useRouter();
@@ -107,12 +107,12 @@ export default function WizardClient() {
       {/* Header */}
       <div className="w-full max-w-lg mb-6">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-rose-400 text-xs font-medium uppercase tracking-widest">EURORA LOVE</span>
+          <span className="text-[#DCBA98] text-xs font-medium uppercase tracking-widest">EURORA LOVE</span>
           <span className="text-gray-500 text-xs">Passo {step} de {TOTAL_STEPS}</span>
         </div>
         <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-linear-to-r from-rose-600 to-amber-400 rounded-full"
+            className="h-full bg-linear-to-r from-[#C8917A] to-[#D4AF70] rounded-full"
             animate={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
             transition={{ duration: 0.4 }}
           />
@@ -134,7 +134,7 @@ export default function WizardClient() {
             {/* Step 1: Names */}
             {step === 1 && (
               <div>
-                <p className="text-xs uppercase tracking-widest text-rose-400 mb-2">Passo 1</p>
+                <p className="text-xs uppercase tracking-widest text-[#DCBA98] mb-2">Passo 1</p>
                 <h2 className="font-heading text-2xl sm:text-3xl font-bold text-white mb-2">Quem são os apaixonados?</h2>
                 <p className="text-gray-400 text-sm mb-6">Os nomes que aparecerão na sua página.</p>
                 <div className="space-y-4">
@@ -174,12 +174,12 @@ export default function WizardClient() {
             {/* Step 2: Photos */}
             {step === 2 && (
               <div>
-                <p className="text-xs uppercase tracking-widest text-rose-400 mb-2">Passo 2</p>
+                <p className="text-xs uppercase tracking-widest text-[#DCBA98] mb-2">Passo 2</p>
                 <h2 className="font-heading text-2xl sm:text-3xl font-bold text-white mb-2">Suas fotos juntos</h2>
                 <p className="text-gray-400 text-sm mb-6">
                   Até {data.plan === "premium" ? 10 : 5} fotos · Toque para selecionar
                 </p>
-                <label className="block border-2 border-dashed border-white/10 rounded-2xl p-6 text-center cursor-pointer hover:border-rose-600/50 active:border-rose-600/70 transition-colors">
+                <label className="block border-2 border-dashed border-white/10 rounded-2xl p-6 text-center cursor-pointer hover:border-[#C8917A]/50 active:border-[#C8917A]/70 transition-colors">
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
@@ -215,7 +215,7 @@ export default function WizardClient() {
             {/* Step 3: Message */}
             {step === 3 && (
               <div>
-                <p className="text-xs uppercase tracking-widest text-rose-400 mb-2">Passo 3</p>
+                <p className="text-xs uppercase tracking-widest text-[#DCBA98] mb-2">Passo 3</p>
                 <h2 className="font-heading text-2xl sm:text-3xl font-bold text-white mb-2">Sua mensagem de amor</h2>
                 <p className="text-gray-400 text-sm mb-6">Escreva o que o coração mandar. Mín. 10 caracteres.</p>
                 <textarea
@@ -232,7 +232,7 @@ export default function WizardClient() {
             {/* Step 4: Music */}
             {step === 4 && (
               <div>
-                <p className="text-xs uppercase tracking-widest text-rose-400 mb-2">Passo 4</p>
+                <p className="text-xs uppercase tracking-widest text-[#DCBA98] mb-2">Passo 4</p>
                 <h2 className="font-heading text-2xl sm:text-3xl font-bold text-white mb-2">A música de vocês</h2>
                 <p className="text-gray-400 text-sm mb-6">
                   {data.plan === "basic" ? "Disponível no plano Premium." : "Cole o link do Spotify ou YouTube (opcional)."}
@@ -250,7 +250,7 @@ export default function WizardClient() {
                   <div className="glass rounded-2xl p-6 text-center">
                     <p className="text-amber-400 text-sm font-medium mb-2">🎵 Recurso Premium</p>
                     <p className="text-gray-400 text-sm">Faça upgrade para adicionar música à sua página.</p>
-                    <button onClick={() => update("plan", "premium")} className="mt-4 px-6 py-2 bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white text-sm font-semibold rounded-xl transition-all">
+                    <button onClick={() => update("plan", "premium")} className="mt-4 px-6 py-2 bg-[#C8917A] hover:bg-[#A8705C] active:bg-[#8A5840] text-white text-sm font-semibold rounded-xl transition-all">
                       Upgrade para Premium (R$ 39)
                     </button>
                   </div>
@@ -261,7 +261,7 @@ export default function WizardClient() {
             {/* Step 5: Date */}
             {step === 5 && (
               <div>
-                <p className="text-xs uppercase tracking-widest text-rose-400 mb-2">Passo 5</p>
+                <p className="text-xs uppercase tracking-widest text-[#DCBA98] mb-2">Passo 5</p>
                 <h2 className="font-heading text-2xl sm:text-3xl font-bold text-white mb-2">Quando começou tudo?</h2>
                 <p className="text-gray-400 text-sm mb-6">A data do início do relacionamento de vocês.</p>
                 <input
@@ -277,7 +277,7 @@ export default function WizardClient() {
             {/* Step 6: Theme */}
             {step === 6 && (
               <div>
-                <p className="text-xs uppercase tracking-widest text-rose-400 mb-2">Passo 6</p>
+                <p className="text-xs uppercase tracking-widest text-[#DCBA98] mb-2">Passo 6</p>
                 <h2 className="font-heading text-2xl sm:text-3xl font-bold text-white mb-2">Escolha o tema</h2>
                 <p className="text-gray-400 text-sm mb-6">
                   {data.plan === "basic" ? "2 temas disponíveis no Basic." : "Todos os 4 temas Premium."}
@@ -296,7 +296,7 @@ export default function WizardClient() {
                         <p className="text-gray-400 text-xs">{theme.description}</p>
                       </div>
                       {data.theme === theme.id && (
-                        <div className="absolute top-2 right-2 w-5 h-5 bg-rose-600 rounded-full flex items-center justify-center">
+                        <div className="absolute top-2 right-2 w-5 h-5 bg-[#C8917A] rounded-full flex items-center justify-center">
                           <span className="text-white text-xs">✓</span>
                         </div>
                       )}
@@ -309,7 +309,7 @@ export default function WizardClient() {
             {/* Step 7: Preview */}
             {step === 7 && (
               <div>
-                <p className="text-xs uppercase tracking-widest text-rose-400 mb-2">Passo 7</p>
+                <p className="text-xs uppercase tracking-widest text-[#DCBA98] mb-2">Passo 7</p>
                 <h2 className="font-heading text-2xl sm:text-3xl font-bold text-white mb-2">Prévia da sua página</h2>
                 <p className="text-gray-400 text-sm mb-5">Confira antes de finalizar.</p>
                 <div className="space-y-2 text-sm">
@@ -327,7 +327,7 @@ export default function WizardClient() {
                   ))}
                   <div className="flex justify-between py-2">
                     <span className="text-gray-500">Plano</span>
-                    <span className="text-rose-400 font-semibold">{data.plan === "premium" ? "Premium · R$ 39" : "Basic · R$ 19"}</span>
+                    <span className="text-[#DCBA98] font-semibold">{data.plan === "premium" ? "Premium · R$ 39" : "Basic · R$ 19"}</span>
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-white/3 rounded-xl">
@@ -339,7 +339,7 @@ export default function WizardClient() {
             {/* Step 8: Payment selection */}
             {step === 8 && (
               <div>
-                <p className="text-xs uppercase tracking-widest text-rose-400 mb-2">Passo 8</p>
+                <p className="text-xs uppercase tracking-widest text-[#DCBA98] mb-2">Passo 8</p>
                 <h2 className="font-heading text-2xl sm:text-3xl font-bold text-white mb-2">Tudo pronto!</h2>
                 <p className="text-gray-400 text-sm mb-5">Confirme o plano e finalize com Pix ou cartao.</p>
                 <div className="space-y-3 mb-5">
@@ -358,7 +358,7 @@ export default function WizardClient() {
                         }
                       }}
                       className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all active:scale-[0.98] ${
-                        data.plan === p ? "border-rose-600 bg-rose-950/20" : "border-white/10 bg-white/3"
+                        data.plan === p ? "border-[#C8917A] bg-[#C8917A]/8" : "border-white/10 bg-white/3"
                       }`}
                     >
                       <div className="text-left">
@@ -373,7 +373,7 @@ export default function WizardClient() {
                 <button
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="w-full py-4 bg-rose-600 hover:bg-rose-500 active:bg-rose-700 disabled:opacity-50 text-white font-bold rounded-2xl transition-all glow-rose"
+                  className="w-full py-4 bg-[#C8917A] hover:bg-[#A8705C] active:bg-[#8A5840] disabled:opacity-50 text-white font-bold rounded-2xl transition-all glow-rose"
                 >
                   {loading ? "Processando..." : "Pagar com PIX →"}
                 </button>
@@ -399,7 +399,7 @@ export default function WizardClient() {
             <button
               onClick={() => setStep((s) => s + 1)}
               disabled={!canNext()}
-              className="px-5 py-3 bg-rose-600 hover:bg-rose-500 active:bg-rose-700 disabled:opacity-30 text-white font-semibold rounded-xl transition-all text-sm"
+              className="px-5 py-3 bg-[#C8917A] hover:bg-[#A8705C] active:bg-[#8A5840] disabled:opacity-30 text-white font-semibold rounded-xl transition-all text-sm"
             >
               Continuar →
             </button>
