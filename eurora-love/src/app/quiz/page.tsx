@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import QuizClient from "./QuizClient";
 
 export const metadata: Metadata = {
-  title: "Teste do Amor — Descubra seu match real | EURORA LOVE",
+  title: "Teste do Parceiro — Ele/ela te conhece bem? | EURORA LOVE",
   description:
-    "Quiz de compatibilidade científico. Resultado com porcentagem real, mapa do casal e card pronto pra Stories. Já testado por +210.000 casais.",
+    "Crie um teste personalizado sobre você, mande no WhatsApp e descubra o quanto seu parceiro(a) te conhece. Grátis e instantâneo.",
 };
 
 export default function Page() {
