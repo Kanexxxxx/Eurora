@@ -352,92 +352,41 @@ export default function LovePage({ couple, musicMeta }: Props) {
             {/* ── Music card ── */}
             {couple.music_url && (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.5 }}
-                className="rounded-3xl overflow-hidden glass-premium">
+                className="rounded-3xl overflow-hidden glass-premium"
+                style={{ boxShadow: `0 0 50px rgba(${styles.glowRgb}, 0.1)` }}>
 
-                {hasMeta ? (
-                  <>
-                    {/* Album art hero section */}
-                    <div className="relative h-52 overflow-hidden">
-                      {/* Blurred background */}
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={musicMeta!.albumArt} alt="" aria-hidden
-                        className="absolute inset-0 w-full h-full object-cover scale-125 blur-xl"
-                        style={{ opacity: 0.65 }} loading="lazy" decoding="async" />
-                      <div className="absolute inset-0 bg-linear-to-b from-black/10 via-transparent to-black/95" />
+                {/* Label + waveform header */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+                  <p className="text-[9px] uppercase tracking-[0.4em] text-gradient-rose font-semibold">Nossa Música</p>
+                  <div className="flex items-end gap-0.5 h-3">
+                    {WAVEFORM.slice(0, 7).map((h, i) => (
+                      <motion.span key={i} className="w-0.5 rounded-full"
+                        animate={{ height: [h * 0.3, h * 0.9, h * 0.45] }}
+                        transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.07, ease: "easeInOut" }}
+                        style={{ minHeight: 2, maxHeight: 12, backgroundColor: albumColor }} />
+                    ))}
+                  </div>
+                </div>
 
-                      {/* Content row */}
-                      <div className="absolute inset-x-0 bottom-0 px-5 pb-5 flex items-end gap-4">
-                        {/* Album art with glow ring */}
-                        <div className="relative shrink-0">
-                          <div className="absolute -inset-2 rounded-2xl animate-glow-pulse"
-                            style={{ background: `radial-gradient(circle, ${albumColor}55 0%, transparent 70%)` }} />
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={musicMeta!.albumArt} alt="Capa"
-                            className="relative w-20 h-20 rounded-xl object-cover shadow-2xl ring-1 ring-white/20"
-                            loading="lazy" decoding="async" />
-                        </div>
-
-                        {/* Song info */}
-                        <div className="flex-1 min-w-0 pb-0.5">
-                          <p className="text-[9px] uppercase tracking-[0.4em] text-gradient-rose font-semibold mb-1">
-                            Nossa Música
-                          </p>
-                          <p className="font-heading text-white font-bold text-base leading-snug line-clamp-2">
-                            {musicMeta!.title}
-                          </p>
-                          {musicMeta!.provider && (
-                            <p className="text-white/40 text-[11px] mt-0.5">{musicMeta!.provider}</p>
-                          )}
-                          {/* Waveform bars */}
-                          <div className="flex items-end gap-0.5 mt-2 h-4">
-                            {WAVEFORM.map((h, i) => (
-                              <motion.span key={i} className="w-0.5 rounded-full"
-                                animate={{ height: [h * 0.35, h * 0.9, h * 0.5] }}
-                                transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.06, ease: "easeInOut" }}
-                                style={{ minHeight: 2, maxHeight: 13, backgroundColor: albumColor }} />
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Spotify embed */}
-                    {musicEmbed?.type === "spotify" && (
-                      <iframe title="Nossa música" src={musicEmbed.src} width="100%" height="80"
-                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                        className="block" />
-                    )}
-                    {musicEmbed?.type === "youtube" && (
-                      <div className="aspect-video w-full">
-                        <iframe title="Nossa música" src={musicEmbed.src}
-                          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                          allowFullScreen className="w-full h-full block" />
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  /* No metadata: show embed alone */
-                  <>
-                    {musicEmbed?.type === "spotify" && (
-                      <iframe title="Nossa música" src={musicEmbed.src} width="100%" height="152"
-                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                        className="block" />
-                    )}
-                    {musicEmbed?.type === "youtube" && (
-                      <div className="aspect-video w-full">
-                        <iframe title="Nossa música" src={musicEmbed.src}
-                          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                          allowFullScreen className="w-full h-full block" />
-                      </div>
-                    )}
-                    {!musicEmbed && (
-                      <a href={couple.music_url} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-5 hover:bg-white/5 transition-all">
-                        <span className="text-2xl">🎵</span>
-                        <span className="text-gray-300 text-sm font-heading">Ouvir nossa música</span>
-                      </a>
-                    )}
-                  </>
+                {/* Embed */}
+                {musicEmbed?.type === "spotify" && (
+                  <iframe title="Nossa música" src={musicEmbed.src} width="100%" height="80"
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    className="block" />
+                )}
+                {musicEmbed?.type === "youtube" && (
+                  <div className="aspect-video w-full">
+                    <iframe title="Nossa música" src={musicEmbed.src}
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      allowFullScreen className="w-full h-full block" />
+                  </div>
+                )}
+                {!musicEmbed && (
+                  <a href={couple.music_url} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-5 hover:bg-white/5 transition-all">
+                    <span className="text-2xl">🎵</span>
+                    <span className="text-gray-300 text-sm font-heading">Ouvir nossa música</span>
+                  </a>
                 )}
               </motion.div>
             )}
