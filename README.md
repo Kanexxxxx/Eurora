@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="eurora-love/src/app/icon.svg" width="80" height="80" alt="EURORA LOVE"/>
+<img src="docs/logo.png" width="120" height="120" alt="EURORA LOVE"/>
 
 # EURORA LOVE
 
