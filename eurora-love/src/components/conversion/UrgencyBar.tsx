@@ -28,7 +28,7 @@ export default function UrgencyBar() {
   }, []);
 
   return (
-    <div className="w-full bg-gradient-to-r from-[#A8705C] via-[#C8917A] to-[#D4AF70] text-white text-xs sm:text-sm py-2 px-4 text-center font-medium animate-gradient-shift relative overflow-hidden">
+    <div className="w-full bg-gradient-to-r from-[#d6195a] via-[#ff2d6a] to-[#f6c986] text-white text-xs sm:text-sm py-2 px-4 text-center font-medium animate-gradient-shift relative overflow-hidden">
       <span className="absolute inset-0 animate-shimmer-bg pointer-events-none" />
       <span className="relative">
         🔥 OFERTA DIA DOS NAMORADOS — termina em{" "}

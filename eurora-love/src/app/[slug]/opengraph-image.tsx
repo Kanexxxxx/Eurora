@@ -1,4 +1,4 @@
-﻿import { ImageResponse } from "next/og";
+import { ImageResponse } from "next/og";
 import { prisma } from "@/server/db/prisma";
 
 export const runtime = "nodejs";
@@ -25,7 +25,7 @@ export default async function OgImage({ params }: { params: Promise<{ slug: stri
         style={{
           width: "100%",
           height: "100%",
-          background: "linear-gradient(135deg, #080506 0%, #0c0810 50%, #100810 100%)",
+          background: "linear-gradient(135deg, #07050a 0%, #0c0810 50%, #100810 100%)",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -34,7 +34,7 @@ export default async function OgImage({ params }: { params: Promise<{ slug: stri
           fontFamily: "serif",
         }}
       >
-        <div style={{ color: "#C8917A", fontSize: 18, letterSpacing: "0.3em", marginBottom: 32, fontWeight: 700 }}>
+        <div style={{ color: "#ff2d6a", fontSize: 18, letterSpacing: "0.3em", marginBottom: 32, fontWeight: 700 }}>
           ♥ EURORA LOVE ♥
         </div>
         <div
@@ -51,7 +51,7 @@ export default async function OgImage({ params }: { params: Promise<{ slug: stri
         </div>
         <div
           style={{
-            color: "rgba(255,248,240,0.55)",
+            color: "rgba(255,245,240,0.55)",
             fontSize: 28,
             textAlign: "center",
             maxWidth: 900,
@@ -65,7 +65,7 @@ export default async function OgImage({ params }: { params: Promise<{ slug: stri
           style={{
             position: "absolute",
             bottom: 48,
-            color: "#C8917A",
+            color: "#ff2d6a",
             fontSize: 18,
             letterSpacing: "0.1em",
           }}

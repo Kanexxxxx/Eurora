@@ -54,8 +54,8 @@ export default function SiteHeader() {
                 <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <defs>
                     <linearGradient id="hg" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
-                      <stop offset="0%" stopColor="#C8917A"/>
-                      <stop offset="100%" stopColor="#D4AF70"/>
+                      <stop offset="0%" stopColor="#ff2d6a"/>
+                      <stop offset="100%" stopColor="#f6c986"/>
                     </linearGradient>
                     <filter id="glow">
                       <feGaussianBlur stdDeviation="2.5" result="blur"/>
@@ -88,7 +88,7 @@ export default function SiteHeader() {
                   >
                     <span>{item.label}</span>
                     {item.badge && (
-                      <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-[#C8917A] text-white rounded-full">
+                      <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-[#ff2d6a] text-white rounded-full">
                         {item.badge}
                       </span>
                     )}
@@ -100,7 +100,7 @@ export default function SiteHeader() {
             <div className="hidden sm:flex items-center gap-2">
               <Link
                 href="/criar"
-                className="relative inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-white bg-gradient-to-r from-[#C8917A] to-[#A8705C] shadow-[0_8px_30px_-8px_rgba(200,145,122,0.55)] hover:shadow-[0_12px_40px_-8px_rgba(200,145,122,0.75)] hover:scale-[1.02] transition-all duration-300"
+                className="relative inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-white bg-gradient-to-r from-[#ff2d6a] to-[#d6195a] shadow-[0_8px_30px_-8px_rgba(255,45,106,0.55)] hover:shadow-[0_12px_40px_-8px_rgba(255,45,106,0.75)] hover:scale-[1.02] transition-all duration-300"
               >
                 <span className="absolute inset-0 rounded-full bg-white/20 opacity-0 hover:opacity-100 blur-md transition-opacity" />
                 <span className="relative">Criar agora →</span>
@@ -167,7 +167,7 @@ export default function SiteHeader() {
                       <span className="text-white font-medium">{item.label}</span>
                     </span>
                     {item.badge && (
-                      <span className="px-2 py-0.5 text-[10px] font-bold bg-[#C8917A] text-white rounded-full">
+                      <span className="px-2 py-0.5 text-[10px] font-bold bg-[#ff2d6a] text-white rounded-full">
                         {item.badge}
                       </span>
                     )}
