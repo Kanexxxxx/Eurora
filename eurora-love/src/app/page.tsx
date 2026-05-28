@@ -49,8 +49,8 @@ const FEATURES = [
   },
   {
     emoji: "🔮",
-    title: "Teste do Amor",
-    desc: "Descubra a porcentagem real de combinação entre vocês. Resultado compartilhável.",
+    title: "Teste do Parceiro",
+    desc: "Crie um teste sobre você, mande no WhatsApp e descubra o quanto ele/ela te conhece de verdade.",
     href: "/quiz",
     color: "from-pink-400/30 to-pink-600/10",
     badge: "Grátis",

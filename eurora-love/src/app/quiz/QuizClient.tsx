@@ -1,442 +1,746 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import FloatingHearts from "@/components/effects/FloatingHearts";
 import FakeNotifications from "@/components/conversion/FakeNotifications";
 
-const Q = [
+/* ─── Types ─── */
+type CustomQ = { q: string; opts: string[]; a: number };
+type QuizData = { n: string; q: number[]; c: CustomQ[] };
+
+/* ─── Preset questions (about the creator) ─── */
+const PRESET = [
   {
-    q: "Quando vocês discutem, geralmente…",
-    options: [
-      { v: 3, l: "Conversam e resolvem na mesma hora" },
-      { v: 2, l: "Ficam um pouco emburrados, mas voltam pro normal" },
-      { v: 1, l: "Cada um vai pra um canto até passar" },
-      { v: 0, l: "É guerra mundial 🌪️" },
-    ],
+    q: "Qual é a minha cor favorita?",
+    opts: ["Azul 💙", "Rosa / Lilás 🌸", "Verde 🌿", "Preto / Branco 🖤"],
   },
   {
-    q: "Sobre os planos pro futuro…",
-    options: [
-      { v: 3, l: "Já planejamos tudo — casa, filho, viagem" },
-      { v: 2, l: "Conversamos sobre algumas coisas" },
-      { v: 1, l: "Vamos vivendo, sem pressa" },
-      { v: 0, l: "Cada um tem o seu plano" },
-    ],
+    q: "Como prefiro passar meu fim de semana ideal?",
+    opts: ["Em casa relaxando 🛋️", "Saindo pra comer e explorar 🍕", "Aventura na natureza 🌿", "Com muita gente 🎉"],
   },
   {
-    q: "Vocês riem juntos?",
-    options: [
-      { v: 3, l: "Constantemente, somos um show de comédia" },
-      { v: 2, l: "Bastante, é uma das nossas linguagens" },
-      { v: 1, l: "Às vezes, em ondas" },
-      { v: 0, l: "Raramente" },
-    ],
+    q: "O que eu não consigo viver sem?",
+    opts: ["Café ou chá ☕", "Música 🎵", "Celular 📱", "Séries ou filmes 🎬"],
   },
   {
-    q: "Como vocês demonstram amor no dia a dia?",
-    options: [
-      { v: 3, l: "Mil formas: toque, palavras, presentes, tempo" },
-      { v: 2, l: "Tem nossas linguagens preferidas" },
-      { v: 1, l: "Mais sutil, com gestos pequenos" },
-      { v: 0, l: "Não somos muito de demonstrar" },
-    ],
+    q: "Como fico quando estou com raiva?",
+    opts: ["Fico em silêncio 😶", "Falo tudo na hora 💬", "Choro 😢", "Me afasto por um tempo 🚶"],
   },
   {
-    q: "Vocês conhecem os medos um do outro?",
-    options: [
-      { v: 3, l: "Sim, até os mais profundos" },
-      { v: 2, l: "Os principais sim" },
-      { v: 1, l: "Alguns" },
-      { v: 0, l: "Não muito" },
-    ],
+    q: "Minha maior qualidade é...",
+    opts: ["Lealdade e honestidade", "Senso de humor 😂", "Cuidar dos outros ❤️", "Determinação 💪"],
   },
   {
-    q: "Confiança no relacionamento…",
-    options: [
-      { v: 3, l: "100% — é nossa fundação" },
-      { v: 2, l: "Forte, com pequenas inseguranças" },
-      { v: 1, l: "Estamos construindo" },
-      { v: 0, l: "Tem furos sérios" },
-    ],
+    q: "O que me deixa mais feliz?",
+    opts: ["Momentos em casal ❤️", "Conquistas e vitórias 🏆", "Viajar e explorar 🌍", "Comida boa 🍽️"],
   },
   {
-    q: "Vocês têm rituais de casal?",
-    options: [
-      { v: 3, l: "Vários — séries, comidinhas, datas, lugares" },
-      { v: 2, l: "Alguns que amamos" },
-      { v: 1, l: "Estamos criando aos poucos" },
-      { v: 0, l: "Cada um na sua" },
-    ],
+    q: "Onde sonho em viajar?",
+    opts: ["Europa (Paris, Roma...)", "Praia tropical 🏖️", "Japão ou Ásia 🗾", "EUA (NY, Miami...)"],
   },
   {
-    q: "Você sente que pode ser 100% vulnerável com ele/ela?",
-    options: [
-      { v: 3, l: "Sim, totalmente" },
-      { v: 2, l: "Quase sempre" },
-      { v: 1, l: "Em algumas coisas" },
-      { v: 0, l: "Não muito" },
-    ],
-  },
-  {
-    q: "Sexualmente, vocês estão…",
-    options: [
-      { v: 3, l: "Em fogo total, conexão absurda" },
-      { v: 2, l: "Bem, com altos e baixos" },
-      { v: 1, l: "Em fase morna" },
-      { v: 0, l: "Distantes" },
-    ],
-  },
-  {
-    q: "Imagina os dois daqui 10 anos. Você vê…",
-    options: [
-      { v: 3, l: "A gente junto, melhor que hoje" },
-      { v: 2, l: "Provavelmente juntos" },
-      { v: 1, l: "Não sei dizer" },
-      { v: 0, l: "Honestamente, não sei" },
-    ],
+    q: "Meu gênero favorito de série ou filme?",
+    opts: ["Romance / Drama 💕", "Comédia 😂", "Terror / Suspense 👻", "Ação / Aventura 💥"],
   },
 ];
 
-const RESULT_TIERS = [
+/* ─── Result tiers (partner score) ─── */
+const TIERS = [
   {
-    min: 27,
-    title: "Almas gêmeas confirmadas",
+    min: 1.0,
     emoji: "💎",
-    color: "from-rose-500 via-fuchsia-400 to-amber-300",
-    headline: "Um match raro. Daqueles que ninguém quer perder.",
-    body:
-      "Vocês têm uma sintonia que poucos casais alcançam. A confiança, o riso e os planos compartilhados formam uma base praticamente indestrutível. Cuide disso como cuida-se de um tesouro: pequenos gestos, todos os dias.",
-    cta: "Crie a página do amor pra eternizar isso",
+    title: "Você me conhece de cor e salteado!",
+    text: "Acertou tudo! Isso só prova que a gente foi feito um pro outro. Nada passa por você.",
   },
   {
-    min: 20,
-    title: "Casal real, conexão forte",
+    min: 0.75,
     emoji: "🔥",
-    color: "from-rose-500 via-rose-400 to-amber-400",
-    headline: "Vocês têm o que importa. E muito espaço pra ficar ainda melhor.",
-    body:
-      "Existe afeto, há química e há projeto. Algumas áreas precisam de carinho extra — comunicação ou tempo de qualidade — e isso é absolutamente normal. Investir um pouco agora pode levar vocês ao próximo nível.",
-    cta: "Programar uma mensagem mágica pra ele/ela",
+    title: "Você me conhece muito bem!",
+    text: "Quase perfeito! A ligação entre vocês é real e profunda. Que casal incrível.",
   },
   {
-    min: 12,
-    title: "Em construção",
+    min: 0.5,
+    emoji: "❤️",
+    title: "Você me conhece bastante!",
+    text: "Mais da metade certa! Vocês têm uma boa conexão — e ainda tem muito pra descobrir juntos.",
+  },
+  {
+    min: 0.25,
     emoji: "🌱",
-    color: "from-amber-400 via-rose-400 to-fuchsia-400",
-    headline: "Está nascendo algo. Precisa de água e luz pra crescer.",
-    body:
-      "Tem peças se encaixando, mas ainda tem distâncias importantes pra ajustar. Conversas francas, planos compartilhados e demonstrações concretas de afeto vão fazer milagre. Não desista cedo — relacionamentos sólidos quase sempre começam aqui.",
-    cta: "Gerar uma carta romântica com a IA",
+    title: "Ainda tem segredos pra descobrir!",
+    text: "Tá chegando lá! O relacionamento de vocês ainda tem muita história pela frente.",
   },
   {
     min: 0,
-    title: "Atenção necessária",
-    emoji: "🚧",
-    color: "from-rose-700 via-rose-500 to-amber-500",
-    headline: "Vocês merecem mais. Bora trabalhar nisso?",
-    body:
-      "Os sinais mostram que algo importante precisa de atenção: confiança, vulnerabilidade ou projeto. Não é sentença — é diagnóstico. Casais que se importam o suficiente pra fazer um teste como esse já estão na frente. O próximo passo é uma conversa real e gestos concretos.",
-    cta: "Salvar o relacionamento com presentes secretos",
+    emoji: "😄",
+    title: "A gente ainda vai se conhecer muito!",
+    text: "Pontuação baixa não quer dizer nada — significa que vocês têm muito pra explorar juntos ainda.",
   },
 ];
 
-export default function QuizClient() {
-  const [step, setStep] = useState<"intro" | "quiz" | "result">("intro");
-  const [qIndex, setQIndex] = useState(0);
-  const [answers, setAnswers] = useState<number[]>([]);
-  const [name1, setName1] = useState("");
-  const [name2, setName2] = useState("");
+/* ─── Encode / decode (UTF-8 safe base64url) ─── */
+function encodeQuiz(data: QuizData): string {
+  const json = JSON.stringify(data);
+  const bytes = new TextEncoder().encode(json);
+  let binary = "";
+  bytes.forEach((b) => (binary += String.fromCharCode(b)));
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+}
 
-  const total = useMemo(() => answers.reduce((a, b) => a + b, 0), [answers]);
-  const max = Q.length * 3;
-  const pct = Math.round((total / max) * 100);
+function decodeQuiz(s: string): QuizData | null {
+  try {
+    const base64 = s.replace(/-/g, "+").replace(/_/g, "/");
+    const binary = atob(base64);
+    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes)) as QuizData;
+  } catch {
+    return null;
+  }
+}
 
-  const tier =
-    RESULT_TIERS.find((t) => total >= t.min) ?? RESULT_TIERS[RESULT_TIERS.length - 1];
+const inputClass =
+  "w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-[#C8917A]/40 transition-colors";
 
-  const handleAnswer = (v: number) => {
-    const next = [...answers, v];
-    setAnswers(next);
-    if (qIndex < Q.length - 1) {
-      setQIndex((i) => i + 1);
+/* ════════════════════════════════
+   CREATOR VIEW
+════════════════════════════════ */
+function CreatorView() {
+  type Step = "name" | "preset" | "custom" | "share";
+  const [step, setStep] = useState<Step>("name");
+  const [name, setName] = useState("");
+  const [presetIdx, setPresetIdx] = useState(0);
+  const [presetAnswers, setPresetAnswers] = useState<number[]>([]);
+  const [customQs, setCustomQs] = useState<CustomQ[]>([]);
+  const [editQ, setEditQ] = useState({ q: "", opts: ["", "", "", ""], a: 0 });
+  const [copied, setCopied] = useState(false);
+
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://eurora.site";
+  const quizData: QuizData = { n: name, q: presetAnswers, c: customQs };
+  const encoded = step === "share" ? encodeQuiz(quizData) : "";
+  const shareUrl = `${origin}/quiz?t=${encoded}`;
+  const whatsappMsg = `${name} criou um teste especial pra você! 💕\nVocê me conhece bem? Prove! 👇\n${shareUrl}`;
+
+  function handlePresetAnswer(idx: number) {
+    const next = [...presetAnswers, idx];
+    setPresetAnswers(next);
+    if (presetIdx < PRESET.length - 1) {
+      setPresetIdx((i) => i + 1);
     } else {
-      setStep("result");
+      setStep("custom");
     }
-  };
+  }
 
-  const restart = () => {
-    setStep("intro");
-    setQIndex(0);
-    setAnswers([]);
-  };
+  function addCustomQ() {
+    const validOpts = editQ.opts.filter((o) => o.trim());
+    if (!editQ.q.trim() || validOpts.length < 2) return;
+    const finalOpts = editQ.opts.filter((o) => o.trim());
+    setCustomQs([...customQs, { q: editQ.q.trim(), opts: finalOpts, a: Math.min(editQ.a, finalOpts.length - 1) }]);
+    setEditQ({ q: "", opts: ["", "", "", ""], a: 0 });
+  }
+
+  function copyLink() {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  }
 
   return (
-    <main className="relative min-h-screen overflow-hidden">
-      <FloatingHearts count={10} />
-      <FakeNotifications />
+    <AnimatePresence mode="wait">
+      {/* ── STEP: NAME ── */}
+      {step === "name" && (
+        <motion.section
+          key="name"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -30 }}
+          className="relative px-4 pt-16 pb-24 max-w-xl mx-auto text-center"
+        >
+          <p className="pill pill-live mb-6 mx-auto">
+            <span className="live-dot" /> Novo · Teste do Parceiro
+          </p>
+          <h1 className="font-heading text-5xl sm:text-6xl font-bold text-white mb-4 tracking-tight leading-[0.95]">
+            Ele/ela te<br />
+            <span className="text-gradient-rose">conhece bem?</span>
+          </h1>
+          <p className="text-white/60 text-lg mb-10 leading-relaxed">
+            Responda perguntas sobre você, gere um link e manda no WhatsApp.
+            Seu parceiro vai tentar acertar — e você descobre tudo.
+          </p>
 
-      <AnimatePresence mode="wait">
-        {step === "intro" && (
-          <motion.section
-            key="intro"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -30 }}
-            className="relative px-4 pt-12 pb-20"
+          <div className="card-premium p-6 mb-5">
+            <label className="block text-white/50 text-xs uppercase tracking-wider mb-2 text-left">
+              Seu nome
+            </label>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Como você se chama?"
+              className={inputClass}
+              onKeyDown={(e) => e.key === "Enter" && name.trim() && setStep("preset")}
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setStep("preset")}
+            disabled={!name.trim()}
+            className="btn-premium w-full text-lg disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <div className="max-w-3xl mx-auto text-center">
-              <p className="pill pill-live mb-6 mx-auto">
-                <span className="live-dot" /> +210.000 casais testaram
+            Criar meu teste →
+          </button>
+
+          <p className="mt-6 text-white/35 text-xs">
+            Grátis · Sem cadastro · Link instantâneo
+          </p>
+        </motion.section>
+      )}
+
+      {/* ── STEP: PRESET QUESTIONS ── */}
+      {step === "preset" && (
+        <motion.section
+          key="preset"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="relative px-4 pt-12 pb-20 max-w-2xl mx-auto"
+        >
+          {/* Progress bar */}
+          <div className="mb-10">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-white/60 text-sm">{presetIdx + 1} / {PRESET.length}</p>
+              <p className="text-[#DCBA98] text-sm font-semibold">
+                {Math.round(((presetIdx + 1) / PRESET.length) * 100)}%
               </p>
+            </div>
+            <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-linear-to-r from-[#C8917A] via-[#DCBA98] to-[#D4AF70]"
+                animate={{ width: `${((presetIdx + 1) / PRESET.length) * 100}%` }}
+                transition={{ duration: 0.5 }}
+              />
+            </div>
+          </div>
 
-              <h1 className="font-heading text-5xl sm:text-7xl font-bold text-white mb-6 tracking-tight leading-[0.95]">
-                <span className="text-gradient-rose">Teste do Amor</span>
-                <span className="text-rose-400 font-heading italic">.</span>
-              </h1>
+          <p className="text-white/45 text-sm mb-2 uppercase tracking-wider">
+            Sobre você, {name}
+          </p>
 
-              <p className="text-white/65 text-lg sm:text-xl mb-8 leading-relaxed">
-                10 perguntas. 2 minutos. Um diagnóstico real e brutalmente
-                honesto do que vocês têm — com card compartilhável e mapa do
-                casal.
-              </p>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={presetIdx}
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -30 }}
+              transition={{ duration: 0.35 }}
+            >
+              <h2 className="font-heading text-3xl sm:text-4xl text-white mb-8 leading-tight tracking-tight">
+                {PRESET[presetIdx].q}
+              </h2>
+              <div className="space-y-3">
+                {PRESET[presetIdx].opts.map((opt, i) => (
+                  <motion.button
+                    key={opt}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.07 }}
+                    whileHover={{ scale: 1.01, x: 4 }}
+                    whileTap={{ scale: 0.99 }}
+                    onClick={() => handlePresetAnswer(i)}
+                    className="card-premium w-full text-left px-6 py-4 text-white/85 font-medium"
+                  >
+                    {opt}
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </motion.section>
+      )}
 
-              <div className="card-premium p-6 mb-8 max-w-md mx-auto">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-white/50 text-xs uppercase tracking-wider mb-2">
-                      Você
-                    </label>
-                    <input
-                      value={name1}
-                      onChange={(e) => setName1(e.target.value)}
-                      placeholder="Seu nome"
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-rose-400/40 text-center"
-                    />
+      {/* ── STEP: CUSTOM QUESTIONS ── */}
+      {step === "custom" && (
+        <motion.section
+          key="custom"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -30 }}
+          className="relative px-4 pt-12 pb-24 max-w-xl mx-auto"
+        >
+          <div className="text-center mb-8">
+            <span className="text-5xl block mb-4">✨</span>
+            <h2 className="font-heading text-3xl sm:text-4xl text-white mb-3 tracking-tight">
+              Quer adicionar perguntas suas?
+            </h2>
+            <p className="text-white/50 text-sm">
+              Opcional — até 2 perguntas personalizadas sobre você.
+            </p>
+          </div>
+
+          {/* Perguntas adicionadas */}
+          {customQs.length > 0 && (
+            <div className="space-y-3 mb-6">
+              {customQs.map((cq, i) => (
+                <div key={i} className="card-premium p-4 flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-white/85 text-sm font-medium truncate">{cq.q}</p>
+                    <p className="text-white/40 text-xs mt-1">
+                      Resposta correta: {cq.opts[cq.a]}
+                    </p>
                   </div>
-                  <div>
-                    <label className="block text-white/50 text-xs uppercase tracking-wider mb-2">
-                      Ele/Ela
-                    </label>
-                    <input
-                      value={name2}
-                      onChange={(e) => setName2(e.target.value)}
-                      placeholder="Nome de quem você ama"
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-rose-400/40 text-center"
-                    />
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCustomQs(customQs.filter((_, j) => j !== i))}
+                    className="shrink-0 text-white/30 hover:text-white/70 text-xl leading-none"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Formulário de nova pergunta */}
+          {customQs.length < 2 && (
+            <div className="card-premium p-5 mb-5 space-y-3">
+              <input
+                value={editQ.q}
+                onChange={(e) => setEditQ({ ...editQ, q: e.target.value })}
+                placeholder="Sua pergunta... ex: Qual é meu prato favorito?"
+                className={inputClass}
+              />
+              <div className="grid grid-cols-2 gap-2">
+                {editQ.opts.map((opt, i) => (
+                  <input
+                    key={i}
+                    value={opt}
+                    onChange={(e) => {
+                      const next = [...editQ.opts];
+                      next[i] = e.target.value;
+                      setEditQ({ ...editQ, opts: next });
+                    }}
+                    placeholder={`Opção ${String.fromCharCode(65 + i)}${i < 2 ? " *" : ""}`}
+                    className={inputClass + " text-sm"}
+                  />
+                ))}
+              </div>
+
+              {/* Resposta correta */}
+              <div>
+                <p className="text-white/40 text-xs mb-2 uppercase tracking-wider">
+                  Qual é a resposta certa?
+                </p>
+                <div className="flex gap-2 flex-wrap">
+                  {editQ.opts.map((opt, i) =>
+                    opt.trim() ? (
+                      <button
+                        type="button"
+                        key={i}
+                        onClick={() => setEditQ({ ...editQ, a: i })}
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                          editQ.a === i
+                            ? "bg-[#C8917A] text-white"
+                            : "bg-white/5 text-white/50 hover:bg-white/10"
+                        }`}
+                      >
+                        {String.fromCharCode(65 + i)}: {opt.trim().slice(0, 18)}
+                      </button>
+                    ) : null
+                  )}
                 </div>
               </div>
 
               <button
-                onClick={() => setStep("quiz")}
-                disabled={!name1.trim() || !name2.trim()}
-                className="btn-premium inline-flex items-center gap-2 text-lg disabled:opacity-40 disabled:cursor-not-allowed"
+                type="button"
+                onClick={addCustomQ}
+                disabled={
+                  !editQ.q.trim() ||
+                  editQ.opts.filter((o) => o.trim()).length < 2
+                }
+                className="w-full py-2.5 rounded-full bg-white/5 border border-white/10 text-white/60 text-sm font-medium hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               >
-                Começar agora →
+                + Adicionar pergunta
               </button>
-
-              <div className="mt-8 flex items-center justify-center gap-4 text-white/45 text-xs">
-                <span>★ ★ ★ ★ ★ 4.94 / 5</span>
-                <span>•</span>
-                <span>100% anônimo</span>
-                <span>•</span>
-                <span>Resultado em 2 min</span>
-              </div>
             </div>
-          </motion.section>
-        )}
+          )}
 
-        {step === "quiz" && (
-          <motion.section
-            key="quiz"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="relative px-4 pt-12 pb-20"
+          <button
+            type="button"
+            onClick={() => setStep("share")}
+            className="btn-premium w-full text-base"
           >
-            <div className="max-w-2xl mx-auto">
-              <div className="mb-10">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-white/60 text-sm">
-                    {qIndex + 1} / {Q.length}
-                  </p>
-                  <p className="text-rose-300 text-sm font-semibold">
-                    {Math.round(((qIndex + 1) / Q.length) * 100)}%
-                  </p>
-                </div>
-                <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-gradient-to-r from-rose-500 via-rose-400 to-amber-400"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${((qIndex + 1) / Q.length) * 100}%` }}
-                    transition={{ duration: 0.5 }}
-                  />
-                </div>
-              </div>
+            {customQs.length === 0 ? "Pular e gerar link →" : "Gerar link do teste →"}
+          </button>
+        </motion.section>
+      )}
 
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={qIndex}
-                  initial={{ opacity: 0, x: 30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -30 }}
-                  transition={{ duration: 0.4 }}
-                >
-                  <h2 className="font-heading text-3xl sm:text-4xl text-white mb-8 tracking-tight leading-tight">
-                    {Q[qIndex].q}
-                  </h2>
+      {/* ── STEP: SHARE ── */}
+      {step === "share" && (
+        <motion.section
+          key="share"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative px-4 pt-12 pb-24 max-w-xl mx-auto text-center"
+        >
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 200, delay: 0.15 }}
+            className="text-6xl mb-5"
+          >
+            🎉
+          </motion.div>
 
-                  <div className="space-y-3">
-                    {Q[qIndex].options.map((opt, i) => (
-                      <motion.button
-                        key={opt.l}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.08 }}
-                        whileHover={{ scale: 1.01, x: 4 }}
-                        whileTap={{ scale: 0.99 }}
-                        onClick={() => handleAnswer(opt.v)}
-                        className="card-premium w-full text-left px-6 py-4 text-white/85 font-medium"
-                      >
-                        {opt.l}
-                      </motion.button>
-                    ))}
-                  </div>
-                </motion.div>
-              </AnimatePresence>
+          <h2 className="font-heading text-3xl sm:text-4xl text-white mb-3 tracking-tight">
+            Teste criado, {name}!
+          </h2>
+          <p className="text-white/55 mb-8 leading-relaxed">
+            Manda pro seu parceiro(a) e descobre o quanto<br className="hidden sm:block" /> ele/ela te conhece. 💕
+          </p>
+
+          {/* Link */}
+          <div className="card-premium p-4 mb-3 flex items-center gap-3">
+            <p className="text-white/45 text-xs font-mono flex-1 truncate text-left">
+              {shareUrl}
+            </p>
+            <button
+              type="button"
+              onClick={copyLink}
+              className="shrink-0 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 text-xs transition-all"
+            >
+              {copied ? "✓ Copiado!" : "Copiar"}
+            </button>
+          </div>
+
+          {/* WhatsApp */}
+          <a
+            href={`https://wa.me/?text=${encodeURIComponent(whatsappMsg)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-premium w-full text-base flex items-center justify-center gap-2 mb-4"
+          >
+            <span>📲</span> Enviar no WhatsApp
+          </a>
+
+          <p className="text-white/30 text-xs">
+            O link já contém o teste completo — sem cadastro nem conta.
+          </p>
+
+          <div className="mt-8 pt-8 border-t border-white/5">
+            <p className="text-white/40 text-xs mb-3">
+              Enquanto espera a resposta...
+            </p>
+            <Link href="/criar" className="btn-ghost-glow inline-flex items-center gap-2 text-sm">
+              💌 Criar página do amor →
+            </Link>
+          </div>
+        </motion.section>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/* ════════════════════════════════
+   PARTNER VIEW
+════════════════════════════════ */
+function PartnerView({ encoded }: { encoded: string }) {
+  const data = decodeQuiz(encoded);
+
+  const allQuestions = data
+    ? [
+        ...PRESET.map((p, i) => ({
+          q: p.q,
+          opts: p.opts,
+          correct: data.q[i] ?? 0,
+        })),
+        ...data.c.map((cq) => ({
+          q: cq.q,
+          opts: cq.opts,
+          correct: cq.a,
+        })),
+      ]
+    : [];
+
+  const [step, setStep] = useState<"intro" | "quiz" | "result">("intro");
+  const [qIdx, setQIdx] = useState(0);
+  const [answers, setAnswers] = useState<number[]>([]);
+
+  if (!data) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen px-4 text-center">
+        <p className="text-5xl mb-4">😕</p>
+        <p className="text-white/60 mb-6">Link inválido ou corrompido.</p>
+        <Link href="/quiz" className="btn-premium">
+          Criar novo teste
+        </Link>
+      </div>
+    );
+  }
+
+  const score = answers.filter((a, i) => a === allQuestions[i]?.correct).length;
+  const total = allQuestions.length;
+  const pct = total > 0 ? score / total : 0;
+  const tier = TIERS.find((t) => pct >= t.min) ?? TIERS[TIERS.length - 1];
+
+  function handleAnswer(idx: number) {
+    const next = [...answers, idx];
+    setAnswers(next);
+    if (qIdx < allQuestions.length - 1) {
+      setQIdx((i) => i + 1);
+    } else {
+      setStep("result");
+    }
+  }
+
+  return (
+    <AnimatePresence mode="wait">
+      {/* ── INTRO ── */}
+      {step === "intro" && (
+        <motion.section
+          key="intro"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -30 }}
+          className="relative px-4 pt-16 pb-24 max-w-xl mx-auto text-center"
+        >
+          <span className="text-6xl block mb-6">💌</span>
+          <p className="pill pill-live mb-6 mx-auto">
+            <span className="live-dot" /> Teste especial pra você
+          </p>
+          <h1 className="font-heading text-4xl sm:text-5xl font-bold text-white mb-4 tracking-tight leading-tight">
+            <span className="text-gradient-rose">{data.n}</span> criou<br />
+            um teste pra você!
+          </h1>
+          <p className="text-white/60 text-lg mb-10 leading-relaxed">
+            {data.n} respondeu perguntas sobre si mesmo(a).
+            Agora é sua vez — você conhece bem essa pessoa?
+          </p>
+
+          <div className="card-premium p-5 mb-8 grid grid-cols-3 divide-x divide-white/5">
+            <div className="text-center px-2">
+              <p className="text-2xl mb-1">🧠</p>
+              <p className="text-white/70 text-xs">{allQuestions.length} perguntas</p>
             </div>
-          </motion.section>
-        )}
+            <div className="text-center px-2">
+              <p className="text-2xl mb-1">⏱️</p>
+              <p className="text-white/70 text-xs">~2 minutos</p>
+            </div>
+            <div className="text-center px-2">
+              <p className="text-2xl mb-1">💕</p>
+              <p className="text-white/70 text-xs">100% revelador</p>
+            </div>
+          </div>
 
-        {step === "result" && (
-          <motion.section
-            key="result"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="relative px-4 pt-12 pb-20"
+          <button
+            type="button"
+            onClick={() => setStep("quiz")}
+            className="btn-premium w-full text-lg"
           >
-            <div className="max-w-3xl mx-auto">
+            Começar o teste →
+          </button>
+        </motion.section>
+      )}
+
+      {/* ── QUIZ ── */}
+      {step === "quiz" && (
+        <motion.section
+          key="quiz"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="relative px-4 pt-12 pb-20 max-w-2xl mx-auto"
+        >
+          <div className="mb-10">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-white/60 text-sm">{qIdx + 1} / {allQuestions.length}</p>
+              <p className="text-[#DCBA98] text-sm font-semibold">
+                {Math.round(((qIdx + 1) / allQuestions.length) * 100)}%
+              </p>
+            </div>
+            <div className="h-2 bg-white/5 rounded-full overflow-hidden">
               <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                className="relative rounded-[36px] overflow-hidden p-px"
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${tier.color} opacity-90 animate-gradient-shift`} />
-                <div className="relative rounded-[35px] bg-[#0a0710]/85 backdrop-blur-md p-8 sm:p-12 text-center">
-                  <p className="text-white/60 text-xs uppercase tracking-luxury mb-6">
-                    Resultado oficial
-                  </p>
+                className="h-full bg-linear-to-r from-[#C8917A] via-[#DCBA98] to-[#D4AF70]"
+                animate={{ width: `${((qIdx + 1) / allQuestions.length) * 100}%` }}
+                transition={{ duration: 0.5 }}
+              />
+            </div>
+          </div>
 
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-                    className="text-7xl mb-6"
+          <p className="text-white/40 text-sm mb-2 uppercase tracking-wider">
+            Sobre {data.n}
+          </p>
+
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={qIdx}
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -30 }}
+              transition={{ duration: 0.35 }}
+            >
+              <h2 className="font-heading text-3xl sm:text-4xl text-white mb-8 leading-tight tracking-tight">
+                {allQuestions[qIdx].q}
+              </h2>
+              <div className="space-y-3">
+                {allQuestions[qIdx].opts.map((opt, i) => (
+                  <motion.button
+                    key={opt}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.07 }}
+                    whileHover={{ scale: 1.01, x: 4 }}
+                    whileTap={{ scale: 0.99 }}
+                    onClick={() => handleAnswer(i)}
+                    className="card-premium w-full text-left px-6 py-4 text-white/85 font-medium"
                   >
-                    {tier.emoji}
-                  </motion.div>
-
-                  <p className="font-heading text-2xl text-white/90 mb-2">
-                    {name1 || "Você"}{" "}
-                    <span className="text-rose-300 italic">&</span>{" "}
-                    {name2 || "Par"}
-                  </p>
-
-                  <motion.div
-                    initial={{ scale: 0.5, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.5, type: "spring" }}
-                    className="my-8"
-                  >
-                    <p className="font-heading text-7xl sm:text-9xl font-bold animate-shimmer-text leading-none">
-                      {pct}%
-                    </p>
-                    <p className="text-white/60 text-sm mt-2 uppercase tracking-wider">
-                      de match real
-                    </p>
-                  </motion.div>
-
-                  <h3 className="font-heading text-3xl sm:text-4xl text-white mb-3 tracking-tight">
-                    {tier.title}
-                  </h3>
-                  <p className="text-rose-200 text-lg mb-6">{tier.headline}</p>
-                  <p className="text-white/65 leading-relaxed max-w-xl mx-auto">
-                    {tier.body}
-                  </p>
-
-                  <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
-                    <Link
-                      href="/criar"
-                      className="btn-premium inline-flex items-center gap-2"
-                    >
-                      {tier.cta} →
-                    </Link>
-                    <button
-                      onClick={() => {
-                        if (navigator.share) {
-                          navigator.share({
-                            title: `${name1} & ${name2} — ${pct}% de match`,
-                            text: `Acabamos de fazer o Teste do Amor e deu ${pct}% 💕`,
-                            url: window.location.href,
-                          });
-                        }
-                      }}
-                      className="btn-ghost-glow inline-flex items-center gap-2"
-                    >
-                      📲 Compartilhar resultado
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Detail breakdown */}
-              <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {[
-                  { label: "Sintonia", value: Math.min(100, pct + 4), emoji: "🎯" },
-                  { label: "Vulnerabilidade", value: Math.min(100, pct - 2), emoji: "🫂" },
-                  { label: "Projeto de futuro", value: Math.min(100, pct + 1), emoji: "🌅" },
-                ].map((m, i) => (
-                  <motion.div
-                    key={m.label}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.8 + i * 0.1 }}
-                    className="card-premium p-5"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-2xl">{m.emoji}</span>
-                      <span className="font-heading text-2xl text-gradient-fire">
-                        {m.value}%
-                      </span>
-                    </div>
-                    <p className="text-white/70 text-sm mb-2">{m.label}</p>
-                    <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${m.value}%` }}
-                        transition={{ delay: 1 + i * 0.1, duration: 0.8 }}
-                        className="h-full bg-gradient-to-r from-rose-500 to-amber-400"
-                      />
-                    </div>
-                  </motion.div>
+                    {opt}
+                  </motion.button>
                 ))}
               </div>
+            </motion.div>
+          </AnimatePresence>
+        </motion.section>
+      )}
 
-              <div className="mt-10 text-center">
+      {/* ── RESULT ── */}
+      {step === "result" && (
+        <motion.section
+          key="result"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative px-4 pt-12 pb-24 max-w-3xl mx-auto"
+        >
+          {/* Score card */}
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className="relative rounded-[36px] overflow-hidden p-px mb-8"
+          >
+            <div className="absolute inset-0 bg-linear-to-br from-[#C8917A] via-[#DCBA98] to-[#D4AF70] opacity-80" />
+            <div className="relative rounded-[35px] bg-[#0a0710]/90 backdrop-blur-md p-8 sm:p-12 text-center">
+              <p className="text-white/50 text-xs uppercase tracking-wider mb-6">
+                Resultado final
+              </p>
+
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+                className="text-7xl mb-4"
+              >
+                {tier.emoji}
+              </motion.div>
+
+              <motion.div
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.5, type: "spring" }}
+                className="my-6"
+              >
+                <p className="font-heading text-7xl sm:text-9xl font-bold animate-shimmer-text leading-none">
+                  {score}/{total}
+                </p>
+                <p className="text-white/55 text-sm mt-2 uppercase tracking-wider">
+                  acertos sobre {data.n}
+                </p>
+              </motion.div>
+
+              <h3 className="font-heading text-2xl sm:text-3xl text-white mb-3 tracking-tight">
+                {tier.title}
+              </h3>
+              <p className="text-white/65 leading-relaxed max-w-md mx-auto">
+                {tier.text}
+              </p>
+
+              <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+                <Link href="/criar" className="btn-premium inline-flex items-center gap-2">
+                  💌 Criar página do amor →
+                </Link>
                 <button
-                  onClick={restart}
-                  className="text-white/55 hover:text-white text-sm underline underline-offset-4"
+                  type="button"
+                  onClick={() => {
+                    const text = `Fiz o teste de ${data.n} e acertei ${score}/${total}! 💕\nFaz o seu também → ${window.location.origin}/quiz`;
+                    if (navigator.share) {
+                      navigator.share({ title: `Acertei ${score}/${total} sobre ${data.n}!`, text, url: window.location.href });
+                    } else {
+                      navigator.clipboard.writeText(text);
+                    }
+                  }}
+                  className="btn-ghost-glow inline-flex items-center gap-2"
                 >
-                  Fazer o teste de novo
+                  📲 Compartilhar resultado
                 </button>
               </div>
             </div>
-          </motion.section>
-        )}
-      </AnimatePresence>
+          </motion.div>
+
+          {/* Gabarito */}
+          <p className="text-white/40 text-xs uppercase tracking-wider mb-4 text-center">
+            Gabarito completo
+          </p>
+          <div className="space-y-3">
+            {allQuestions.map((q, i) => {
+              const correct = answers[i] === q.correct;
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 + i * 0.04 }}
+                  className="card-premium p-4"
+                >
+                  <p className="text-white/75 text-sm font-medium mb-2">{q.q}</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
+                        correct
+                          ? "bg-emerald-500/15 text-emerald-400"
+                          : "bg-red-500/15 text-red-400"
+                      }`}
+                    >
+                      {correct ? "✓ Acertou" : "✗ Errou"}
+                    </span>
+                    <span className="text-white/40 text-xs">
+                      Resposta de {data.n}: {q.opts[q.correct]}
+                    </span>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.section>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/* ════════════════════════════════
+   SHELL (detects creator vs partner)
+════════════════════════════════ */
+function QuizInner() {
+  const params = useSearchParams();
+  const t = params.get("t");
+  return t ? <PartnerView encoded={t} /> : <CreatorView />;
+}
+
+export default function QuizClient() {
+  return (
+    <main className="relative min-h-screen overflow-hidden">
+      <FloatingHearts count={10} />
+      <FakeNotifications />
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center min-h-screen">
+            <p className="text-white/40">Carregando...</p>
+          </div>
+        }
+      >
+        <QuizInner />
+      </Suspense>
     </main>
   );
 }
