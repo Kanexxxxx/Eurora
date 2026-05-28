@@ -31,7 +31,8 @@ jobs:
             cd "$APP_DIR"
             git fetch origin "$BRANCH"
             git checkout "$BRANCH"
-            git pull --ff-only origin "$BRANCH"
+            git clean -fd
+            git reset --hard origin/"$BRANCH"
 
             mkdir -p /var/www/eurora/uploads
             chmod -R 755 /var/www/eurora/uploads
