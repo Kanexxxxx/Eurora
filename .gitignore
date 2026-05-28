@@ -13,6 +13,7 @@
 skills/
 skills-lock.json
 docs/superpowers/
+video/
 
 # Superpowers runtime
 .superpowers/
@@ -20,6 +21,10 @@ docs/superpowers/
 # OS
 .DS_Store
 Thumbs.db
+
+# Videos e assets de producao — nao subir (arquivos grandes)
+eurora-love-video/
+docs/roteiro/*.srt
 
 # Logs
 *.log
