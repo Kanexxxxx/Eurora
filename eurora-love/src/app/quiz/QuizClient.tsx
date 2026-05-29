@@ -525,7 +525,384 @@ function CreatorView() {
 /* ════════════════════════════════
    PARTNER VIEW
 ════════════════════════════════ */
-function PartnerView({ encoded }: { encoded: string }) { return null; }
+function PartnerView({ encoded }: { encoded: string }) {
+  const data = decodeQuiz(encoded);
+  const v2 = data && isV2(data) ? data : null;
+
+  // Monta lista de perguntas (preset v2 + custom de ambas versões)
+  const presetQs = v2
+    ? QUESTIONS.map((pq, i) => ({ q: pq.q, opts: pq.opts, correct: v2.q[i] ?? 0 }))
+    : data
+    ? [
+        { q: "Qual é a minha cor favorita?", opts: ["Azul 💙","Rosa / Lilás 🌸","Verde 🌿","Preto / Branco 🖤"], correct: data.q[0] ?? 0 },
+        { q: "Como prefiro passar meu fim de semana ideal?", opts: ["Em casa relaxando 🛋️","Saindo pra comer e explorar 🍕","Aventura na natureza 🌿","Com muita gente 🎉"], correct: data.q[1] ?? 0 },
+        { q: "O que eu não consigo viver sem?", opts: ["Café ou chá ☕","Música 🎵","Celular 📱","Séries ou filmes 🎬"], correct: data.q[2] ?? 0 },
+        { q: "Como fico quando estou com raiva?", opts: ["Fico em silêncio 😶","Falo tudo na hora 💬","Choro 😢","Me afasto por um tempo 🚶"], correct: data.q[3] ?? 0 },
+        { q: "Minha maior qualidade é...", opts: ["Lealdade e honestidade","Senso de humor 😂","Cuidar dos outros ❤️","Determinação 💪"], correct: data.q[4] ?? 0 },
+        { q: "O que me deixa mais feliz?", opts: ["Momentos em casal ❤️","Conquistas e vitórias 🏆","Viajar e explorar 🌍","Comida boa 🍽️"], correct: data.q[5] ?? 0 },
+        { q: "Onde sonho em viajar?", opts: ["Europa (Paris, Roma...)","Praia tropical 🏖️","Japão ou Ásia 🗾","EUA (NY, Miami...)"], correct: data.q[6] ?? 0 },
+        { q: "Meu gênero favorito de série ou filme?", opts: ["Romance / Drama 💕","Comédia 😂","Terror / Suspense 👻","Ação / Aventura 💥"], correct: data.q[7] ?? 0 },
+      ]
+    : [];
+
+  const customQs = data
+    ? data.c.map((cq) => ({ q: cq.q, opts: cq.opts, correct: cq.a }))
+    : [];
+
+  const allQuestions = [...presetQs, ...customQs];
+
+  const [step, setStep] = useState<"intro" | "quiz" | "result">("intro");
+  const [qIdx, setQIdx] = useState(0);
+  const [answers, setAnswers] = useState<number[]>([]);
+
+  if (!data) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen px-4 text-center">
+        <p className="text-5xl mb-4">😕</p>
+        <p className="text-white/60 mb-6">Link inválido ou corrompido.</p>
+        <Link href="/quiz" className="btn-premium">Criar novo teste</Link>
+      </div>
+    );
+  }
+
+  const score = answers.filter((a, i) => a === allQuestions[i]?.correct).length;
+  const total = allQuestions.length;
+
+  const dimScores = v2
+    ? calcDimScores(answers, v2.q)
+    : ([0.5, 0.5, 0.5, 0.5, 0.5] as [number, number, number, number, number]);
+
+  const arch: ArchetypeId = v2?.arch ?? "ninho";
+  const archData = ARCHETYPES[arch];
+  const partnerName = data.n;
+  const nick = v2?.nick ?? "você";
+
+  function handleAnswer(idx: number) {
+    const next = [...answers, idx];
+    setAnswers(next);
+    if (qIdx < allQuestions.length - 1) {
+      setQIdx((i) => i + 1);
+    } else {
+      setStep("result");
+    }
+  }
+
+  // Mini-radar parcial durante o quiz (só v2)
+  const partialDims = v2
+    ? calcDimScores(
+        [...answers, ...Array(Math.max(0, QUESTIONS.length - answers.length)).fill(-1)],
+        v2.q
+      )
+    : ([0, 0, 0, 0, 0] as [number, number, number, number, number]);
+
+  return (
+    <AnimatePresence mode="wait">
+
+      {/* ── INTRO ── */}
+      {step === "intro" && (
+        <motion.section
+          key="intro"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -30 }}
+          className="relative px-4 pt-16 pb-24 max-w-xl mx-auto text-center"
+        >
+          <span className="text-6xl block mb-6">💌</span>
+          <p className="pill pill-live mb-6 mx-auto">
+            <span className="live-dot" /> Teste especial pra você
+          </p>
+          <h1 className="font-heading text-4xl sm:text-5xl font-bold text-white mb-4 tracking-tight leading-tight">
+            <span className="text-gradient-rose">{partnerName}</span> criou<br />
+            um teste pra você!
+          </h1>
+          <p className="text-white/60 text-lg mb-8 leading-relaxed">
+            {partnerName} tem um arquétipo secreto. Você consegue descobrir qual é?
+          </p>
+
+          {/* Arquétipo desfocado (só v2) */}
+          {v2 && (
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="relative mb-8"
+            >
+              <div
+                className={`rounded-[28px] p-8 bg-linear-to-br ${archData.gradient} border border-white/10 blur-md grayscale`}
+              >
+                <p className="text-6xl mb-3">{archData.emoji}</p>
+                <p className="font-heading text-2xl text-white">{archData.name}</p>
+                <p className="text-white/60 text-sm mt-1">{archData.tagline}</p>
+              </div>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <p className="text-5xl">🔒</p>
+                <p className="text-white/70 text-sm mt-2 font-medium">Responda pra revelar</p>
+              </div>
+            </motion.div>
+          )}
+
+          <div className="card-premium p-5 mb-8 grid grid-cols-3 divide-x divide-white/5">
+            <div className="text-center px-2">
+              <p className="text-2xl mb-1">🧠</p>
+              <p className="text-white/70 text-xs">{allQuestions.length} perguntas</p>
+            </div>
+            <div className="text-center px-2">
+              <p className="text-2xl mb-1">⏱️</p>
+              <p className="text-white/70 text-xs">~2 minutos</p>
+            </div>
+            <div className="text-center px-2">
+              <p className="text-2xl mb-1">💕</p>
+              <p className="text-white/70 text-xs">100% revelador</p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setStep("quiz")}
+            className="btn-premium w-full text-lg"
+          >
+            Começar o teste →
+          </button>
+        </motion.section>
+      )}
+
+      {/* ── QUIZ ── */}
+      {step === "quiz" && (
+        <motion.section
+          key="quiz"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="relative px-4 pt-12 pb-20 max-w-2xl mx-auto"
+        >
+          {/* Progress + mini-radar */}
+          <div className="mb-10 flex items-start gap-4">
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-white/60 text-sm">{qIdx + 1} / {allQuestions.length}</p>
+              </div>
+              <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-linear-to-r from-[#ff2d6a] via-[#ffb1c9] to-[#f6c986]"
+                  animate={{ width: `${((qIdx + 1) / allQuestions.length) * 100}%` }}
+                  transition={{ duration: 0.5 }}
+                />
+              </div>
+            </div>
+            {/* Mini-radar (só v2) */}
+            {v2 && (
+              <div className="shrink-0 -mt-1">
+                <RadarChart dims={partialDims} size={52} mini />
+              </div>
+            )}
+          </div>
+
+          <p className="text-white/40 text-sm mb-2 uppercase tracking-wider">
+            Sobre {partnerName}
+          </p>
+
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={qIdx}
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -30 }}
+              transition={{ duration: 0.35 }}
+            >
+              <h2 className="font-heading text-3xl sm:text-4xl text-white mb-8 leading-tight tracking-tight">
+                {allQuestions[qIdx].q}
+              </h2>
+              <div className="space-y-3">
+                {allQuestions[qIdx].opts.map((opt, i) => (
+                  <motion.button
+                    key={opt}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.07 }}
+                    whileHover={{ scale: 1.01, x: 4 }}
+                    whileTap={{ scale: 0.99 }}
+                    onClick={() => handleAnswer(i)}
+                    className="card-premium w-full text-left px-6 py-4 text-white/85 font-medium"
+                  >
+                    {opt}
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </motion.section>
+      )}
+
+      {/* ── RESULT ── */}
+      {step === "result" && (
+        <motion.section
+          key="result"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative px-4 pt-12 pb-24 max-w-3xl mx-auto"
+        >
+          {v2 ? (
+            /* ─── RESULTADO V2 (novo) ─── */
+            <>
+              {/* Card do Arquétipo */}
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                className="relative rounded-[36px] overflow-hidden p-px mb-6"
+              >
+                <div className="absolute inset-0 bg-linear-to-br from-[#ff2d6a] via-[#ffb1c9] to-[#f6c986] opacity-80" />
+                <div className="relative rounded-[35px] bg-[#0a0710]/90 backdrop-blur-md p-8 sm:p-12 text-center">
+                  <p className="text-white/50 text-xs uppercase tracking-wider mb-4">
+                    Vocês são
+                  </p>
+                  <motion.p
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+                    className="text-7xl mb-4"
+                  >
+                    {archData.emoji}
+                  </motion.p>
+                  <h3 className="font-heading text-3xl sm:text-4xl text-white mb-2 tracking-tight">
+                    {archData.name}
+                  </h3>
+                  <p className="text-[#ffb1c9] text-sm italic mb-6">{archData.tagline}</p>
+                  <p className="text-white/70 leading-relaxed max-w-md mx-auto text-sm sm:text-base">
+                    {getResultText(arch, score, total, partnerName, nick)}
+                  </p>
+                </div>
+              </motion.div>
+
+              {/* Radar */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="card-premium p-6 mb-6 flex flex-col items-center"
+              >
+                <p className="text-white/40 text-xs uppercase tracking-wider mb-4">
+                  Radar de Sintonia
+                </p>
+                <RadarChart dims={dimScores} size={220} />
+                <p className="text-white/50 text-sm mt-4">
+                  {score}/{total} dimensões descobertas
+                </p>
+              </motion.div>
+
+              {/* CTAs */}
+              <div className="space-y-3">
+                <a
+                  href={`/presentes?tipo=${archData.presentes}`}
+                  className="btn-premium w-full text-base flex items-center justify-center gap-2"
+                >
+                  🎁 Ver presentes para {archData.name} →
+                </a>
+                <Link
+                  href="/criar"
+                  className="block text-center py-3.5 rounded-full text-white font-semibold border border-white/10 bg-white/5 hover:bg-white/10 transition-all"
+                >
+                  💌 Criar a página de vocês →
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const text =
+                      `Fiz o teste de ${partnerName} e descobrimos que somos "${archData.name}" 💕\n` +
+                      `Acertei ${score}/${total} sobre ela/ele — e o resultado me surpreendeu.\n` +
+                      `Descubra o arquétipo do seu casal também →\n${window.location.origin}/quiz`;
+                    if (navigator.share) {
+                      navigator.share({ title: `Somos ${archData.name}!`, text, url: window.location.href });
+                    } else {
+                      navigator.clipboard.writeText(text);
+                    }
+                  }}
+                  className="w-full py-3.5 rounded-full text-white/70 font-semibold border border-white/10 bg-white/5 hover:bg-white/10 transition-all"
+                >
+                  📲 Compartilhar resultado
+                </button>
+                <Link
+                  href="/quiz"
+                  className="block text-center py-3 text-white/40 text-sm hover:text-white/60 transition-colors"
+                >
+                  Criar o teste sobre mim também →
+                </Link>
+              </div>
+            </>
+          ) : (
+            /* ─── RESULTADO V1 FALLBACK (legado) ─── */
+            (() => {
+              const pct = total > 0 ? score / total : 0;
+              const TIERS_LEGACY = [
+                { min: 1.0, emoji: "💎", title: "Você me conhece de cor e salteado!", text: "Acertou tudo! Isso só prova que a gente foi feito um pro outro." },
+                { min: 0.75, emoji: "🔥", title: "Você me conhece muito bem!", text: "Quase perfeito! A ligação entre vocês é real e profunda." },
+                { min: 0.5, emoji: "❤️", title: "Você me conhece bastante!", text: "Mais da metade certa! Vocês têm uma boa conexão." },
+                { min: 0.25, emoji: "🌱", title: "Ainda tem segredos pra descobrir!", text: "Tá chegando lá! O relacionamento de vocês ainda tem muita história pela frente." },
+                { min: 0, emoji: "😄", title: "A gente ainda vai se conhecer muito!", text: "Pontuação baixa não quer dizer nada — significa que vocês têm muito pra explorar juntos." },
+              ];
+              const tier = TIERS_LEGACY.find((t) => pct >= t.min) ?? TIERS_LEGACY[TIERS_LEGACY.length - 1];
+              return (
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.7 }}
+                  className="relative rounded-[36px] overflow-hidden p-px mb-8"
+                >
+                  <div className="absolute inset-0 bg-linear-to-br from-[#ff2d6a] via-[#ffb1c9] to-[#f6c986] opacity-80" />
+                  <div className="relative rounded-[35px] bg-[#0a0710]/90 backdrop-blur-md p-8 sm:p-12 text-center">
+                    <p className="text-7xl mb-4">{tier.emoji}</p>
+                    <p className="font-heading text-7xl sm:text-9xl font-bold animate-shimmer-text leading-none my-6">
+                      {score}/{total}
+                    </p>
+                    <h3 className="font-heading text-2xl sm:text-3xl text-white mb-3">{tier.title}</h3>
+                    <p className="text-white/65 leading-relaxed">{tier.text}</p>
+                    <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+                      <Link href="/criar" className="btn-premium inline-flex items-center gap-2">
+                        💌 Criar página do amor →
+                      </Link>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })()
+          )}
+
+          {/* Gabarito (ambas versões) */}
+          <p className="text-white/40 text-xs uppercase tracking-wider mb-4 text-center mt-8">
+            Gabarito completo
+          </p>
+          <div className="space-y-3">
+            {allQuestions.map((q, i) => {
+              const correct = answers[i] === q.correct;
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 + i * 0.04 }}
+                  className="card-premium p-4"
+                >
+                  <p className="text-white/75 text-sm font-medium mb-2">{q.q}</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
+                      correct ? "bg-emerald-500/15 text-emerald-400" : "bg-red-500/15 text-red-400"
+                    }`}>
+                      {correct ? "✓ Acertou" : "✗ Errou"}
+                    </span>
+                    <span className="text-white/40 text-xs">
+                      Resposta de {partnerName}: {q.opts[q.correct]}
+                    </span>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.section>
+      )}
+
+    </AnimatePresence>
+  );
+}
 
 /* ════════════════════════════════
    SHELL (detects creator vs partner)
