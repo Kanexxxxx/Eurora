@@ -22,15 +22,13 @@ function ProdutoCard({ p, index }: { p: Produto; index: number }) {
   const plat = PLATFORM_STYLE[p.platform] ?? { bg: "bg-gray-500", label: p.platform };
   const [imgSrc, setImgSrc] = useState<string | null>(p.image ?? null);
   const [imgError, setImgError] = useState(false);
-  const [loading, setLoading] = useState(!p.image);
+  const [loading, setLoading] = useState(!p.image && Boolean(p.url));
   const [preco, setPreco] = useState<string | undefined>(p.preco);
 
   useEffect(() => {
     if (imgSrc) return;
-    let endpoint: string | null = null;
-    if (p.asin) endpoint = `/api/presentes/imagem?asin=${p.asin}`;
-    else if (p.url) endpoint = `/api/presentes/imagem?url=${encodeURIComponent(p.url)}`;
-    if (!endpoint) { setLoading(false); return; }
+    if (!p.url) return;
+    const endpoint = `/api/presentes/imagem?url=${encodeURIComponent(p.url)}`;
     fetch(endpoint)
       .then((r) => (r.ok ? r.json() : null))
       .then((d: { url?: string; preco?: string } | null) => {
@@ -39,7 +37,7 @@ function ProdutoCard({ p, index }: { p: Produto; index: number }) {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [p.asin, p.url, imgSrc, preco]);
+  }, [p.url, imgSrc, preco]);
 
   const showImg = imgSrc && !imgError;
 
