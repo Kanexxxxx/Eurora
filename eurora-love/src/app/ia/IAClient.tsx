@@ -84,8 +84,6 @@ const TOOLS: {
   },
 ];
 
-const FREE_GENERATIONS = 1;
-
 export default function IAClient() {
   const [activeId, setActiveId] = useState<ToolId>("carta");
   const [inputs, setInputs] = useState<Record<string, string>>({});
@@ -94,16 +92,10 @@ export default function IAClient() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
-  const [generationsUsed, setGenerationsUsed] = useState(0);
 
   const active = TOOLS.find((t) => t.id === activeId)!;
 
   const handleGenerate = async () => {
-    if (generationsUsed >= FREE_GENERATIONS) {
-      setShowPaywall(true);
-      return;
-    }
-
     const hasContent = active.fields.some((f) => inputs[f.name]?.trim());
     if (!hasContent) {
       setError("Preencha pelo menos um campo antes de gerar.");
@@ -122,10 +114,15 @@ export default function IAClient() {
       });
 
       const data = await res.json();
+
+      if (res.status === 403 && data.paywall) {
+        setShowPaywall(true);
+        return;
+      }
+
       if (!res.ok) throw new Error(data.error || "Erro ao gerar.");
 
       setOutput(data.texto);
-      setGenerationsUsed((n) => n + 1);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Erro inesperado.");
     } finally {
@@ -154,14 +151,14 @@ export default function IAClient() {
       <section className="relative px-4 pt-12 pb-6">
         <div className="max-w-4xl mx-auto text-center">
           <p className="pill pill-live mb-6 mx-auto">
-            <span className="live-dot" /> IA Romântica com Claude
+            <span className="live-dot" /> IA Romântica
           </p>
           <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4 tracking-tight leading-tight">
             A <span className="text-gradient-fire">IA Romântica</span> mais
             poderosa do Brasil
           </h1>
           <p className="text-white/65 text-base sm:text-lg max-w-2xl mx-auto">
-            Treinada em poetas, compositores e cartas de amor reais.{" "}
+            Inspirada em poetas, compositores e cartas de amor reais.{" "}
             <span className="text-white font-medium">
               Sem clichê. Só palavras que tocam de verdade.
             </span>
@@ -228,16 +225,16 @@ export default function IAClient() {
 
               <div className="rounded-2xl p-4 bg-amber-500/5 border border-amber-500/20 mt-4">
                 <p className="text-amber-200 text-xs font-semibold mb-1">
-                  💎 Premium ilimitado
+                  💎 Mais gerações
                 </p>
                 <p className="text-white/55 text-[11px] leading-relaxed">
-                  R$ 19 por todos os geradores, pra sempre.
+                  Crie sua página Premium e use os geradores à vontade.
                 </p>
                 <Link
                   href="/criar?plan=premium"
                   className="inline-block mt-3 text-rose-300 text-xs font-semibold hover:text-rose-200"
                 >
-                  Desbloquear premium →
+                  Criar minha página →
                 </Link>
               </div>
             </div>
@@ -313,7 +310,7 @@ export default function IAClient() {
                 )}
               </button>
 
-              {generationsUsed === 0 && !output && (
+              {!output && (
                 <p className="text-white/45 text-xs text-center mt-3">
                   🎁 1 geração grátis · Sem cadastro
                 </p>
@@ -370,16 +367,16 @@ export default function IAClient() {
           {/* Mobile premium */}
           <div className="lg:hidden mt-6 rounded-2xl p-4 bg-amber-500/5 border border-amber-500/20">
             <p className="text-amber-200 text-sm font-semibold mb-1">
-              💎 Premium ilimitado — R$ 19
+              💎 Mais gerações
             </p>
             <p className="text-white/55 text-xs leading-relaxed mb-3">
-              Todos os geradores, pra sempre.
+              Crie sua página Premium e use os geradores à vontade.
             </p>
             <Link
               href="/criar?plan=premium"
               className="btn-premium text-center block text-sm"
             >
-              Desbloquear premium →
+              Criar minha página →
             </Link>
           </div>
         </div>
@@ -418,15 +415,15 @@ export default function IAClient() {
                 Continuar gerando?
               </h3>
               <p className="text-white/65 text-sm mb-6 leading-relaxed">
-                Você usou sua geração grátis. Pelo preço de uma cerveja,
-                desbloqueia <strong>tudo</strong> da IA Romântica — pra sempre.
+                Você usou sua geração grátis. Crie sua página do amor e continue
+                usando os geradores à vontade.
               </p>
 
               <Link
                 href="/criar?plan=premium"
                 className="btn-premium w-full block text-center"
               >
-                Desbloquear premium — R$ 19 →
+                Criar minha página Premium →
               </Link>
 
               <p className="text-white/40 text-xs mt-3">

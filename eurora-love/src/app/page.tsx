@@ -19,6 +19,7 @@ const NoiseOverlay = dynamic(() => import("@/components/effects/NoiseOverlay"), 
 const LiveCounter = dynamic(() => import("@/components/conversion/LiveCounter"), { ssr: false });
 const FakeNotifications = dynamic(() => import("@/components/conversion/FakeNotifications"), { ssr: false });
 const PreviewMockup = dynamic(() => import("@/components/conversion/PreviewMockup"), { ssr: false });
+const StickyMobileCTA = dynamic(() => import("@/components/conversion/StickyMobileCTA"), { ssr: false });
 import UrgencyBar from "@/components/conversion/UrgencyBar";
 import TrustStrip from "@/components/conversion/TrustStrip";
 
@@ -42,7 +43,7 @@ const FEATURES = [
   {
     emoji: "⏰",
     title: "Mensagem Programada",
-    desc: "Escreva agora, envie automaticamente no Dia dos Namorados via WhatsApp ou SMS.",
+    desc: "Escreva agora, programe o envio para o momento certo — por e-mail, WhatsApp ou Telegram.",
     href: "/mensagem",
     color: "from-fuchsia-500/30 to-fuchsia-700/10",
     badge: "Viral",
@@ -61,7 +62,7 @@ const FEATURES = [
     desc: "Cartas, poemas, letras de música, bio de casal e convite romântico — em segundos.",
     href: "/ia",
     color: "from-violet-500/30 to-violet-700/10",
-    badge: "Premium",
+    badge: "Grátis",
   },
   {
     emoji: "📱",
@@ -118,7 +119,7 @@ const FAQS = [
   },
   {
     q: "Posso editar minha página depois?",
-    a: "Sim! No plano Premium você pode editar fotos, mensagem e música quantas vezes quiser. No plano Basic, a página é fixada após o pagamento.",
+    a: "A página é criada e publicada no momento do pagamento. Para ajustes pontuais após a publicação, entre em contato pelo e-mail eurora.com.br@gmail.com — atendemos todos os planos.",
   },
   {
     q: "É realmente seguro pagar via PIX?",
@@ -130,7 +131,7 @@ const FAQS = [
   },
   {
     q: "Posso usar pra pedir em namoro / casamento?",
-    a: "Pode (e milhares já usaram). Recomendamos o plano Premium com mensagem programada — assim a surpresa aparece automaticamente na hora exata do pedido.",
+    a: "Pode (e milhares já usaram). Recomendamos o plano Premium para a página completa. Para o timing perfeito, use a Mensagem Programada: programe o e-mail dela para o horário exato, ou receba um lembrete para enviar no WhatsApp na hora certa.",
   },
   {
     q: "Funciona pra namorado também?",
@@ -159,6 +160,7 @@ export default function LandingPage() {
       <NoiseOverlay />
       <FloatingHearts count={8} />
       <FakeNotifications />
+      <StickyMobileCTA />
 
       {/* ====================== HERO ====================== */}
       <section className="relative min-h-svh flex flex-col items-center justify-center px-4 pt-16 pb-20">
@@ -455,6 +457,128 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ====================== QR SACADA ====================== */}
+      <section className="relative py-24 px-4 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-[#ff2d6a]/6 rounded-full blur-[100px]" />
+          <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-amber-400/6 rounded-full blur-[80px]" />
+        </div>
+
+        <div className="relative max-w-5xl mx-auto">
+          <div className="text-center mb-14">
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="pill pill-gold mb-5 mx-auto"
+            >
+              ✦ O truque que ninguém espera
+            </motion.p>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="font-heading text-4xl sm:text-6xl font-bold text-white mb-5 leading-tight tracking-tight"
+            >
+              Ela abre o presente.{" "}
+              <span className="text-gradient-fire">Escaneia o QR.</span>
+              <br className="hidden sm:block" /> Não consegue parar de chorar.
+            </motion.h2>
+            <p className="text-white/55 max-w-xl mx-auto text-lg">
+              O QR Code vai onde você quiser — numa caixa de bombons, num bilhete, num buquê. O que ela abre é uma experiência que ela nunca vai deletar.
+            </p>
+          </div>
+
+          {/* Steps */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-14">
+            {[
+              {
+                step: "01",
+                emoji: "🍫",
+                title: "Você coloca o QR num presente",
+                desc: "Imprime, cola na caixinha de chocolate, no buquê, no bilhetinho. Ela não faz ideia do que vem aí.",
+                color: "from-amber-500/20",
+              },
+              {
+                step: "02",
+                emoji: "📱",
+                title: "Ela escaneia",
+                desc: "Três segundos. A câmera aponta pro QR. A página abre com a foto de vocês, a música, o nome dela.",
+                color: "from-[#ff2d6a]/20",
+              },
+              {
+                step: "03",
+                emoji: "😭",
+                title: "Ela nunca mais esquece",
+                desc: "A página fica no ar para sempre. Ela vai mostrar pras amigas, salvar, revisitar no aniversário de vocês.",
+                color: "from-violet-500/20",
+              },
+            ].map((item, i) => (
+              <motion.div
+                key={item.step}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.12, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                className="card-premium p-7 relative overflow-hidden"
+              >
+                <div className={`absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br ${item.color} to-transparent rounded-full blur-2xl`} />
+                <div className="relative">
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="font-heading text-5xl font-bold text-white/8 leading-none select-none">
+                      {item.step}
+                    </span>
+                    <span className="text-4xl">{item.emoji}</span>
+                  </div>
+                  <h3 className="font-heading text-xl text-white mb-2 leading-tight">
+                    {item.title}
+                  </h3>
+                  <p className="text-white/55 text-sm leading-relaxed">{item.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Central CTA */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="relative rounded-[28px] overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-[#1a0a08]/80 via-zinc-900 to-black" />
+            <div className="absolute inset-0 border border-[#ff2d6a]/20 rounded-[28px]" />
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#ff2d6a]/40 to-transparent" />
+
+            <div className="relative px-8 py-10 sm:px-14 sm:py-12 flex flex-col sm:flex-row items-center gap-6 sm:gap-10">
+              <div className="flex-1 text-center sm:text-left">
+                <p className="text-[#ffb1c9] text-xs uppercase tracking-luxury font-semibold mb-3">
+                  Pronto em 3 minutos
+                </p>
+                <h3 className="font-heading text-3xl sm:text-4xl font-bold text-white mb-3 leading-tight">
+                  O presente que ela
+                  <br />
+                  <span className="text-gradient-rose">nunca vai deletar</span>.
+                </h3>
+                <p className="text-white/55 text-sm leading-relaxed max-w-sm">
+                  Fotos, música e mensagem em uma página vitalícia. O QR Code gerado na hora, pronto pra imprimir.
+                </p>
+              </div>
+              <div className="shrink-0 flex flex-col items-center gap-3">
+                <Link href="/criar" className="btn-premium inline-flex items-center gap-2 text-base group">
+                  <span>Criar minha página</span>
+                  <span className="transition-transform group-hover:translate-x-1">→</span>
+                </Link>
+                <p className="text-white/40 text-xs">
+                  PIX · Cartão · Entrega imediata
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* ====================== PRICING ====================== */}
       <section id="precos" className="relative py-24 px-4">
         <div className="absolute inset-0 pointer-events-none">
@@ -497,11 +621,12 @@ export default function LandingPage() {
               <ul className="space-y-3 text-white/75 text-sm mb-8">
                 {[
                   "Página do amor completa",
-                  "Até 5 fotos premium",
+                  "Até 5 fotos no slideshow",
                   "2 temas exclusivos",
                   "Mensagem personalizada",
-                  "QR Code premium impresso",
-                  "Link vitalício",
+                  "Contagem ao vivo do relacionamento",
+                  "QR Code digital para baixar e imprimir",
+                  "Link vitalício · entrega imediata",
                 ].map((f) => (
                   <li key={f} className="flex items-center gap-3">
                     <span className="w-5 h-5 rounded-full bg-[#ff2d6a]/14 text-[#ffb1c9] flex items-center justify-center text-xs">
@@ -544,31 +669,30 @@ export default function LandingPage() {
                 <p className="text-white/40 text-sm mb-2">/ vitalício</p>
               </div>
               <p className="text-[#ffb1c9] text-sm mb-7">
-                💎 Inclui todos os recursos premium
+                💎 A experiência completa — nada cortado
               </p>
               <ul className="space-y-3 text-white/85 text-sm mb-8">
                 {[
-                  "Tudo do Basic, e mais:",
-                  "Até 10 fotos em alta resolução",
-                  "Todos os 4 temas exclusivos",
-                  "Música (Spotify, YouTube, Apple)",
-                  "Contagem ao vivo do relacionamento",
-                  "Mensagem programada (WhatsApp/SMS)",
-                  "Cartas, poemas e bios com IA Romântica",
-                  "Editar a página sempre que quiser",
-                  "Prioridade no suporte",
-                ].map((f, idx) => (
-                  <li key={f} className="flex items-center gap-3">
+                  { text: "Tudo do Basic, e mais:", star: true },
+                  { text: "Até 10 fotos no slideshow", star: false },
+                  { text: "Todos os 4 temas exclusivos", star: false },
+                  { text: "Música (Spotify e YouTube) com player embutido", star: false },
+                  { text: "Dynamic Island animada com capa do álbum", star: false },
+                  { text: "Cor da página inspirada na capa da música", star: false },
+                  { text: "QR Code digital para baixar e imprimir", star: false },
+                  { text: "Link vitalício · entrega imediata após o PIX", star: false },
+                ].map(({ text, star }) => (
+                  <li key={text} className="flex items-center gap-3">
                     <span
                       className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
-                        idx === 0
+                        star
                           ? "bg-amber-500/15 text-amber-300"
                           : "bg-[#ff2d6a]/18 text-[#ffb1c9]"
                       }`}
                     >
-                      {idx === 0 ? "★" : "✓"}
+                      {star ? "★" : "✓"}
                     </span>
-                    <span className={idx === 0 ? "font-semibold" : ""}>{f}</span>
+                    <span className={star ? "font-semibold" : ""}>{text}</span>
                   </li>
                 ))}
               </ul>
@@ -579,7 +703,7 @@ export default function LandingPage() {
                 Quero o Premium →
               </Link>
               <p className="text-center mt-3 text-white/50 text-xs">
-                7 dias de garantia · Cancelamento fácil
+                🔒 Pagamento protegido pelo Asaas
               </p>
             </motion.div>
           </div>

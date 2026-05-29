@@ -42,10 +42,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
   }
 
+  const planRaw = (formData.get("plan") as string) === "premium" ? "premium" : "basic";
+  const maxPhotos = planRaw === "premium" ? 10 : 5;
+
   const photos = formData.getAll("photos") as File[];
-  if (!photos.length || photos.length > 10) {
+  if (!photos.length || photos.length > maxPhotos) {
     return NextResponse.json(
-      { error: "Envie entre 1 e 10 fotos." },
+      { error: `Envie entre 1 e ${maxPhotos} fotos.` },
       { status: 400 }
     );
   }
@@ -108,9 +111,19 @@ export async function POST(req: NextRequest) {
   }
 
   const fields = fieldsCheck.data;
+
+  const BASIC_THEMES = new Set(["black-luxury", "neon-romance"]);
+  if (fields.plan === "basic" && !BASIC_THEMES.has(fields.theme)) {
+    return NextResponse.json(
+      { error: "Tema não disponível no plano Basic." },
+      { status: 400 }
+    );
+  }
+
   const slug = generateSlug(fields.person1, fields.person2);
   const theme = THEME_MAP[fields.theme] as Theme;
   const plan = fields.plan as Plan;
+  const musicUrl = fields.plan === "basic" ? null : (fields.music_url || null);
 
   const couple = await prisma.couple.create({
     data: {
@@ -118,7 +131,7 @@ export async function POST(req: NextRequest) {
       person1: fields.person1,
       person2: fields.person2,
       message: fields.message,
-      music_url: fields.music_url || null,
+      music_url: musicUrl,
       relationship_date: fields.relationship_date,
       theme,
       plan,

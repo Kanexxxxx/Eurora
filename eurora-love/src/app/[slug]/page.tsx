@@ -42,9 +42,19 @@ async function getMusicMeta(url: string | null): Promise<MusicMeta | null> {
     if (data.html) {
       const m = data.html.match(/src="([^"]+)"/);
       if (m?.[1]) {
-        embedUrl = embedType === "spotify" && !m[1].includes("autoplay")
-          ? m[1] + (m[1].includes("?") ? "&" : "?") + "autoplay=1&theme=0"
-          : m[1];
+        const raw = m[1];
+        const sep = raw.includes("?") ? "&" : "?";
+        if (!raw.includes("autoplay")) {
+          if (embedType === "spotify") {
+            embedUrl = raw + sep + "autoplay=1&theme=0";
+          } else if (embedType === "youtube") {
+            embedUrl = raw + sep + "autoplay=1";
+          } else {
+            embedUrl = raw;
+          }
+        } else {
+          embedUrl = raw;
+        }
       }
     }
 

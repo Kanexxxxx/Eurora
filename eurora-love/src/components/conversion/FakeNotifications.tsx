@@ -4,18 +4,18 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const POOL = [
-  { name: "Lucas, SP", action: "criou uma página do amor", emoji: "💌" },
-  { name: "Maria, MG", action: "desbloqueou os Presentes Secretos", emoji: "🎁" },
-  { name: "João, RJ", action: "agendou uma mensagem para 12 de junho", emoji: "⏰" },
-  { name: "Beatriz, RS", action: "fez o Teste do Amor: 96% de match", emoji: "🔮" },
-  { name: "Pedro, BA", action: "gerou um poema com a IA Romântica", emoji: "✨" },
-  { name: "Camila, PR", action: "comprou o plano Premium", emoji: "👑" },
-  { name: "Rafael, CE", action: "salvou o casamento com uma carta", emoji: "💍" },
-  { name: "Ana, DF", action: "chorou recebendo o QR code", emoji: "😭" },
-  { name: "Mateus, SC", action: "viralizou no TikTok com a página", emoji: "📱" },
-  { name: "Larissa, GO", action: "presentou o ex (e voltaram)", emoji: "🥹" },
-  { name: "Felipe, AM", action: "agendou pedido de namoro automático", emoji: "💎" },
-  { name: "Juliana, PE", action: "criou bio de casal pra Insta", emoji: "💕" },
+  { name: "Lucas, SP",    action: "criou uma página do amor agora",          emoji: "💌" },
+  { name: "Maria, MG",    action: "desbloqueou os Presentes Secretos",        emoji: "🎁" },
+  { name: "João, RJ",     action: "agendou uma mensagem para 12 de junho",    emoji: "⏰" },
+  { name: "Beatriz, RS",  action: "fez o Teste do Parceiro: 94% de match",   emoji: "🔮" },
+  { name: "Pedro, BA",    action: "gerou um poema com a IA Romântica",        emoji: "✨" },
+  { name: "Camila, PR",   action: "comprou o plano Premium",                  emoji: "👑" },
+  { name: "Rafael, CE",   action: "colou o QR code numa caixa de bombons",   emoji: "💍" },
+  { name: "Ana, DF",      action: "chorou ao escanear o QR code",             emoji: "😭" },
+  { name: "Mateus, SC",   action: "virou viral no TikTok com a página",       emoji: "📱" },
+  { name: "Larissa, GO",  action: "presenteou o ex com uma carta de IA",     emoji: "🥹" },
+  { name: "Felipe, AM",   action: "programou a mensagem do pedido de namoro", emoji: "💎" },
+  { name: "Juliana, PE",  action: "criou a bio do casal pro Instagram",       emoji: "💕" },
 ];
 
 interface Props {

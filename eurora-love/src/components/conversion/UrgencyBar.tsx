@@ -31,11 +31,11 @@ export default function UrgencyBar() {
     <div className="w-full bg-gradient-to-r from-[#d6195a] via-[#ff2d6a] to-[#f6c986] text-white text-xs sm:text-sm py-2 px-4 text-center font-medium animate-gradient-shift relative overflow-hidden">
       <span className="absolute inset-0 animate-shimmer-bg pointer-events-none" />
       <span className="relative">
-        🔥 OFERTA DIA DOS NAMORADOS — termina em{" "}
+        🔥 DIA DOS NAMORADOS em{" "}
         <strong className="font-mono-romantic tabular-nums">
           {pad(t.d)}d {pad(t.h)}h {pad(t.m)}m {pad(t.s)}s
         </strong>{" "}
-        · Use o cupom <strong className="tracking-wider">AMOR50</strong> ➜ 50% OFF
+        · Preços especiais · Entrega imediata após o PIX
       </span>
     </div>
   );
