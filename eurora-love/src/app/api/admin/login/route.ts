@@ -1,22 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const ATTEMPTS = new Map<string, { count: number; ts: number }>();
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const entry = ATTEMPTS.get(ip);
-  if (!entry || now - entry.ts > 15 * 60 * 1000) {
-    ATTEMPTS.set(ip, { count: 1, ts: now });
-    return true;
-  }
-  if (entry.count >= 5) return false;
-  entry.count++;
-  return true;
-}
+import {
+  adminCookieName,
+  adminSessionMaxAge,
+  createAdminSessionToken,
+} from "@/server/auth/admin";
+import { checkRateLimit } from "@/server/rateLimit";
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
-  if (!checkRateLimit(ip)) {
+  if (!checkRateLimit(req, { key: "admin-login", limit: 5, windowMs: 15 * 60 * 1000 })) {
     return NextResponse.json(
       { error: "Muitas tentativas. Aguarde 15 minutos." },
       { status: 429 }
@@ -31,18 +22,19 @@ export async function POST(req: NextRequest) {
   }
 
   const res = NextResponse.json({ ok: true });
-  res.cookies.set("admin_token", correct, {
+  const sessionToken = await createAdminSessionToken();
+  res.cookies.set(adminCookieName(), sessionToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
     path: "/",
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: adminSessionMaxAge(),
   });
   return res;
 }
 
 export async function DELETE() {
   const res = NextResponse.json({ ok: true });
-  res.cookies.delete("admin_token");
+  res.cookies.delete(adminCookieName());
   return res;
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/server/db/prisma";
 import { asaasRequest } from "@/server/payments/asaas";
 import { z } from "zod";
+import { checkRateLimit } from "@/server/rateLimit";
 
 const schema = z.object({
   channel: z.enum(["email", "wpp", "telegram", "correios"]),
@@ -12,23 +13,8 @@ const schema = z.object({
   payment_id: z.string().optional(),
 });
 
-const RATE_LIMIT = new Map<string, { count: number; ts: number }>();
-
-function checkRateLimit(ip: string, max = 5, windowMs = 60 * 60 * 1000): boolean {
-  const now = Date.now();
-  const entry = RATE_LIMIT.get(ip);
-  if (!entry || now - entry.ts > windowMs) {
-    RATE_LIMIT.set(ip, { count: 1, ts: now });
-    return true;
-  }
-  if (entry.count >= max) return false;
-  entry.count++;
-  return true;
-}
-
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
-  if (!checkRateLimit(ip)) {
+  if (!checkRateLimit(req, { key: "schedule-message", limit: 5, windowMs: 60 * 60 * 1000 })) {
     return NextResponse.json(
       { error: "Limite de agendamentos atingido. Tente novamente em 1 hora." },
       { status: 429 }

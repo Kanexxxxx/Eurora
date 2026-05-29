@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { asaasRequest, onlyDigits, todayIsoDate } from "@/server/payments/asaas";
+import { checkRateLimit } from "@/server/rateLimit";
 
 const schema = z.object({
   name: z.string().min(2).max(120),
@@ -8,19 +9,10 @@ const schema = z.object({
   cpf: z.string().transform(onlyDigits).pipe(z.string().length(11)),
 });
 
-const RATE_LIMIT = new Map<string, { count: number; ts: number }>();
-function checkRL(ip: string): boolean {
-  const now = Date.now();
-  const e = RATE_LIMIT.get(ip);
-  if (!e || now - e.ts > 60_000) { RATE_LIMIT.set(ip, { count: 1, ts: now }); return true; }
-  if (e.count >= 3) return false;
-  e.count++;
-  return true;
-}
-
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
-  if (!checkRL(ip)) return NextResponse.json({ error: "Muitas tentativas." }, { status: 429 });
+  if (!checkRateLimit(req, { key: "message-payment", limit: 3, windowMs: 60_000 })) {
+    return NextResponse.json({ error: "Muitas tentativas." }, { status: 429 });
+  }
 
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);

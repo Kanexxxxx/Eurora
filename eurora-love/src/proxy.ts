@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAdminRequest } from "@/server/auth/admin";
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
-    const token = request.cookies.get("admin_token")?.value;
-    if (!token || token !== process.env.ADMIN_PASSWORD) {
+    if (!(await isAdminRequest(request))) {
       const loginUrl = new URL("/admin/login", request.url);
       loginUrl.searchParams.set("from", pathname);
       return NextResponse.redirect(loginUrl);

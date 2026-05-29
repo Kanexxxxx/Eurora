@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/server/db/prisma";
-
-function authed(req: NextRequest) {
-  const token = req.cookies.get("admin_token")?.value;
-  return token && token === process.env.ADMIN_PASSWORD;
-}
+import { isAdminRequest } from "@/server/auth/admin";
 
 function isValidUrl(raw: string): boolean {
   try {
@@ -16,7 +12,7 @@ function isValidUrl(raw: string): boolean {
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!authed(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await isAdminRequest(req))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
 
   if (!id || typeof id !== "string") {
@@ -43,7 +39,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!authed(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await isAdminRequest(req))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
 
   if (!id || typeof id !== "string") {

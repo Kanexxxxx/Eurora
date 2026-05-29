@@ -4,20 +4,7 @@ import { createUploadKey, extensionFromMime, saveUpload } from "@/server/storage
 import { coupleFieldsSchema } from "@/lib/validations";
 import { generateSlug } from "@/lib/utils/slug";
 import type { Theme, Plan } from "@prisma/client";
-
-const RATE_LIMIT = new Map<string, { count: number; ts: number }>();
-
-function checkRateLimit(ip: string, max = 5, windowMs = 60_000): boolean {
-  const now = Date.now();
-  const entry = RATE_LIMIT.get(ip);
-  if (!entry || now - entry.ts > windowMs) {
-    RATE_LIMIT.set(ip, { count: 1, ts: now });
-    return true;
-  }
-  if (entry.count >= max) return false;
-  entry.count++;
-  return true;
-}
+import { checkRateLimit } from "@/server/rateLimit";
 
 const THEME_MAP: Record<string, Theme> = {
   "black-luxury": "black_luxury",
@@ -27,8 +14,7 @@ const THEME_MAP: Record<string, Theme> = {
 };
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  if (!checkRateLimit(ip)) {
+  if (!checkRateLimit(req, { key: "create-page", limit: 5, windowMs: 60_000 })) {
     return NextResponse.json(
       { error: "Muitas requisições. Tente novamente em 1 minuto." },
       { status: 429 }

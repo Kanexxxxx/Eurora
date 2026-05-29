@@ -5,6 +5,9 @@
 *.pem
 *.key
 
+# Dependencias locais
+node_modules/
+
 # Claude Code (configurações locais — não subir)
 .claude/
 
@@ -29,3 +32,9 @@ docs/roteiro/*.srt
 # Logs
 *.log
 *.log.err
+
+# Arquivos temporarios de coleta/scraping na raiz
+/_scraper*.js
+/_fetch*.js
+/_fetch*.py
+/_images*.json

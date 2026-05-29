@@ -9,6 +9,7 @@ import {
   onlyDigits,
 } from "@/server/payments/asaas";
 import { activateCouplePage } from "@/server/payments/activateCouple";
+import { checkRateLimit, clientIp } from "@/server/rateLimit";
 
 const payerSchema = z.object({
   name: z.string().min(2).max(120),
@@ -34,31 +35,9 @@ const schema = z.object({
   card: cardSchema.optional(),
 });
 
-const RATE_LIMIT = new Map<string, { count: number; ts: number }>();
-
-function checkRL(ip: string): boolean {
-  const now = Date.now();
-  const e = RATE_LIMIT.get(ip);
-  if (!e || now - e.ts > 60_000) {
-    RATE_LIMIT.set(ip, { count: 1, ts: now });
-    return true;
-  }
-  if (e.count >= 5) return false;
-  e.count++;
-  return true;
-}
-
-function requestIp(req: NextRequest) {
-  return (
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    req.headers.get("x-real-ip") ||
-    "127.0.0.1"
-  );
-}
-
 export async function POST(req: NextRequest) {
-  const ip = requestIp(req);
-  if (!checkRL(ip)) {
+  const ip = clientIp(req);
+  if (!checkRateLimit(req, { key: "asaas-page-payment", limit: 5, windowMs: 60_000 })) {
     return NextResponse.json({ error: "Muitas tentativas" }, { status: 429 });
   }
 

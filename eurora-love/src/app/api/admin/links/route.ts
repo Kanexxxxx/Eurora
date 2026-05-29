@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/server/db/prisma";
-
-function authed(req: NextRequest) {
-  const token = req.cookies.get("admin_token")?.value;
-  return token && token === process.env.ADMIN_PASSWORD;
-}
+import { isAdminRequest } from "@/server/auth/admin";
 
 function isValidUrl(raw: string): boolean {
   try {
@@ -16,7 +12,7 @@ function isValidUrl(raw: string): boolean {
 }
 
 export async function GET(req: NextRequest) {
-  if (!authed(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await isAdminRequest(req))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const items = await prisma.presenteLink.findMany({
     orderBy: [{ order: "asc" }, { created_at: "desc" }],
@@ -25,7 +21,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!authed(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await isAdminRequest(req))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json().catch(() => ({})) as Record<string, unknown>;
   const { name, platform, url, categoria, order } = body;
