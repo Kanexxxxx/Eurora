@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 const ITEMS = [
   { icon: "🔒", title: "Pagamento seguro", sub: "Pix e cartao via Asaas" },
-  { icon: "↩", title: "7 dias de garantia", sub: "Devolução sem perguntas" },
+  { icon: "🛡️", title: "Suporte garantido", sub: "Atendimento em até 7 dias" },
   { icon: "⚡", title: "Pronto em 3 minutos", sub: "Entrega instantânea" },
   { icon: "♥", title: "+38.000 casais", sub: "Em todo o Brasil" },
 ];

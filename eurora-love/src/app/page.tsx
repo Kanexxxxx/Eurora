@@ -807,7 +807,7 @@ export default function LandingPage() {
                 <span className="text-emerald-400">✓</span> PIX aprovado em 30s
               </span>
               <span className="flex items-center gap-2">
-                <span className="text-emerald-400">✓</span> Garantia de 7 dias
+                <span className="text-emerald-400">✓</span> Suporte por 7 dias
               </span>
               <span className="flex items-center gap-2">
                 <span className="text-emerald-400">✓</span> Sem mensalidade

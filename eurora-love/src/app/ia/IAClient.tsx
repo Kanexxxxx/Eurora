@@ -427,7 +427,7 @@ export default function IAClient() {
               </Link>
 
               <p className="text-white/40 text-xs mt-3">
-                💳 PIX · Garantia 7 dias
+                💳 PIX · Suporte por 7 dias
               </p>
             </motion.div>
           </motion.div>

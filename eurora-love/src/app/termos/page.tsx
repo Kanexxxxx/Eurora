@@ -47,21 +47,29 @@ export default function TermosPage() {
           <Section title="3. Pagamentos e Reembolso">
             <p>
               Os pagamentos são processados pelo <strong>Asaas</strong>, plataforma brasileira de pagamentos.
-              Após a confirmação do PIX, sua página ou recurso digital é liberado automaticamente.
+              Após a confirmação do PIX ou cartão, sua página ou recurso digital é liberado automaticamente e
+              imediatamente disponibilizado para uso.
             </p>
             <p>
-              O consumidor pode exercer o direito de arrependimento no prazo legal de <strong>7 (sete) dias</strong>,
-              quando aplicável à contratação feita fora do estabelecimento comercial, conforme o art. 49 do Código
-              de Defesa do Consumidor. Para solicitar atendimento, envie e-mail para{" "}
+              <strong>Produtos digitais entregues e utilizados:</strong> Por se tratar de conteúdo digital
+              fornecido de forma imediata e personalizada, o direito de arrependimento previsto no art. 49 do
+              Código de Defesa do Consumidor não se aplica após a ativação, acesso ou uso do produto, conforme
+              o parágrafo único do mesmo artigo. Ao confirmar o pagamento, o consumidor expressamente concorda
+              com a entrega imediata do conteúdo digital e declara ciência de que, nessa hipótese, não caberá
+              direito de arrependimento ou reembolso após a entrega.
+            </p>
+            <p>
+              <strong>Exceções em que o reembolso pode ser solicitado:</strong> falha técnica grave que impeça
+              a entrega do produto mesmo após 24 horas da confirmação do pagamento. Para solicitar suporte,
+              envie e-mail para{" "}
               <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.site"}`} className="text-rose-300 hover:text-rose-200">
                 {process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.site"}
-              </a>.
+              </a>{" "}
+              em até 7 dias após o pagamento.
             </p>
             <p>
-              Solicitações de reembolso serão analisadas de acordo com a legislação brasileira e com estes Termos.
-              A EURORA LOVE poderá suspender ou remover páginas e acessos vinculados ao pedido após o estorno, bem
-              como negar benefícios ou reembolsos em casos de fraude, má-fé, chargeback indevido, violação destes
-              Termos ou uso abusivo da Plataforma.
+              A EURORA LOVE se reserva o direito de suspender ou remover páginas e acessos vinculados a
+              estornos indevidos, fraude, má-fé, chargeback não autorizado ou violação destes Termos.
             </p>
           </Section>
 

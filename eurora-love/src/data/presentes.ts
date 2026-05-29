@@ -53,7 +53,7 @@ export const CATEGORIAS: Record<string, CategoriaInfo> = {
 };
 
 export const PRODUTOS: Produto[] = [
-  { id: 1,  name: "Caixa Surpresa com Rosa Artificial Namorados",   platform: "Amazon", url: "https://amzn.to/49ccCh6",  categoria: "Caixas Surpresa",    asin: "B0BR5GJQ6Y" },
+  { id: 1,  name: "Caixa Surpresa com Rosa Artificial Namorados",   platform: "Amazon", url: "https://amzn.to/49ccCh6",  categoria: "Caixas Surpresa",    asin: "B0BR5GJQ6Y", image: "https://m.media-amazon.com/images/I/71pFSuf8ZLL._SL400_.jpg" },
   { id: 2,  name: "Ursinho de Pelúcia Vermelho Presente",           platform: "Amazon", url: "https://amzn.to/4v4Wq9M",  categoria: "Ursos e Pelucias",   asin: "B0GNDD1BST" },
   { id: 3,  name: "Flores Artificiais Decorativas Presente",        platform: "Amazon", url: "https://amzn.to/4v8Vbqc",  categoria: "Presentes em Geral", asin: "B0GWPCPKLJ" },
   { id: 4,  name: "Almofada Porta-Pipoca Presente Namorados",       platform: "Amazon", url: "https://amzn.to/4nJh9O3",  categoria: "Almofadas",          asin: "B09RTP8GZS" },
