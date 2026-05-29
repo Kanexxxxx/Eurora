@@ -8,6 +8,7 @@ const schema = z.object({
   channel: z.enum(["email", "wpp", "telegram", "correios"]),
   recipient: z.string().min(3).max(500),
   sender_email: z.string().email().optional(),
+  sender_name: z.string().max(60).optional(),
   message: z.string().min(10).max(2000),
   send_at: z.string().datetime(),
   payment_id: z.string().optional(),
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
   if (!parsed.success)
     return NextResponse.json({ error: "Dados inválidos." }, { status: 400 });
 
-  const { channel, recipient, sender_email, message, send_at, payment_id } = parsed.data;
+  const { channel, recipient, sender_email, sender_name, message, send_at, payment_id } = parsed.data;
 
   // Correios requires a verified payment of R$14
   if (channel === "correios") {
@@ -54,6 +55,7 @@ export async function POST(req: NextRequest) {
       channel,
       recipient,
       sender_email: sender_email ?? null,
+      sender_name: sender_name ?? null,
       message,
       send_at: sendDate,
       paid: true,

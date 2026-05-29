@@ -45,6 +45,7 @@ model ScheduledMessage {
   channel      String
   recipient    String
   sender_email String?
+  sender_name  String?
   message      String    @db.VarChar(2000)
   send_at      DateTime
   sent         Boolean   @default(false)

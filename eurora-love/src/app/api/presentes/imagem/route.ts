@@ -40,22 +40,53 @@ function extractAmazonImage(html: string): string | null {
   return null;
 }
 
-async function fetchImage(targetUrl: string): Promise<string | null> {
-  const res = await fetch(targetUrl, {
-    headers: BROWSER_HEADERS,
-    redirect: "follow",
-    signal: AbortSignal.timeout(8000),
-  });
-  if (!res.ok) return null;
-  const html = await res.text();
-
-  // Amazon-specific extractor first
-  if (targetUrl.includes("amazon")) {
-    const img = extractAmazonImage(html);
-    if (img) return img;
+function extractPrice(html: string): string | null {
+  // JSON-LD offers.price (padrão Schema.org)
+  const ldMatch = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+  if (ldMatch) {
+    for (const block of ldMatch) {
+      const inner = block.replace(/<\/?script[^>]*>/gi, "");
+      try {
+        const data = JSON.parse(inner);
+        const price = data?.offers?.price ?? data?.offers?.[0]?.price;
+        if (price && Number(price) > 0) {
+          return `R$ ${Number(price).toFixed(2).replace(".", ",")}`;
+        }
+      } catch { /* continua */ }
+    }
   }
 
-  return extractOgImage(html);
+  // Shopee: preço em meta product:price:amount
+  const metaPrice = html.match(/<meta[^>]+property=["']product:price:amount["'][^>]+content=["']([^"']+)["']/i)
+    ?? html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']product:price:amount["']/i);
+  if (metaPrice?.[1] && Number(metaPrice[1]) > 0) {
+    return `R$ ${Number(metaPrice[1]).toFixed(2).replace(".", ",")}`;
+  }
+
+  return null;
+}
+
+async function fetchPageData(targetUrl: string): Promise<{ image: string | null; price: string | null }> {
+  try {
+    const res = await fetch(targetUrl, {
+      headers: BROWSER_HEADERS,
+      redirect: "follow",
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return { image: null, price: null };
+    const html = await res.text();
+
+    let image: string | null = null;
+    if (targetUrl.includes("amazon")) {
+      image = extractAmazonImage(html);
+    }
+    if (!image) image = extractOgImage(html);
+
+    const price = extractPrice(html);
+    return { image, price };
+  } catch {
+    return { image: null, price: null };
+  }
 }
 
 export async function GET(req: NextRequest) {
@@ -76,26 +107,9 @@ export async function GET(req: NextRequest) {
         : NextResponse.json({ error: "Não encontrada" }, { status: 404 });
     }
 
-    // Tenta URL pública do CDN da Amazon (sem scraping, sem bloqueio)
-    const cdnUrl = `https://m.media-amazon.com/images/P/${asin}.01._SL400_.jpg`;
-    try {
-      const probe = await fetch(cdnUrl, { method: "HEAD", signal: AbortSignal.timeout(5000) });
-      if (probe.ok) {
-        cache.set(cacheKey, { url: cdnUrl, ts: Date.now() });
-        return NextResponse.json({ url: cdnUrl });
-      }
-    } catch { /* fallback para scraping */ }
-
-    // Fallback: scraping da página
-    try {
-      const url = await fetchImage(`https://www.amazon.com.br/dp/${asin}`);
-      cache.set(cacheKey, { url, ts: Date.now() });
-      return url
-        ? NextResponse.json({ url })
-        : NextResponse.json({ error: "Não encontrada" }, { status: 404 });
-    } catch {
-      return NextResponse.json({ error: "Erro" }, { status: 500 });
-    }
+    // Amazon bloqueia scraping de VPS — retorna null para usar fallback visual no cliente
+    cache.set(cacheKey, { url: null, ts: Date.now() });
+    return NextResponse.json({ error: "Não encontrada" }, { status: 404 });
   }
 
   // ── Qualquer URL (Shopee, ML, etc.) ─────────────────────────────────────
@@ -135,24 +149,24 @@ export async function GET(req: NextRequest) {
     }
 
     // 3. Buscar externamente (só acontece uma vez por produto)
-    try {
-      const url = await fetchImage(targetUrl);
-      cache.set(cacheKey, { url, ts: Date.now() });
+    const { image: url, price } = await fetchPageData(targetUrl);
+    cache.set(cacheKey, { url, ts: Date.now() });
 
-      // Salvar no banco para nunca mais buscar externamente
-      if (url) {
-        prisma.presenteLink.updateMany({
-          where: { url: targetUrl, image_url: null },
-          data: { image_url: url },
-        }).catch(() => {});
-      }
-
-      return url
-        ? NextResponse.json({ url })
-        : NextResponse.json({ error: "Não encontrada" }, { status: 404 });
-    } catch {
-      return NextResponse.json({ error: "Erro" }, { status: 500 });
+    // Salvar imagem e preço no banco para nunca mais buscar externamente
+    if (url || price) {
+      prisma.presenteLink.updateMany({
+        where: { url: targetUrl },
+        data: {
+          ...(url ? { image_url: url } : {}),
+          ...(price ? { preco: price } : {}),
+        },
+      }).catch(() => {});
     }
+
+    if (url) {
+      return NextResponse.json({ url, ...(price ? { preco: price } : {}) });
+    }
+    return NextResponse.json({ error: "Não encontrada" }, { status: 404 });
   }
 
   return NextResponse.json({ error: "asin ou url obrigatório" }, { status: 400 });

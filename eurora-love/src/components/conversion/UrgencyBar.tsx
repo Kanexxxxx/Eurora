@@ -50,18 +50,18 @@ export default function UrgencyBar() {
   const allItems = [...items, ...items];
 
   return (
-    <div className="urgency-bar-bg w-full overflow-hidden relative py-2.5">
+    <div className="urgency-bar-bg w-full overflow-hidden relative py-1.5">
       <div className="urgency-bar-fade-left absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none" />
       <div className="urgency-bar-fade-right absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none" />
 
       <div className="animate-ticker flex items-center whitespace-nowrap">
         {allItems.map((item, i) => (
-          <span key={i} className="inline-flex items-center gap-2 px-7">
-            <span className="text-xl leading-none">{item.icon}</span>
-            <span className="text-white text-sm font-semibold tracking-wide drop-shadow-sm">
+          <span key={i} className="inline-flex items-center gap-1.5 px-5">
+            <span className="text-sm leading-none">{item.icon}</span>
+            <span className="text-white text-xs font-semibold tracking-wide">
               {item.text}
             </span>
-            <span className="text-white/40 text-lg ml-2">·</span>
+            <span className="text-white/40 text-sm ml-1.5">·</span>
           </span>
         ))}
       </div>

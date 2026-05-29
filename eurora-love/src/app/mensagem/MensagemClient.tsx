@@ -93,6 +93,7 @@ export default function MensagemClient() {
   const [message, setMessage] = useState("");
   const [recipient, setRecipient] = useState("");
   const [senderEmail, setSenderEmail] = useState("");
+  const [senderName, setSenderName] = useState("");
   const [date, setDate] = useState("2026-06-12");
   const [time, setTime] = useState("06:00");
   const [loading, setLoading] = useState(false);
@@ -142,6 +143,7 @@ export default function MensagemClient() {
           message,
           send_at,
           ...(channel !== "email" && senderEmail ? { sender_email: senderEmail } : {}),
+          ...(channel === "email" && senderName.trim() ? { sender_name: senderName.trim() } : {}),
           ...(payment_id ? { payment_id } : {}),
         }),
       });
@@ -467,6 +469,26 @@ export default function MensagemClient() {
                       />
                     )}
                   </div>
+
+                  {/* Remetente (apenas email) */}
+                  {channel === "email" && (
+                    <div>
+                      <label className="block text-white/70 text-xs uppercase tracking-wider mb-2">
+                        Assinar como <span className="text-white/40 normal-case font-normal">(opcional)</span>
+                      </label>
+                      <input
+                        value={senderName}
+                        onChange={(e) => setSenderName(e.target.value)}
+                        placeholder="Ex: João — ou deixe em branco para anônimo"
+                        type="text"
+                        maxLength={60}
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-rose-400/40 text-sm"
+                      />
+                      <p className="text-white/40 text-xs mt-2">
+                        Se preenchido, aparece no rodapé do e-mail. Se vazio, a mensagem chega de forma anônima.
+                      </p>
+                    </div>
+                  )}
 
                   {/* Sender email */}
                   {channel !== "email" && (

@@ -229,7 +229,7 @@ function messagePreviewCard(msg: string, label: string) {
 
 // ─── Email builders ──────────────────────────────────────────────────────────
 
-function buildDirectEmail(message: string): { html: string; text: string } {
+function buildDirectEmail(message: string, senderName?: string): { html: string; text: string } {
   const body = `
   <!-- Hero title -->
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
@@ -283,7 +283,7 @@ function buildDirectEmail(message: string): { html: string; text: string } {
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:8px;" class="efeat">
     <tr>
       <td width="33%" valign="top" style="padding:0 5px 0 0;">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(255,255,255,0.03);border:1px solid rgba(246,201,134,0.08);border-radius:12px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#13101a;border:1px solid #2a2035;border-radius:12px;">
           <tr><td align="center" style="padding:16px 12px 8px;font-size:24px;">&#x1F381;</td></tr>
           <tr><td align="center" style="padding:0 10px 6px;"><p style="margin:0;color:#fff5f0;font-family:Arial,sans-serif;font-size:11px;font-weight:700;">Presentes Secretos</p></td></tr>
           <tr><td align="center" style="padding:0 10px 12px;"><p style="margin:0;color:rgba(255,245,240,0.40);font-family:Arial,sans-serif;font-size:10px;line-height:1.5;">250+ ideias por R$8</p></td></tr>
@@ -291,7 +291,7 @@ function buildDirectEmail(message: string): { html: string; text: string } {
         </table>
       </td>
       <td width="33%" valign="top" style="padding:0 2px;">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(255,255,255,0.03);border:1px solid rgba(246,201,134,0.08);border-radius:12px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#13101a;border:1px solid #2a2035;border-radius:12px;">
           <tr><td align="center" style="padding:16px 12px 8px;font-size:24px;">&#x1F4AC;</td></tr>
           <tr><td align="center" style="padding:0 10px 6px;"><p style="margin:0;color:#fff5f0;font-family:Arial,sans-serif;font-size:11px;font-weight:700;">Mensagem Futura</p></td></tr>
           <tr><td align="center" style="padding:0 10px 12px;"><p style="margin:0;color:rgba(255,245,240,0.40);font-family:Arial,sans-serif;font-size:10px;line-height:1.5;">Agende para a hora certa</p></td></tr>
@@ -299,7 +299,7 @@ function buildDirectEmail(message: string): { html: string; text: string } {
         </table>
       </td>
       <td width="33%" valign="top" style="padding:0 0 0 5px;">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(255,255,255,0.03);border:1px solid rgba(246,201,134,0.08);border-radius:12px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#13101a;border:1px solid #2a2035;border-radius:12px;">
           <tr><td align="center" style="padding:16px 12px 8px;font-size:24px;">&#x1F9E0;</td></tr>
           <tr><td align="center" style="padding:0 10px 6px;"><p style="margin:0;color:#fff5f0;font-family:Arial,sans-serif;font-size:11px;font-weight:700;">Teste do Casal</p></td></tr>
           <tr><td align="center" style="padding:0 10px 12px;"><p style="margin:0;color:rgba(255,245,240,0.40);font-family:Arial,sans-serif;font-size:10px;line-height:1.5;">Quanto ele te conhece?</p></td></tr>
@@ -310,6 +310,18 @@ function buildDirectEmail(message: string): { html: string; text: string } {
   </table>
   `;
 
+  // Assinatura do remetente
+  const signatureBlock = senderName ? `
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:-16px;margin-bottom:24px;">
+    <tr><td align="right">
+      <p style="margin:0;color:rgba(255,245,240,0.55);font-family:Georgia,'Times New Roman',serif;font-size:13px;font-style:italic;">
+        — ${esc(senderName)} &#x2665;
+      </p>
+    </td></tr>
+  </table>` : "";
+
+  const fullBody = body.replace("  <!-- 3 features row -->", `${signatureBlock}  <!-- 3 features row -->`);
+
   const text = [
     "EURORA LOVE ♥",
     "",
@@ -317,13 +329,14 @@ function buildDirectEmail(message: string): { html: string; text: string } {
     "",
     message,
     "",
+    ...(senderName ? [`— ${senderName} ♥`, ""] : []),
     "──────────────────",
     `Crie sua página do amor: ${APP_URL}/criar`,
     `Presentes secretos: ${APP_URL}/presentes`,
     `eurora.site ♥`,
   ].join("\n");
 
-  return { html: baseHtml("Uma mensagem especial chegou pra você 💌", "Alguém pensou muito em você antes de escrever isso ♥", body, false), text };
+  return { html: baseHtml("Uma mensagem especial chegou pra você 💌", "Alguém pensou muito em você antes de escrever isso ♥", fullBody, false), text };
 }
 
 function buildWaReminder(phone: string, message: string): { html: string; text: string } {
@@ -481,7 +494,7 @@ export async function GET(req: NextRequest) {
       let headers: Record<string, string> = {};
 
       if (msg.channel === "email") {
-        ({ html, text } = buildDirectEmail(msg.message));
+        ({ html, text } = buildDirectEmail(msg.message, msg.sender_name ?? undefined));
         subject = "Uma mensagem especial chegou pra você 💌";
         to = msg.recipient;
       } else if (msg.channel === "wpp") {

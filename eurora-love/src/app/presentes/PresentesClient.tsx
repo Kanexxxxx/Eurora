@@ -23,6 +23,7 @@ function ProdutoCard({ p, index }: { p: Produto; index: number }) {
   const [imgSrc, setImgSrc] = useState<string | null>(p.image ?? null);
   const [imgError, setImgError] = useState(false);
   const [loading, setLoading] = useState(!p.image);
+  const [preco, setPreco] = useState<string | undefined>(p.preco);
 
   useEffect(() => {
     if (imgSrc) return;
@@ -32,10 +33,13 @@ function ProdutoCard({ p, index }: { p: Produto; index: number }) {
     if (!endpoint) { setLoading(false); return; }
     fetch(endpoint)
       .then((r) => (r.ok ? r.json() : null))
-      .then((d: { url?: string } | null) => { if (d?.url) setImgSrc(d.url); })
+      .then((d: { url?: string; preco?: string } | null) => {
+        if (d?.url) setImgSrc(d.url);
+        if (d?.preco && !preco) setPreco(d.preco);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [p.asin, p.url, imgSrc]);
+  }, [p.asin, p.url, imgSrc, preco]);
 
   const showImg = imgSrc && !imgError;
 
@@ -50,25 +54,31 @@ function ProdutoCard({ p, index }: { p: Produto; index: number }) {
       className="group flex flex-col rounded-2xl overflow-hidden border border-white/8 bg-white/3 hover:border-rose-400/30 hover:bg-white/6 transition-all duration-200 active:scale-[0.97]"
     >
       {/* Imagem */}
-      <div className={`relative w-full aspect-square overflow-hidden ${!showImg ? `bg-linear-to-br ${cat?.gradient ?? "from-gray-700 to-gray-900"}` : "bg-black"} flex items-center justify-center`}>
+      <div className={`relative w-full overflow-hidden bg-linear-to-br ${cat?.gradient ?? "from-gray-700 to-gray-900"} flex items-center justify-center ${showImg ? "aspect-square" : "h-28"}`}>
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-5 h-5 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
           </div>
         )}
-        {showImg ? (
+        {showImg && (
           <img
             src={imgSrc}
             alt={p.name}
-            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
-            onError={() => setImgError(true)}
+            onError={() => { setImgError(true); setImgSrc(null); }}
           />
-        ) : !loading ? (
-          <span className="text-5xl drop-shadow-lg group-hover:scale-110 transition-transform duration-300">
-            {cat?.emoji ?? "🎁"}
-          </span>
-        ) : null}
+        )}
+        {!loading && !showImg && (
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-5xl drop-shadow-lg group-hover:scale-110 transition-transform duration-300">
+              {cat?.emoji ?? "🎁"}
+            </span>
+            <span className="text-white/50 text-[10px] font-medium uppercase tracking-wider px-3 text-center line-clamp-2">
+              {p.name}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Info */}
@@ -85,8 +95,8 @@ function ProdutoCard({ p, index }: { p: Produto; index: number }) {
           {p.name}
         </p>
         <div className="flex items-center justify-between mt-auto pt-1">
-          {p.preco ? (
-            <span className="text-emerald-400 text-[11px] font-bold">{p.preco}</span>
+          {preco ? (
+            <span className="text-emerald-400 text-[11px] font-bold">{preco}</span>
           ) : (
             <span />
           )}

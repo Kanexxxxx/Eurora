@@ -77,12 +77,28 @@ const defaultData: WizardData = {
 
 const inputClass = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff2d6a] transition-colors";
 
-const MUSIC_EXAMPLES = [
+const ALL_MUSIC_EXAMPLES = [
   { url: "https://open.spotify.com/track/1tmD4Xpd1YNSGCG5AYqHDk", title: "Última Saudade", artist: "Sertanejo", thumb: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e025856830b78bbf4343b9305", platform: "spotify" },
   { url: "https://open.spotify.com/track/3xgrWGYrqZVL7aAvZTm2MA", title: "Saudade de Quem Eu Sou", artist: "Sertanejo", thumb: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02ea8c31c9f8657e8c3812eb", platform: "spotify" },
   { url: "https://open.spotify.com/track/5jP9oqulg2Dz6yLwLYj5KO", title: "Seja Ex", artist: "Sertanejo", thumb: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e025856830b78bbf4343b9305", platform: "spotify" },
   { url: "https://youtu.be/rtOvBOTyX00", title: "A Thousand Years", artist: "Christina Perri", thumb: "https://i.ytimg.com/vi/rtOvBOTyX00/hqdefault.jpg", platform: "youtube" },
+  { url: "https://open.spotify.com/track/0V3wPSX9ygBnCm8psDIegu", title: "Perfect", artist: "Ed Sheeran", thumb: "https://i.scdn.co/image/ab67616d00001e02ba5db46f4b838ef6027e6f96", platform: "spotify" },
+  { url: "https://open.spotify.com/track/7qiZfU4dY1lWllzX7mPBI3", title: "Shape of You", artist: "Ed Sheeran", thumb: "https://i.scdn.co/image/ab67616d00001e02ba5db46f4b838ef6027e6f96", platform: "spotify" },
+  { url: "https://open.spotify.com/track/2takcwOaAZWiXQijPHIx7B", title: "Can't Help Falling in Love", artist: "Elvis Presley", thumb: "https://i.scdn.co/image/ab67616d00001e02bfec73f3af08be3a33bfb44e", platform: "spotify" },
+  { url: "https://open.spotify.com/track/6AQbmUe0Qwf5PZnt4HmTXv", title: "Lover", artist: "Taylor Swift", thumb: "https://i.scdn.co/image/ab67616d00001e0291563e3dc63dc903d0e79e47", platform: "spotify" },
 ];
+
+// Shuffle determinístico por sessão (muda a cada reload)
+function shuffleExamples() {
+  const arr = [...ALL_MUSIC_EXAMPLES];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr.slice(0, 4);
+}
+
+const MUSIC_EXAMPLES = shuffleExamples();
 
 function useMusicPreview(url: string) {
   const [preview, setPreview] = useState<{ title: string; thumb: string } | null>(null);
