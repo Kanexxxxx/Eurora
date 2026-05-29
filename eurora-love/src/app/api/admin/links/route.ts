@@ -4,26 +4,15 @@ import { isAdminRequest } from "@/server/auth/admin";
 
 function isValidUrl(raw: string): boolean {
   try {
-    const url = new URL(raw);
-    return url.protocol === "https:" || url.protocol === "http:";
+    const u = new URL(raw);
+    return u.protocol === "https:" || u.protocol === "http:";
   } catch {
     return false;
   }
 }
 
-function optionalUrl(value: unknown) {
-  if (typeof value !== "string" || !value.trim()) return null;
-  return isValidUrl(value) ? value.trim().slice(0, 1000) : null;
-}
-
-function optionalText(value: unknown, max = 100) {
-  return typeof value === "string" && value.trim() ? value.trim().slice(0, max) : null;
-}
-
 export async function GET(req: NextRequest) {
-  if (!(await isAdminRequest(req))) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!(await isAdminRequest(req))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const items = await prisma.presenteLink.findMany({
     orderBy: [{ order: "asc" }, { created_at: "desc" }],
@@ -32,12 +21,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await isAdminRequest(req))) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!(await isAdminRequest(req))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
-  const { name, platform, url, categoria, image_url, preco, order } = body;
+  const body = await req.json().catch(() => ({})) as Record<string, unknown>;
+  const { name, platform, url, categoria, order } = body;
 
   if (
     typeof name !== "string" || !name.trim() ||
@@ -45,7 +32,7 @@ export async function POST(req: NextRequest) {
     typeof url !== "string" || !isValidUrl(url) ||
     typeof categoria !== "string" || !categoria.trim()
   ) {
-    return NextResponse.json({ error: "Dados invalidos ou URL nao permitida." }, { status: 400 });
+    return NextResponse.json({ error: "Dados inválidos ou URL não permitida." }, { status: 400 });
   }
 
   const item = await prisma.presenteLink.create({
@@ -54,11 +41,8 @@ export async function POST(req: NextRequest) {
       platform: platform.trim().slice(0, 100),
       url: url.trim().slice(0, 1000),
       categoria: categoria.trim().slice(0, 100),
-      image_url: optionalUrl(image_url),
-      preco: optionalText(preco, 40),
       order: typeof order === "number" ? order : 0,
     },
   });
-
   return NextResponse.json(item, { status: 201 });
 }

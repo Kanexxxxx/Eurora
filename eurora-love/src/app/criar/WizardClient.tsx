@@ -106,7 +106,7 @@ function useMusicPreview(url: string) {
 
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
-    queueMicrotask(() => setPreview(null));
+    setPreview(null);
     if (!url || (!url.includes("spotify") && !url.includes("youtube") && !url.includes("youtu.be"))) return;
 
     timerRef.current = setTimeout(async () => {

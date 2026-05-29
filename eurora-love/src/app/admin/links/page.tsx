@@ -9,7 +9,6 @@ type LinkItem = {
   platform: string;
   url: string;
   categoria: string;
-  image_url?: string | null;
   preco?: string | null;
   active: boolean;
   order: number;
@@ -17,7 +16,7 @@ type LinkItem = {
 };
 
 const PLATAFORMAS = ["Amazon", "Shopee", "ML"];
-const EMPTY = { name: "", platform: "Amazon", url: "", categoria: "Presentes em Geral", image_url: "", preco: "", active: true, order: 0 };
+const EMPTY = { name: "", platform: "Amazon", url: "", categoria: "Presentes em Geral", preco: "", active: true, order: 0 };
 type Tab = "adicionados" | "estaticos";
 
 function PlatBadge({ platform }: { platform: string }) {
@@ -187,13 +186,6 @@ export default function AdminLinks() {
                 onChange={(e) => setForm({ ...form, url: e.target.value })}
                 className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:border-rose-500"
               />
-              <input
-                type="url"
-                placeholder="URL da imagem (opcional, mas recomendado)"
-                value={form.image_url ?? ""}
-                onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:border-rose-500"
-              />
               <select
                 value={form.platform}
                 onChange={(e) => setForm({ ...form, platform: e.target.value })}
@@ -278,18 +270,6 @@ export default function AdminLinks() {
                   </div>
                   <p className="text-white text-sm font-medium truncate">{item.name}</p>
                   <p className="text-white/30 text-xs truncate">{item.url}</p>
-                  <div className="mt-1 flex items-center gap-2 text-xs">
-                    {item.image_url ? (
-                      <span className="text-emerald-300/80">imagem ok</span>
-                    ) : (
-                      <span className="text-amber-300/70">sem imagem salva</span>
-                    )}
-                    {item.preco ? (
-                      <span className="text-white/50">{item.preco}</span>
-                    ) : (
-                      <span className="text-white/25">sem preco</span>
-                    )}
-                  </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <button
@@ -303,7 +283,7 @@ export default function AdminLinks() {
                     {item.active ? "Ativo" : "Inativo"}
                   </button>
                   <button
-                    onClick={() => setForm({ ...item, image_url: item.image_url ?? "", preco: item.preco ?? "" })}
+                    onClick={() => setForm({ ...item, preco: item.preco ?? "" })}
                     className="text-white/40 hover:text-white px-2 py-1 transition-colors"
                     title="Editar"
                   >

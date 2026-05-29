@@ -1,20 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/server/db/prisma";
 
-type CachedProductMedia = {
-  url: string | null;
-  price: string | null;
-  ts: number;
-};
-
-const cache = new Map<string, CachedProductMedia>();
+const cache = new Map<string, { url: string | null; ts: number }>();
 const TTL = 24 * 60 * 60 * 1000;
 
 const BROWSER_HEADERS = {
-  "User-Agent":
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+  "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
   "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8",
+  "Accept-Encoding": "gzip, deflate, br",
   "Cache-Control": "no-cache",
   "Sec-Fetch-Dest": "document",
   "Sec-Fetch-Mode": "navigate",
@@ -22,152 +16,77 @@ const BROWSER_HEADERS = {
   "Upgrade-Insecure-Requests": "1",
 };
 
-const ALLOWED_DOMAINS = [
-  "shopee.com.br",
-  "s.shopee.com.br",
-  "amazon.com.br",
-  "amzn.to",
-  "magazinevoce.com.br",
-  "mercadolivre.com.br",
-  "mercadolibre.com",
-];
+function extractOgImage(html: string): string | null {
+  const og = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
+    ?? html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
+  if (og?.[1]?.startsWith("http")) return og[1];
 
-function isAllowedUrl(raw: string) {
-  const parsed = new URL(raw);
-  return ALLOWED_DOMAINS.some((domain) => {
-    return parsed.hostname === domain || parsed.hostname.endsWith(`.${domain}`);
-  });
+  const tw = html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i)
+    ?? html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image["']/i);
+  if (tw?.[1]?.startsWith("http")) return tw[1];
+
+  return null;
 }
 
-function absoluteUrl(raw: string, baseUrl: string) {
-  try {
-    return new URL(raw, baseUrl).toString();
-  } catch {
-    return null;
-  }
-}
-
-function extractMetaContent(html: string, key: string) {
-  const propertyFirst = new RegExp(
-    `<meta[^>]+property=["']${key}["'][^>]+content=["']([^"']+)["']`,
-    "i"
-  );
-  const contentFirst = new RegExp(
-    `<meta[^>]+content=["']([^"']+)["'][^>]+property=["']${key}["']`,
-    "i"
-  );
-  return html.match(propertyFirst)?.[1] ?? html.match(contentFirst)?.[1] ?? null;
-}
-
-function extractNamedMetaContent(html: string, key: string) {
-  const nameFirst = new RegExp(
-    `<meta[^>]+name=["']${key}["'][^>]+content=["']([^"']+)["']`,
-    "i"
-  );
-  const contentFirst = new RegExp(
-    `<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${key}["']`,
-    "i"
-  );
-  return html.match(nameFirst)?.[1] ?? html.match(contentFirst)?.[1] ?? null;
-}
-
-function extractAmazonImage(html: string) {
+function extractAmazonImage(html: string): string | null {
   const dyn = html.match(/data-a-dynamic-image="([^"]+)"/);
   if (dyn) {
     const decoded = dyn[1].replace(/&quot;/g, '"');
-    const match = decoded.match(/(https:\/\/m\.media-amazon\.com\/images\/I\/[^"]+\.(?:jpg|jpeg|png|webp))/i);
-    if (match) return match[1].replace(/\._[A-Z0-9,_-]+_\./, "._SL500_.");
+    const m = decoded.match(/(https:\/\/m\.media-amazon\.com\/images\/I\/[^"]+\.jpg)/);
+    if (m) return m[1].replace(/\._[A-Z0-9,_]+_\./, "._SL400_.");
   }
-
-  const fallback = html.match(
-    /(https:\/\/m\.media-amazon\.com\/images\/I\/[A-Za-z0-9%+_.-]+\.(?:jpg|jpeg|png|webp))/i
-  );
-  return fallback?.[1]?.replace(/\._[A-Z0-9,_-]+_\./, "._SL500_.") ?? null;
+  const fb = html.match(/(https:\/\/m\.media-amazon\.com\/images\/I\/[A-Za-z0-9%+_-]+\._[A-Z0-9,_]+_\.(?:jpg|jpeg|png|webp))/);
+  if (fb) return fb[1].replace(/\._[A-Z0-9,_]+_\./, "._SL400_.");
+  return null;
 }
 
-function extractImage(html: string, baseUrl: string) {
-  const metaImage =
-    extractMetaContent(html, "og:image") ??
-    extractNamedMetaContent(html, "twitter:image") ??
-    extractNamedMetaContent(html, "twitter:image:src");
-
-  const jsonImage =
-    html.match(/"image"\s*:\s*"([^"]+)"/i)?.[1]?.replace(/\\\//g, "/") ??
-    html.match(/"imageUrl"\s*:\s*"([^"]+)"/i)?.[1]?.replace(/\\\//g, "/") ??
-    null;
-
-  const imgTag = html.match(/<img[^>]+src=["']([^"']+)["'][^>]*>/i)?.[1] ?? null;
-  const image = metaImage ?? jsonImage ?? imgTag;
-
-  if (!image) return null;
-  return image.startsWith("http") ? image : absoluteUrl(image, baseUrl);
-}
-
-function formatPrice(value: string | number) {
-  const parsed = Number(String(value).replace(",", ".").replace(/[^\d.]/g, ""));
-  if (!Number.isFinite(parsed) || parsed <= 0) return null;
-  return `R$ ${parsed.toFixed(2).replace(".", ",")}`;
-}
-
-function extractPrice(html: string) {
-  const jsonLdBlocks = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
-  if (jsonLdBlocks) {
-    for (const block of jsonLdBlocks) {
-      const inner = block.replace(/<\/?script[^>]*>/gi, "").trim();
+function extractPrice(html: string): string | null {
+  // JSON-LD offers.price (padrão Schema.org)
+  const ldMatch = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+  if (ldMatch) {
+    for (const block of ldMatch) {
+      const inner = block.replace(/<\/?script[^>]*>/gi, "");
       try {
         const data = JSON.parse(inner);
-        const candidates = Array.isArray(data) ? data : [data];
-        for (const candidate of candidates) {
-          const offer = Array.isArray(candidate?.offers) ? candidate.offers[0] : candidate?.offers;
-          const price = offer?.price ?? candidate?.price;
-          const formatted = price ? formatPrice(price) : null;
-          if (formatted) return formatted;
+        const price = data?.offers?.price ?? data?.offers?.[0]?.price;
+        if (price && Number(price) > 0) {
+          return `R$ ${Number(price).toFixed(2).replace(".", ",")}`;
         }
-      } catch {
-        // Some stores ship invalid JSON-LD. Continue with other patterns.
-      }
+      } catch { /* continua */ }
     }
   }
 
-  const metaPrice =
-    extractMetaContent(html, "product:price:amount") ??
-    extractMetaContent(html, "og:price:amount");
-  const formattedMeta = metaPrice ? formatPrice(metaPrice) : null;
-  if (formattedMeta) return formattedMeta;
+  // Shopee: preço em meta product:price:amount
+  const metaPrice = html.match(/<meta[^>]+property=["']product:price:amount["'][^>]+content=["']([^"']+)["']/i)
+    ?? html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']product:price:amount["']/i);
+  if (metaPrice?.[1] && Number(metaPrice[1]) > 0) {
+    return `R$ ${Number(metaPrice[1]).toFixed(2).replace(".", ",")}`;
+  }
 
-  const visiblePrice = html.match(/R\$\s?\d{1,5}(?:[\.,]\d{2})/i)?.[0];
-  return visiblePrice ?? null;
+  return null;
 }
 
-async function fetchPageData(targetUrl: string) {
+async function fetchPageData(targetUrl: string): Promise<{ image: string | null; price: string | null }> {
   try {
     const res = await fetch(targetUrl, {
       headers: BROWSER_HEADERS,
       redirect: "follow",
-      signal: AbortSignal.timeout(10_000),
+      signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) return { image: null, price: null };
-
     const html = await res.text();
-    const finalUrl = res.url || targetUrl;
-    const image =
-      finalUrl.includes("amazon") || targetUrl.includes("amazon")
-        ? extractAmazonImage(html) ?? extractImage(html, finalUrl)
-        : extractImage(html, finalUrl);
 
-    return { image, price: extractPrice(html) };
+    let image: string | null = null;
+    if (targetUrl.includes("amazon")) {
+      image = extractAmazonImage(html);
+    }
+    if (!image) image = extractOgImage(html);
+
+    const price = extractPrice(html);
+    return { image, price };
   } catch {
     return { image: null, price: null };
   }
-}
-
-function cachedResponse(product: CachedProductMedia) {
-  return product.url
-    ? NextResponse.json({
-        url: product.url,
-        ...(product.price ? { preco: product.price } : {}),
-      })
-    : NextResponse.json({ error: "Nao encontrada" }, { status: 404 });
 }
 
 export async function GET(req: NextRequest) {
@@ -175,66 +94,80 @@ export async function GET(req: NextRequest) {
   const asin = searchParams.get("asin");
   const rawUrl = searchParams.get("url");
 
-  if (asin && !rawUrl) {
+  // ── Amazon via ASIN ──────────────────────────────────────────────────────
+  if (asin) {
     if (!/^[A-Z0-9]{10}$/.test(asin)) {
-      return NextResponse.json({ error: "ASIN invalido" }, { status: 400 });
+      return NextResponse.json({ error: "ASIN inválido" }, { status: 400 });
     }
-
     const cacheKey = `asin:${asin}`;
     const cached = cache.get(cacheKey);
-    if (cached && Date.now() - cached.ts < TTL) return cachedResponse(cached);
-
-    const { image, price } = await fetchPageData(`https://www.amazon.com.br/dp/${asin}`);
-    const product = { url: image, price, ts: Date.now() };
-    cache.set(cacheKey, product);
-    return cachedResponse(product);
-  }
-
-  if (!rawUrl) {
-    return NextResponse.json({ error: "asin ou url obrigatorio" }, { status: 400 });
-  }
-
-  let targetUrl: string;
-  try {
-    targetUrl = decodeURIComponent(rawUrl);
-    if (!isAllowedUrl(targetUrl)) {
-      return NextResponse.json({ error: "Dominio nao permitido" }, { status: 400 });
+    if (cached && Date.now() - cached.ts < TTL) {
+      return cached.url
+        ? NextResponse.json({ url: cached.url })
+        : NextResponse.json({ error: "Não encontrada" }, { status: 404 });
     }
-  } catch {
-    return NextResponse.json({ error: "URL invalida" }, { status: 400 });
+
+    // Amazon bloqueia scraping de VPS — retorna null para usar fallback visual no cliente
+    cache.set(cacheKey, { url: null, ts: Date.now() });
+    return NextResponse.json({ error: "Não encontrada" }, { status: 404 });
   }
 
-  try {
-    const saved = await prisma.presenteLink.findFirst({
-      where: { url: targetUrl, image_url: { not: null } },
-      select: { image_url: true, preco: true },
-    });
-    if (saved?.image_url) {
-      const product = { url: saved.image_url, price: saved.preco, ts: Date.now() };
-      cache.set(`url:${targetUrl}`, product);
-      return cachedResponse(product);
+  // ── Qualquer URL (Shopee, ML, etc.) ─────────────────────────────────────
+  if (rawUrl) {
+    let targetUrl: string;
+    try {
+      targetUrl = decodeURIComponent(rawUrl);
+      const parsed = new URL(targetUrl);
+      const allowed = ["shopee.com.br", "s.shopee.com.br", "amazon.com.br", "amzn.to",
+                       "magazinevoce.com.br", "mercadolivre.com.br", "mercadolibre.com"];
+      if (!allowed.some(d => parsed.hostname === d || parsed.hostname.endsWith("." + d))) {
+        return NextResponse.json({ error: "Domínio não permitido" }, { status: 400 });
+      }
+    } catch {
+      return NextResponse.json({ error: "URL inválida" }, { status: 400 });
     }
-  } catch {
-    // If database is unavailable, still try external metadata.
+
+    // 1. Verificar se já está salvo no banco (zero request externo)
+    try {
+      const saved = await prisma.presenteLink.findFirst({
+        where: { url: targetUrl, image_url: { not: null } },
+        select: { image_url: true },
+      });
+      if (saved?.image_url) {
+        cache.set(`url:${targetUrl}`, { url: saved.image_url, ts: Date.now() });
+        return NextResponse.json({ url: saved.image_url });
+      }
+    } catch { /* fallback para fetch */ }
+
+    // 2. Cache em memória
+    const cacheKey = `url:${targetUrl}`;
+    const cached = cache.get(cacheKey);
+    if (cached && Date.now() - cached.ts < TTL) {
+      return cached.url
+        ? NextResponse.json({ url: cached.url })
+        : NextResponse.json({ error: "Não encontrada" }, { status: 404 });
+    }
+
+    // 3. Buscar externamente (só acontece uma vez por produto)
+    const { image: url, price } = await fetchPageData(targetUrl);
+    cache.set(cacheKey, { url, ts: Date.now() });
+
+    // Salvar imagem e preço no banco para nunca mais buscar externamente
+    if (url || price) {
+      prisma.presenteLink.updateMany({
+        where: { url: targetUrl },
+        data: {
+          ...(url ? { image_url: url } : {}),
+          ...(price ? { preco: price } : {}),
+        },
+      }).catch(() => {});
+    }
+
+    if (url) {
+      return NextResponse.json({ url, ...(price ? { preco: price } : {}) });
+    }
+    return NextResponse.json({ error: "Não encontrada" }, { status: 404 });
   }
 
-  const cacheKey = `url:${targetUrl}`;
-  const cached = cache.get(cacheKey);
-  if (cached && Date.now() - cached.ts < TTL) return cachedResponse(cached);
-
-  const { image, price } = await fetchPageData(targetUrl);
-  const product = { url: image, price, ts: Date.now() };
-  cache.set(cacheKey, product);
-
-  if (image || price) {
-    void prisma.presenteLink.updateMany({
-      where: { url: targetUrl },
-      data: {
-        ...(image ? { image_url: image } : {}),
-        ...(price ? { preco: price } : {}),
-      },
-    }).catch(() => {});
-  }
-
-  return cachedResponse(product);
+  return NextResponse.json({ error: "asin ou url obrigatório" }, { status: 400 });
 }
