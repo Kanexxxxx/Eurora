@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   description: "Finalize seu pagamento via Pix ou cartao.",
 };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default function CheckoutPage() {
   return (
     <Suspense>
