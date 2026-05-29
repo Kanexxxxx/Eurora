@@ -337,3 +337,40 @@ export const DIM_LABELS = [
   "Energia\ndo Casal",
   "Forma de\nCuidar",
 ];
+
+// ─── Encode / Decode (UTF-8 safe base64url) ──────────────────────────────
+export function encodeQuiz(data: QuizData): string {
+  const json = JSON.stringify(data);
+  const bytes = new TextEncoder().encode(json);
+  let binary = "";
+  bytes.forEach((b) => (binary += String.fromCharCode(b)));
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+}
+
+export function decodeQuiz(s: string): QuizData | null {
+  try {
+    const base64 = s.replace(/-/g, "+").replace(/_/g, "/");
+    const binary = atob(base64);
+    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes)) as QuizData;
+  } catch {
+    return null;
+  }
+}
+
+// ─── Helper: monta QuizDataV2 ─────────────────────────────────────────────
+export function buildQuizDataV2(
+  name: string,
+  nick: string,
+  answers: number[],
+  customQs: CustomQ[]
+): QuizDataV2 {
+  return {
+    v: 2,
+    n: name,
+    nick,
+    q: answers,
+    c: customQs,
+    arch: calcArchetype(answers),
+  };
+}
