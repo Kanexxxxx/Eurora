@@ -102,7 +102,7 @@ function decodeQuiz(s: string): QuizData | null {
 }
 
 const inputClass =
-  "w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-[#C8917A]/40 transition-colors";
+  "w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-[#ff2d6a]/40 transition-colors";
 
 /* ════════════════════════════════
    CREATOR VIEW
@@ -212,13 +212,13 @@ function CreatorView() {
           <div className="mb-10">
             <div className="flex items-center justify-between mb-3">
               <p className="text-white/60 text-sm">{presetIdx + 1} / {PRESET.length}</p>
-              <p className="text-[#DCBA98] text-sm font-semibold">
+              <p className="text-[#ffb1c9] text-sm font-semibold">
                 {Math.round(((presetIdx + 1) / PRESET.length) * 100)}%
               </p>
             </div>
             <div className="h-2 bg-white/5 rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-linear-to-r from-[#C8917A] via-[#DCBA98] to-[#D4AF70]"
+                className="h-full bg-linear-to-r from-[#ff2d6a] via-[#ffb1c9] to-[#f6c986]"
                 animate={{ width: `${((presetIdx + 1) / PRESET.length) * 100}%` }}
                 transition={{ duration: 0.5 }}
               />
@@ -342,7 +342,7 @@ function CreatorView() {
                         onClick={() => setEditQ({ ...editQ, a: i })}
                         className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
                           editQ.a === i
-                            ? "bg-[#C8917A] text-white"
+                            ? "bg-[#ff2d6a] text-white"
                             : "bg-white/5 text-white/50 hover:bg-white/10"
                         }`}
                       >
@@ -556,13 +556,13 @@ function PartnerView({ encoded }: { encoded: string }) {
           <div className="mb-10">
             <div className="flex items-center justify-between mb-3">
               <p className="text-white/60 text-sm">{qIdx + 1} / {allQuestions.length}</p>
-              <p className="text-[#DCBA98] text-sm font-semibold">
+              <p className="text-[#ffb1c9] text-sm font-semibold">
                 {Math.round(((qIdx + 1) / allQuestions.length) * 100)}%
               </p>
             </div>
             <div className="h-2 bg-white/5 rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-linear-to-r from-[#C8917A] via-[#DCBA98] to-[#D4AF70]"
+                className="h-full bg-linear-to-r from-[#ff2d6a] via-[#ffb1c9] to-[#f6c986]"
                 animate={{ width: `${((qIdx + 1) / allQuestions.length) * 100}%` }}
                 transition={{ duration: 0.5 }}
               />
@@ -620,7 +620,7 @@ function PartnerView({ encoded }: { encoded: string }) {
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             className="relative rounded-[36px] overflow-hidden p-px mb-8"
           >
-            <div className="absolute inset-0 bg-linear-to-br from-[#C8917A] via-[#DCBA98] to-[#D4AF70] opacity-80" />
+            <div className="absolute inset-0 bg-linear-to-br from-[#ff2d6a] via-[#ffb1c9] to-[#f6c986] opacity-80" />
             <div className="relative rounded-[35px] bg-[#0a0710]/90 backdrop-blur-md p-8 sm:p-12 text-center">
               <p className="text-white/50 text-xs uppercase tracking-wider mb-6">
                 Resultado final

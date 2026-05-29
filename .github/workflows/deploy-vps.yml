@@ -3,7 +3,7 @@ name: Deploy VPS
 on:
   push:
     branches:
-      - codex/prepare-prod-asaas
+      - main
   workflow_dispatch:
 
 concurrency:
@@ -26,7 +26,7 @@ jobs:
             set -euo pipefail
 
             APP_DIR="/var/www/eurora/eurora-love"
-            BRANCH="codex/prepare-prod-asaas"
+            BRANCH="main"
 
             cd "$APP_DIR"
             git fetch origin "$BRANCH"

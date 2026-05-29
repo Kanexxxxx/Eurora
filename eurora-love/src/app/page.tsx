@@ -28,7 +28,7 @@ const FEATURES = [
     title: "Página do Amor",
     desc: "Fotos, música e mensagem em uma página cinematográfica. Compartilhe via QR Code.",
     href: "/criar",
-    color: "from-[#C8917A]/20 to-[#A8705C]/8",
+    color: "from-[#ff2d6a]/20 to-[#d6195a]/8",
     badge: "Mais popular",
   },
   {
@@ -164,7 +164,7 @@ export default function LandingPage() {
       <section className="relative min-h-svh flex flex-col items-center justify-center px-4 pt-16 pb-20">
         {/* Cinematic background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-125 h-125 sm:w-175 sm:h-175 bg-[#C8917A]/12 rounded-full blur-[80px] sm:blur-[120px] animate-glow-pulse" />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-125 h-125 sm:w-175 sm:h-175 bg-[#ff2d6a]/12 rounded-full blur-[80px] sm:blur-[120px] animate-glow-pulse" />
           <div className="absolute -top-32 right-0 w-75 h-75 bg-amber-400/8 rounded-full blur-[80px] hidden sm:block" />
           <div className="absolute bottom-0 left-0 w-62.5 h-62.5 bg-fuchsia-500/8 rounded-full blur-[70px] hidden sm:block" />
         </div>
@@ -180,11 +180,11 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full glass border border-[#C8917A]/20"
+            className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full glass border border-[#ff2d6a]/20"
           >
             <span className="live-dot" />
             <span className="text-xs sm:text-sm text-white/80 font-medium">
-              <span className="text-[#DCBA98] font-bold">1.247</span> casais criando agora
+              <span className="text-[#ffb1c9] font-bold">1.247</span> casais criando agora
               {daysLeft > 0 ? (
                 <> · Dia dos Namorados em <span className="text-amber-300 font-bold">{daysLeft} dias</span></>
               ) : (
@@ -199,7 +199,7 @@ export default function LandingPage() {
               <span className="text-gradient-rose">
                 que ela nunca vai esquecer
               </span>
-              <span className="text-[#C8917A] font-heading italic">.</span>
+              <span className="text-[#ff2d6a] font-heading italic">.</span>
             </span>
           </h1>
 
@@ -207,7 +207,7 @@ export default function LandingPage() {
             Crie uma experiência digital cinematográfica em{" "}
             <span className="text-white font-semibold">3 minutos</span>. Fotos,
             música, mensagem programada e QR code premium —{" "}
-            <span className="text-[#DCBA98]">tudo pronto pra emocionar</span>.
+            <span className="text-[#ffb1c9]">tudo pronto pra emocionar</span>.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-6">
@@ -216,7 +216,7 @@ export default function LandingPage() {
               <span className="transition-transform group-hover:translate-x-1">→</span>
             </Link>
             <Link href="#features" className="btn-ghost-glow inline-flex items-center gap-2 text-base">
-              <span className="text-[#DCBA98]">▶</span> Ver como funciona
+              <span className="text-[#ffb1c9]">▶</span> Ver como funciona
             </Link>
           </div>
 
@@ -225,7 +225,7 @@ export default function LandingPage() {
               {["💖", "💕", "💗", "💓"].map((e, i) => (
                 <span
                   key={i}
-                  className="w-7 h-7 rounded-full bg-gradient-to-br from-[#C8917A] to-[#D4AF70] flex items-center justify-center text-xs ring-2 ring-background"
+                  className="w-7 h-7 rounded-full bg-gradient-to-br from-[#ff2d6a] to-[#f6c986] flex items-center justify-center text-xs ring-2 ring-background"
                 >
                   {e}
                 </span>
@@ -289,7 +289,7 @@ export default function LandingPage() {
               viewport={{ once: true }}
               className="pill pill-live mb-5"
             >
-              <span className="text-[#DCBA98]">✦</span> Tudo num só lugar
+              <span className="text-[#ffb1c9]">✦</span> Tudo num só lugar
             </motion.p>
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
@@ -350,7 +350,7 @@ export default function LandingPage() {
                           {f.desc}
                         </p>
                         <span className={`inline-flex items-center gap-2 text-sm font-medium group-hover:gap-3 transition-all ${
-                          isPresentes ? "text-amber-300" : "text-[#DCBA98]"
+                          isPresentes ? "text-amber-300" : "text-[#ffb1c9]"
                         }`}>
                           {isPresentes ? "Ver presentes →" : "Experimentar agora →"}
                         </span>
@@ -401,7 +401,7 @@ export default function LandingPage() {
           </div>
 
           <div className="relative">
-            <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[#C8917A]/28 to-transparent hidden md:block" />
+            <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[#ff2d6a]/28 to-transparent hidden md:block" />
 
             {[
               {
@@ -458,7 +458,7 @@ export default function LandingPage() {
       {/* ====================== PRICING ====================== */}
       <section id="precos" className="relative py-24 px-4">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-[#C8917A]/8 rounded-full blur-[120px]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-[#ff2d6a]/8 rounded-full blur-[120px]" />
         </div>
 
         <div className="relative max-w-5xl mx-auto">
@@ -491,7 +491,7 @@ export default function LandingPage() {
                 </p>
                 <p className="text-white/40 text-sm mb-2">/ vitalício</p>
               </div>
-              <p className="text-[#DCBA98] text-sm mb-7">
+              <p className="text-[#ffb1c9] text-sm mb-7">
                 ⚡ Ativação instantânea via PIX
               </p>
               <ul className="space-y-3 text-white/75 text-sm mb-8">
@@ -504,7 +504,7 @@ export default function LandingPage() {
                   "Link vitalício",
                 ].map((f) => (
                   <li key={f} className="flex items-center gap-3">
-                    <span className="w-5 h-5 rounded-full bg-[#C8917A]/14 text-[#DCBA98] flex items-center justify-center text-xs">
+                    <span className="w-5 h-5 rounded-full bg-[#ff2d6a]/14 text-[#ffb1c9] flex items-center justify-center text-xs">
                       ✓
                     </span>
                     {f}
@@ -525,14 +525,14 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="relative rounded-[28px] p-8 bg-gradient-to-br from-[#1a0a08]/60 via-zinc-900 to-black border border-[#C8917A]/32 glow-rose-soft"
+              className="relative rounded-[28px] p-8 bg-gradient-to-br from-[#1a0a08]/60 via-zinc-900 to-black border border-[#ff2d6a]/32 glow-rose-soft"
             >
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#C8917A] to-[#D4AF70] text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#ff2d6a] to-[#f6c986] text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">
                 Mais escolhido · 87% dos casais
               </div>
 
               <div className="flex items-baseline justify-between mb-2">
-                <p className="text-[#DCBA98] text-xs uppercase tracking-widest font-semibold">
+                <p className="text-[#ffb1c9] text-xs uppercase tracking-widest font-semibold">
                   Premium
                 </p>
                 <p className="text-white/40 text-xs line-through">R$ 79</p>
@@ -543,7 +543,7 @@ export default function LandingPage() {
                 </p>
                 <p className="text-white/40 text-sm mb-2">/ vitalício</p>
               </div>
-              <p className="text-[#DCBA98] text-sm mb-7">
+              <p className="text-[#ffb1c9] text-sm mb-7">
                 💎 Inclui todos os recursos premium
               </p>
               <ul className="space-y-3 text-white/85 text-sm mb-8">
@@ -563,7 +563,7 @@ export default function LandingPage() {
                       className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
                         idx === 0
                           ? "bg-amber-500/15 text-amber-300"
-                          : "bg-[#C8917A]/18 text-[#DCBA98]"
+                          : "bg-[#ff2d6a]/18 text-[#ffb1c9]"
                       }`}
                     >
                       {idx === 0 ? "★" : "✓"}
@@ -613,7 +613,7 @@ export default function LandingPage() {
                   className="flex-shrink-0 w-[340px] snap-center card-premium p-7"
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#C8917A]/22 to-[#D4AF70]/22 flex items-center justify-center text-2xl border border-white/10">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#ff2d6a]/22 to-[#f6c986]/22 flex items-center justify-center text-2xl border border-white/10">
                       {t.photo}
                     </div>
                     <div>
@@ -640,7 +640,7 @@ export default function LandingPage() {
       <section className="relative py-24 px-4 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-rose-flare opacity-50" />
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#C8917A]/22 rounded-full blur-[100px] animate-glow-pulse" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#ff2d6a]/22 rounded-full blur-[100px] animate-glow-pulse" />
         </div>
 
         <div className="relative max-w-3xl mx-auto text-center">
@@ -650,7 +650,7 @@ export default function LandingPage() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <p className="text-[#DCBA98] text-xs uppercase tracking-luxury mb-6 font-semibold">
+            <p className="text-[#ffb1c9] text-xs uppercase tracking-luxury mb-6 font-semibold">
               Faltam <span className="text-amber-300">poucos dias</span> · É agora
             </p>
 
@@ -715,7 +715,7 @@ export default function LandingPage() {
               >
                 <summary className="cursor-pointer flex items-center justify-between p-6 list-none">
                   <p className="text-white font-medium pr-4">{faq.q}</p>
-                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-[#DCBA98] transition-transform group-open:rotate-45">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-[#ffb1c9] transition-transform group-open:rotate-45">
                     +
                   </span>
                 </summary>

@@ -33,7 +33,7 @@ export default function SiteFooter() {
   return (
     <footer className="relative mt-20 pt-14 pb-10 px-4 border-t border-white/5 overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-[#C8917A]/8 rounded-full blur-[100px]" />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-[#ff2d6a]/8 rounded-full blur-[100px]" />
       </div>
 
       <div className="relative max-w-7xl mx-auto">
@@ -45,8 +45,8 @@ export default function SiteFooter() {
               <svg width="36" height="36" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <defs>
                   <linearGradient id="hgf" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#C8917A"/>
-                    <stop offset="100%" stopColor="#D4AF70"/>
+                    <stop offset="0%" stopColor="#ff2d6a"/>
+                    <stop offset="100%" stopColor="#f6c986"/>
                   </linearGradient>
                 </defs>
                 <circle cx="17" cy="17" r="17" fill="url(#hgf)" opacity="0.15"/>
@@ -75,7 +75,7 @@ export default function SiteFooter() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-white/55 hover:text-[#DCBA98] text-sm transition-colors"
+                    className="text-white/55 hover:text-[#ffb1c9] text-sm transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -94,7 +94,7 @@ export default function SiteFooter() {
                     href={link.href}
                     target={link.href.startsWith("http") ? "_blank" : undefined}
                     rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                    className="text-white/55 hover:text-[#DCBA98] text-sm transition-colors"
+                    className="text-white/55 hover:text-[#ffb1c9] text-sm transition-colors"
                   >
                     {link.label}
                   </a>
@@ -111,7 +111,7 @@ export default function SiteFooter() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-white/55 hover:text-[#DCBA98] text-sm transition-colors"
+                    className="text-white/55 hover:text-[#ffb1c9] text-sm transition-colors"
                   >
                     {link.label}
                   </Link>

@@ -6,10 +6,10 @@ import type { Couple, Theme } from "@/lib/types";
 import type { MusicMeta } from "./page";
 
 const THEME_STYLES: Record<Theme, { bg: string; accent: string; text: string; accentHex: string; glowRgb: string }> = {
-  "black-luxury": { bg: "bg-[#080506]",  accent: "text-[#C8917A]", text: "text-[#FFF8F0]", accentHex: "#C8917A", glowRgb: "200,145,122" },
-  "neon-romance": { bg: "bg-[#060410]",  accent: "text-[#C4A5D4]", text: "text-[#FFF8F0]", accentHex: "#C4A5D4", glowRgb: "196,165,212" },
-  "minimal-love": { bg: "bg-[#080604]",  accent: "text-[#D4AF70]", text: "text-[#FFF8F0]", accentHex: "#D4AF70", glowRgb: "212,175,112" },
-  "velvet-dark":  { bg: "bg-[#060408]",  accent: "text-[#C8917A]", text: "text-[#FFF8F0]", accentHex: "#C8917A", glowRgb: "200,145,122" },
+  "black-luxury": { bg: "bg-[#07050a]",  accent: "text-[#ff2d6a]", text: "text-[#fff5f0]", accentHex: "#ff2d6a", glowRgb: "255,45,106" },
+  "neon-romance": { bg: "bg-[#060410]",  accent: "text-[#C4A5D4]", text: "text-[#fff5f0]", accentHex: "#C4A5D4", glowRgb: "196,165,212" },
+  "minimal-love": { bg: "bg-[#080604]",  accent: "text-[#f6c986]", text: "text-[#fff5f0]", accentHex: "#f6c986", glowRgb: "246,201,134" },
+  "velvet-dark":  { bg: "bg-[#060408]",  accent: "text-[#ff2d6a]", text: "text-[#fff5f0]", accentHex: "#ff2d6a", glowRgb: "255,45,106" },
 };
 
 const WAVEFORM = [4, 9, 6, 13, 5, 11, 7, 12, 4, 10];
@@ -305,7 +305,7 @@ export default function LovePage({ couple, musicMeta }: Props) {
 
             {/* Warm champagne dot grid */}
             <div className="pointer-events-none absolute inset-0 opacity-15"
-              style={{ backgroundImage: "radial-gradient(rgba(220,186,152,0.12) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+              style={{ backgroundImage: "radial-gradient(rgba(255,177,201,0.12) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
 
             {/* ── Stats strip ── */}
             <motion.div className="relative flex items-center justify-center py-2"

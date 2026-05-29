@@ -55,7 +55,7 @@ export default function SucessoClient() {
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.5 }}
-          className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#C8917A]/15 rounded-full blur-[140px]"
+          className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#ff2d6a]/15 rounded-full blur-[140px]"
         />
       </div>
 
@@ -68,10 +68,10 @@ export default function SucessoClient() {
             transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
             className="flex justify-center mb-8"
           >
-            <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-[#C8917A] via-[#DCBA98] to-[#D4AF70] flex items-center justify-center shadow-[0_0_80px_rgba(200,145,122,0.5)]">
+            <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-[#ff2d6a] via-[#ffb1c9] to-[#f6c986] flex items-center justify-center shadow-[0_0_80px_rgba(255,45,106,0.5)]">
               <span className="text-5xl sm:text-6xl">💌</span>
               <motion.span
-                className="absolute inset-0 rounded-full border-2 border-[#DCBA98]/50"
+                className="absolute inset-0 rounded-full border-2 border-[#ffb1c9]/50"
                 animate={{ scale: [1, 1.4, 1.4], opacity: [0.5, 0, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
               />
@@ -90,7 +90,7 @@ export default function SucessoClient() {
             <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4 tracking-tight leading-[0.95]">
               Sua página está{" "}
               <span className="text-gradient-fire">no ar</span>
-              <span className="text-[#C8917A]">.</span>
+              <span className="text-[#ff2d6a]">.</span>
             </h1>
             <p className="text-white/65 text-base sm:text-lg leading-relaxed max-w-md mx-auto">
               Agora é só compartilhar — e esperar a cara de quem você ama
@@ -109,7 +109,7 @@ export default function SucessoClient() {
               Seu link exclusivo
             </p>
             <div className="flex items-center justify-between gap-3">
-              <p className="text-[#DCBA98] font-medium break-all text-xs sm:text-sm font-mono-romantic">
+              <p className="text-[#ffb1c9] font-medium break-all text-xs sm:text-sm font-mono-romantic">
                 {pageUrl}
               </p>
               <button
@@ -136,13 +136,13 @@ export default function SucessoClient() {
             </button>
             <button
               onClick={shareNative}
-              className="py-3.5 rounded-2xl bg-gradient-to-r from-[#C8917A] to-[#DCBA98] text-white text-sm font-semibold shadow-[0_8px_30px_-8px_rgba(200,145,122,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-transform"
+              className="py-3.5 rounded-2xl bg-gradient-to-r from-[#ff2d6a] to-[#ffb1c9] text-white text-sm font-semibold shadow-[0_8px_30px_-8px_rgba(255,45,106,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-transform"
             >
               📲 Compartilhar
             </button>
             <Link
               href={`/${slug}`}
-              className="py-3.5 rounded-2xl bg-gradient-to-r from-[#C8917A] to-[#A8705C] text-white text-sm font-semibold shadow-[0_8px_30px_-8px_rgba(200,145,122,0.5)] hover:scale-[1.02] active:scale-[0.98] transition-transform text-center"
+              className="py-3.5 rounded-2xl bg-gradient-to-r from-[#ff2d6a] to-[#d6195a] text-white text-sm font-semibold shadow-[0_8px_30px_-8px_rgba(255,45,106,0.5)] hover:scale-[1.02] active:scale-[0.98] transition-transform text-center"
             >
               💖 Ver página
             </Link>
@@ -169,7 +169,7 @@ export default function SucessoClient() {
               Imprima e cole no seu presente, na caixinha de chocolate, na flor…
             </p>
             <div className="relative inline-block">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#C8917A]/22 to-[#D4AF70]/22 blur-2xl rounded-3xl" />
+              <div className="absolute inset-0 bg-gradient-to-br from-[#ff2d6a]/22 to-[#f6c986]/22 blur-2xl rounded-3xl" />
               <div className="relative bg-white rounded-2xl p-4 inline-block shadow-2xl">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={qrUrl} alt="QR Code" className="w-40 h-40 sm:w-44 sm:h-44 mx-auto" />
@@ -193,7 +193,7 @@ export default function SucessoClient() {
                   emoji: "⏰",
                   title: "Mensagem programada",
                   desc: "Dispara dia 12/06 às 06h",
-                  bg: "from-[#C8917A]/15",
+                  bg: "from-[#ff2d6a]/15",
                 },
                 {
                   href: "/presentes",
@@ -232,7 +232,7 @@ export default function SucessoClient() {
             Precisa de ajuda?{" "}
             <a
               href="mailto:eurora.com.br@gmail.com"
-              className="text-[#DCBA98] hover:text-[#E8D5B7]"
+              className="text-[#ffb1c9] hover:text-[#f9d6dc]"
             >
               eurora.com.br@gmail.com
             </a>

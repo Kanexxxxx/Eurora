@@ -73,7 +73,7 @@ function ProdutoCard({ p, index }: { p: Produto; index: number }) {
         <p className="text-white text-[12px] font-medium leading-snug line-clamp-2 mb-2">
           {p.name}
         </p>
-        <p className="text-[#DCBA98] text-[11px] font-semibold group-hover:text-[#E8D5B7] transition-colors">
+        <p className="text-[#ffb1c9] text-[11px] font-semibold group-hover:text-[#f9d6dc] transition-colors">
           Ver produto →
         </p>
       </div>

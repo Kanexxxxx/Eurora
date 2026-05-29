@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Termos e condições de uso da plataforma EURORA LOVE.",
 };
 
-const UPDATED = "20 de maio de 2026";
+const UPDATED = "28 de maio de 2026";
 
 export default function TermosPage() {
   return (
@@ -47,15 +47,21 @@ export default function TermosPage() {
           <Section title="3. Pagamentos e Reembolso">
             <p>
               Os pagamentos são processados pelo <strong>Asaas</strong>, plataforma brasileira de pagamentos.
-              Banco Central do Brasil. Após a confirmação do PIX, sua página é ativada instantaneamente.
+              Após a confirmação do PIX, sua página ou recurso digital é liberado automaticamente.
             </p>
             <p>
-              Garantimos reembolso integral em até <strong>7 (sete) dias</strong> corridos a partir da data do
-              pagamento, sem necessidade de justificativa, conforme o Código de Defesa do Consumidor (Art. 49,
-              CDC). Para solicitar, envie e-mail para{" "}
+              O consumidor pode exercer o direito de arrependimento no prazo legal de <strong>7 (sete) dias</strong>,
+              quando aplicável à contratação feita fora do estabelecimento comercial, conforme o art. 49 do Código
+              de Defesa do Consumidor. Para solicitar atendimento, envie e-mail para{" "}
               <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.site"}`} className="text-rose-300 hover:text-rose-200">
                 {process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.site"}
               </a>.
+            </p>
+            <p>
+              Solicitações de reembolso serão analisadas de acordo com a legislação brasileira e com estes Termos.
+              A EURORA LOVE poderá suspender ou remover páginas e acessos vinculados ao pedido após o estorno, bem
+              como negar benefícios ou reembolsos em casos de fraude, má-fé, chargeback indevido, violação destes
+              Termos ou uso abusivo da Plataforma.
             </p>
           </Section>
 
