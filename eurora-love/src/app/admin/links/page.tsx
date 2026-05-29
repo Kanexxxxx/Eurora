@@ -9,13 +9,14 @@ type LinkItem = {
   platform: string;
   url: string;
   categoria: string;
+  preco?: string | null;
   active: boolean;
   order: number;
   created_at: string;
 };
 
 const PLATAFORMAS = ["Amazon", "Shopee", "ML"];
-const EMPTY = { name: "", platform: "Amazon", url: "", categoria: "Presentes em Geral", active: true, order: 0 };
+const EMPTY = { name: "", platform: "Amazon", url: "", categoria: "Presentes em Geral", preco: "", active: true, order: 0 };
 type Tab = "adicionados" | "estaticos";
 
 function PlatBadge({ platform }: { platform: string }) {
@@ -204,6 +205,13 @@ export default function AdminLinks() {
                 ))}
               </select>
               <input
+                type="text"
+                placeholder="Preço (ex: R$ 49,90) — opcional"
+                value={form.preco ?? ""}
+                onChange={(e) => setForm({ ...form, preco: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:border-rose-500"
+              />
+              <input
                 type="number"
                 placeholder="Ordem (0 = primeiro)"
                 value={form.order}
@@ -275,7 +283,7 @@ export default function AdminLinks() {
                     {item.active ? "Ativo" : "Inativo"}
                   </button>
                   <button
-                    onClick={() => setForm({ ...item })}
+                    onClick={() => setForm({ ...item, preco: item.preco ?? "" })}
                     className="text-white/40 hover:text-white px-2 py-1 transition-colors"
                     title="Editar"
                   >

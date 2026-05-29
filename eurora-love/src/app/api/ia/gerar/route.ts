@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { checkRateLimit } from "@/server/rateLimit";
 
 const schema = z.object({
   tipo: z.enum(["carta", "poema", "musica", "presente", "bio", "convite"]),
@@ -365,27 +366,6 @@ Eu sei que fui o(a) mais sortudo(a) que já existiu nesse lado
 [Final]
 Fica comigo, meu bem
 Que eu te amo sem mais ninguém`,
-
-    `[Intro]
-{historia}
-
-[Verso 1]
-Desde aquele dia eu não fui mais o mesmo(a)
-Você me pegou de mansinho, foi devagar
-Me ensinou que amor não precisa de cinema
-Às vezes é só você do meu lado a me olhar
-
-[Refrão]
-Te amo do jeitinho que você é
-Teimoso(a), sincero(a), meu bem
-Com defeito e tudo mais
-Você é o que me faz bem
-
-[Verso 2]
-Sertão, cidade grande, tanto faz o lugar
-Onde você estiver, lá é o meu lar
-E se a vida complicar e o mundo apertar
-Eu quero estar do seu lado pra te ajudar`,
   ],
 
   pagode: [
@@ -411,23 +391,6 @@ No fim do dia cansado, quando chego no portão
 Fica, meu bem
 Fica comigo
 Você é o pagode que eu quero a vida toda`,
-
-    `[Verso 1]
-{historia}
-E foi nesse momento que eu percebi
-Que o destino caprichou demais em você
-
-[Refrão]
-Amor de verdade não vem com manual
-Não tem horário certo, não tem script final
-Aparece assim, de mansinho, sem avisar
-E antes de você saber, já está te dominar
-
-[Verso 2]
-Eu que não acreditava em coisa assim
-Que dizia que amor era papo de fim
-Tive que engolir o orgulho e admitir
-Que sem você do meu lado, não sei mais existir`,
   ],
 
   funk: [
@@ -452,26 +415,6 @@ Não é a vida fácil que me fez te amar
 É nos dias difíceis que você faz eu aguentar
 Parceiro(a) de verdade, de fé, de coração
 Você é minha escolha, minha melhor decisão`,
-
-    `[Verso 1]
-{historia}
-Desde então eu só sei de uma coisa
-Que você é a parte boa da minha história
-
-[Refrão]
-Não é fama, não é dinheiro
-Não é nada material
-O que eu quero de verdade
-É você, simples e real
-
-Seu sorriso é meu tesouro
-Seu abraço é meu lar
-Não tem lugar nesse mundo
-Onde eu prefira estar
-
-[Bridge]
-E se alguém perguntar o que me faz feliz
-Vou falar seu nome sem hesitar`,
   ],
 
   forro: [
@@ -497,24 +440,6 @@ Fica aqui comigo
 Dança mais um pouco
 Que eu tô apaixonado(a)
 E tô ficando louco(a)`,
-
-    `[Verso 1]
-{historia}
-Foi num lugar simples, numa festa comum
-Mas o que eu senti não era coisa nenhuma
-Era tudo — era você — era o começo de um
-
-[Refrão]
-Vem cá, meu amor, vem dançar comigo
-Que a noite é nossa e eu tô contigo
-Forró na alma, você no coração
-É assim que eu quero, pra toda estação
-
-[Verso 2]
-Não precisa de luxo, não precisa de show
-Só precisa de você, do seu jeito, do seu flow
-Simples e bonito, verdadeiro e só
-O amor que a gente tem vale mais que tudo, safo`,
   ],
 
   pop: [
@@ -539,47 +464,6 @@ Do melhor que já me aconteceu
 Não quero imaginar um dia sem você
 É simples assim
 Você virou necessário(a) pra mim`,
-
-    `[Verso 1]
-Acordei pensando em você
-Mas isso não é novidade
-{historia}
-E aí entendi: você é minha realidade
-
-[Pré-refrão]
-Não é sonho, não é ilusão
-É o amor mais real que eu já senti
-
-[Refrão]
-Você chegou e ficou
-Virou parte de quem eu sou
-Não é coincidência, não é sorte
-É a vida me entregando você de uma vez
-E eu tô de mãos abertas
-Pra receber tudo que você me dá
-
-[Verso 2]
-Com você aprendi que o amor tem textura
-Tem cheiro, tem gosto, tem temperatura
-É quente quando abraça, frio quando vai embora
-E é por isso que eu faço de tudo pra você nunca ir embora`,
-
-    `[Verso 1]
-{historia}
-E foi assim, num momento qualquer
-Que eu percebi que você era especial
-
-[Refrão]
-Ordinary love, extraordinary feeling
-Que você me dá todo dia sem saber
-Eu poderia fingir que não é nada
-Mas seria mentira — você é tudo pra mim
-
-[Bridge]
-E não precisa de grande cinema
-Não precisa de lua cheia
-Só precisa de você, aqui comigo
-E tudo já é perfeito assim`,
   ],
 
   mpb: [
@@ -605,29 +489,6 @@ E que você existe por mim também
 Que nós somos esse lugar
 Onde o mundo lá fora
 Pode esperar`,
-
-    `[Verso 1]
-Tem uma música que toca quando eu penso em você
-{historia}
-É a trilha de tudo que a gente construiu
-
-[Refrão]
-Bossa nova do coração
-Amor em compasso de dois
-Você na minha canção
-Eu na sua — ambos dois
-
-[Verso 2]
-Não é preciso dizer tudo com palavras
-Às vezes um olhar já diz demais
-A gente aprendeu a se falar em silêncio
-E esse é o idioma que mais eu gosto de falar
-
-[Final]
-Que essa música nunca pare
-Que esse amor não tenha fim
-Que você continue sendo
-A melhor parte de mim`,
   ],
 
   rock: [
@@ -719,32 +580,6 @@ Escolhi isso porque você merecia algo que ficasse. Um lembrete de que eu te vej
 Você aparece na minha vida todo dia fazendo dela melhor. Hoje é minha vez de aparecer na sua.
 
 Feliz {momento}! Com carinho, 🎁`,
-
-  `Pra quem tornou meu {momento} inesquecível —
-
-Às vezes a gente não encontra o presente perfeito. Não porque não se importa — mas porque a pessoa é boa demais pra caber numa caixa.
-
-Então {presente} vem com um aviso: isso é só o símbolo. O real presente sou eu, aqui, do seu lado, prometendo continuar sendo.
-
-Te amo do jeito mais inteiro que eu sei.`,
-
-  `{presente} — com uma mensagem:
-
-Você não precisa de datas especiais pra ser especial. Você já é. Todos os dias, de formas que às vezes você mesma(o) não percebe.
-
-Mas o {momento} me deu uma boa desculpa pra dizer isso em voz alta, com embrulho e tudo.
-
-Porque você merece ouvir. Merece sentir. Merece saber.
-
-Com todo o meu amor, ❤️`,
-
-  `Para meu(minha) {momento} —
-
-{presente} com o carinho de alguém que te admira demais pra fingir que é um dia comum.
-
-Que esse {momento} seja tão bonito quanto você. E que esse presente, pequeno que seja, carregue o tamanho do que eu sinto por você.
-
-Parabéns. Com amor.`,
 ];
 
 // ─── BIOS ─────────────────────────────────────────────────────────────────────
@@ -771,26 +606,6 @@ ela(e) foi minha melhor decisão
 a melhor parte de qualquer dia
 é saber que você existe 🌙
 e que você é meu(minha)`,
-
-  `desde {data} que eu não sou mais o(a) mesmo(a) 💘
-{vibe}
-ele(a) chegou sem avisar e ficou pra sempre
-e eu deixei porque era ótimo demais pra resistir`,
-
-  `a gente é {vibe} ☁️
-juntos desde {data} — sem planos de parar
-dois que descobriram que a vida faz mais sentido assim
-juntos, bagunçados e felizes 💛`,
-
-  `{vibe}, juntos, pra sempre 🌹
-desde {data} ele(a) é meu lar favorito
-não precisa de endereço
-só precisa chegar`,
-
-  `juntos desde {data} ❤️
-{vibe} é pouco pra descrever o que somos
-mas é um começo
-o resto você vê nos stories`,
 ];
 
 // ─── CONVITES ─────────────────────────────────────────────────────────────────
@@ -828,40 +643,9 @@ Não tem confete, não tem multidão.
 Mas tem você — e isso já faz de tudo a melhor versão possível.
 
 Você vem? ❤️`,
-
-  `Ei, {ocasiao} está chegando.
-
-E eu queria passar ele(a) com você.
-Em {local}.
-Do jeito mais simples possível, porque com você o simples já é bonito demais.
-
-Não é um convite formal. É um pedido de alguém que te quer por perto.
-
-Vem? 🌙`,
-
-  `Para você, com intenção:
-
-Estou planejando um {ocasiao} especial.
-Local: {local}.
-Motivo: você merece.
-
-Não precisa de mais explicação que essa.
-Me fala se está livre — mas faço questão de que fique. ✨`,
-
-  `Atenção: convite exclusivo.
-
-Destinatário(a): você.
-Ocasião: {ocasiao}.
-Local: {local}.
-Dress code: seja você mesmo(a).
-RSVP: sim. A resposta é sim.
-
-Eu já sei. Só precisava tornar oficial.
-
-Com amor,`,
 ];
 
-// ─── GENERATOR ───────────────────────────────────────────────────────────────
+// ─── TEMPLATE GENERATOR ──────────────────────────────────────────────────────
 
 function generate(tipo: string, campos: Record<string, string>): string {
   const seed = Object.values(campos).join("|");
@@ -869,10 +653,8 @@ function generate(tipo: string, campos: Record<string, string>): string {
   switch (tipo) {
     case "carta":
       return fill(pick(CARTAS, seed), campos);
-
     case "poema":
       return fill(pick(POEMAS, seed), campos);
-
     case "musica": {
       const estilo = (campos.estilo ?? "").toLowerCase();
       let pool: string[];
@@ -896,42 +678,103 @@ function generate(tipo: string, campos: Record<string, string>): string {
       ];
       return fill(pick(pool, seed), campos);
     }
-
     case "presente":
       return fill(pick(PRESENTES, seed), campos);
-
     case "bio":
       return fill(pick(BIOS, seed), campos);
-
     case "convite":
       return fill(pick(CONVITES, seed), campos);
-
     default:
       return "Texto gerado com carinho. 💌";
   }
 }
 
-// ─── RATE LIMIT ──────────────────────────────────────────────────────────────
+// ─── DEEPSEEK ────────────────────────────────────────────────────────────────
 
-const RATE_LIMIT = new Map<string, { count: number; ts: number }>();
+const SYSTEM_PROMPT = `Você é um escritor especializado em textos românticos em português brasileiro. Seu estilo é moderno, profundo e poético — sem clichês baratos. Crie textos que pareçam escritos por uma pessoa real apaixonada. Use linguagem natural, frases variadas, metáforas sutis. Nunca use "nosso amor é eterno", "você é minha metade" ou frases genéricas de cartão de Natal. Responda APENAS com o texto solicitado, sem introduções, sem explicações, sem aspas, sem comentários.`;
 
-function checkRL(ip: string): boolean {
-  const now = Date.now();
-  const e = RATE_LIMIT.get(ip);
-  if (!e || now - e.ts > 60_000) {
-    RATE_LIMIT.set(ip, { count: 1, ts: now });
-    return true;
+function buildUserPrompt(tipo: string, campos: Record<string, string>): string {
+  const c = campos;
+  switch (tipo) {
+    case "carta":
+      return `Escreva uma carta romântica íntima para ${c.para || "meu amor"}. Lembrança especial mencionada: "${c.lembranca || "um momento inesquecível"}". Tom desejado: ${c.tom || "profundo e sincero"}. Use 3-4 parágrafos curtos. Termine com uma despedida carinhosa mas sem nome do remetente.`;
+    case "poema":
+      return `Escreva um poema romântico para ${c.nome || "meu amor"}. Sentimento expresso: "${c.sentimento || "amor profundo"}". Formato: verso livre, 3-4 estrofes curtas. Comece com o nome da pessoa.`;
+    case "musica":
+      return `Escreva uma letra de música no estilo ${c.estilo || "pop romântico"}. História do casal: "${c.historia || "nos conhecemos e nos apaixonamos"}". Estrutura: [Verso 1], [Refrão], [Verso 2], [Final]. 3-4 linhas por seção.`;
+    case "presente":
+      return `Escreva uma mensagem curta (3-4 parágrafos) para acompanhar o presente "${c.presente || "este presente"}" na ocasião "${c.momento || "data especial"}". Íntima, carinhosa, personalizada.`;
+    case "bio":
+      return `Escreva uma bio romântica para perfil de casal no Instagram. Juntos desde: ${c.data || "algum tempo"}. Vibe do casal: ${c.vibe || "apaixonados"}. Máximo 4 linhas curtas. Use emojis sutis. Seja criativo e único.`;
+    case "convite":
+      return `Escreva um convite romântico para ${c.ocasiao || "um encontro especial"} em ${c.local || "um lugar especial"}. Curto (3-4 linhas), íntimo, como escrito à mão. Pode ter um toque gentil de humor.`;
+    default:
+      return `Escreva um texto romântico personalizado em português brasileiro.`;
   }
-  if (e.count >= 30) return false;
-  e.count++;
-  return true;
 }
+
+async function callDeepSeek(tipo: string, campos: Record<string, string>): Promise<string> {
+  const apiKey = process.env.DEEPSEEK_API_KEY;
+  if (!apiKey) return generate(tipo, campos);
+
+  try {
+    const res = await fetch("https://api.deepseek.com/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "deepseek-chat",
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: buildUserPrompt(tipo, campos) },
+        ],
+        max_tokens: 600,
+        temperature: 0.92,
+      }),
+      signal: AbortSignal.timeout(15_000),
+    });
+
+    if (!res.ok) return generate(tipo, campos);
+
+    const data = await res.json();
+    const texto = data.choices?.[0]?.message?.content?.trim();
+    return texto || generate(tipo, campos);
+  } catch {
+    return generate(tipo, campos);
+  }
+}
+
+// ─── SESSION TRACKING (server-side, corrige bypass de paywall) ───────────────
+// Usa header Cookie/Set-Cookie diretamente para evitar dependência de
+// next/dist/compiled/cookie que pode falhar em builds standalone.
+
+const SESSION_MAP = new Map<string, number>();
+
+function getSessionCount(sessionId: string): number {
+  return SESSION_MAP.get(sessionId) ?? 0;
+}
+
+function incrementSession(sessionId: string): void {
+  SESSION_MAP.set(sessionId, (SESSION_MAP.get(sessionId) ?? 0) + 1);
+}
+
+function parseCookieHeader(header: string | null, name: string): string | null {
+  if (!header) return null;
+  for (const part of header.split(";")) {
+    const [k, v] = part.trim().split("=");
+    if (k.trim() === name) return v?.trim() ?? null;
+  }
+  return null;
+}
+
+const FREE_AI_GENERATIONS = 1;
 
 // ─── HANDLER ─────────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  if (!checkRL(ip)) {
+  if (!checkRateLimit(req, { key: "romantic-ai", limit: 5, windowMs: 60_000 })) {
     return NextResponse.json({ error: "Muitas requisições. Aguarde 1 minuto." }, { status: 429 });
   }
 
@@ -942,7 +785,32 @@ export async function POST(req: NextRequest) {
   }
 
   const { tipo, campos } = parsed.data;
-  const texto = generate(tipo, campos);
+  const hasAI = !!process.env.DEEPSEEK_API_KEY;
 
-  return NextResponse.json({ texto });
+  // Sem chave de API → templates grátis ilimitados (modo dev/fallback)
+  if (!hasAI) {
+    return NextResponse.json({ texto: generate(tipo, campos), source: "template" });
+  }
+
+  // Com chave de API → verificar sessão server-side via header raw
+  const cookieHeader = req.headers.get("cookie");
+  const existingId = parseCookieHeader(cookieHeader, "ia_sid");
+  const sessionId = existingId ?? crypto.randomUUID();
+  const count = getSessionCount(sessionId);
+
+  if (count >= FREE_AI_GENERATIONS) {
+    return NextResponse.json({ error: "Limite gratuito atingido.", paywall: true }, { status: 403 });
+  }
+
+  const texto = await callDeepSeek(tipo, campos);
+  incrementSession(sessionId);
+
+  const response = NextResponse.json({ texto, source: "ai" });
+  // Set-Cookie via header raw — sem depender de next/dist/compiled/cookie
+  response.headers.set(
+    "Set-Cookie",
+    `ia_sid=${sessionId}; HttpOnly; Max-Age=86400; SameSite=Lax; Path=/`
+  );
+
+  return response;
 }

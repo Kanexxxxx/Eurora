@@ -1,14 +1,64 @@
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { WizardData, Theme, Plan } from "@/lib/types";
 
-const THEMES: { id: Theme; name: string; description: string; bg: string; accent: string }[] = [
-  { id: "black-luxury", name: "Black Luxury", description: "Sofisticado e elegante", bg: "from-zinc-900 to-black", accent: "border-[#ff2d6a]" },
-  { id: "neon-romance", name: "Neon Romance", description: "Intenso e apaixonado", bg: "from-purple-950 to-black", accent: "border-fuchsia-500" },
-  { id: "minimal-love", name: "Minimal Love", description: "Limpo e atemporal", bg: "from-stone-900 to-black", accent: "border-amber-400" },
-  { id: "velvet-dark", name: "Velvet Dark", description: "Suave e romântico", bg: "from-rose-950 to-black", accent: "border-[#ff2d6a]" },
+const THEMES: {
+  id: Theme;
+  name: string;
+  description: string;
+  bg: string;
+  glow: string;
+  accent: string;
+  accentColor: string;
+  deco: string;
+  badge: string;
+}[] = [
+  {
+    id: "black-luxury",
+    name: "Black Luxury",
+    description: "Sofisticado e elegante",
+    bg: "from-zinc-900 via-zinc-950 to-black",
+    glow: "rgba(255,45,106,0.20)",
+    accent: "border-[#ff2d6a]",
+    accentColor: "#ff2d6a",
+    deco: "✦ ✦ ✦",
+    badge: "Clássico",
+  },
+  {
+    id: "neon-romance",
+    name: "Neon Romance",
+    description: "Intenso e apaixonado",
+    bg: "from-purple-950 via-violet-950 to-black",
+    glow: "rgba(168,85,247,0.25)",
+    accent: "border-fuchsia-500",
+    accentColor: "#d946ef",
+    deco: "💜 ✨ 💜",
+    badge: "Vibrante",
+  },
+  {
+    id: "minimal-love",
+    name: "Minimal Love",
+    description: "Limpo e atemporal",
+    bg: "from-stone-800 via-stone-900 to-black",
+    glow: "rgba(251,191,36,0.18)",
+    accent: "border-amber-400",
+    accentColor: "#f59e0b",
+    deco: "· · ·",
+    badge: "Minimalista",
+  },
+  {
+    id: "velvet-dark",
+    name: "Velvet Dark",
+    description: "Suave e romântico",
+    bg: "from-rose-950 via-red-950 to-black",
+    glow: "rgba(255,45,106,0.22)",
+    accent: "border-rose-400",
+    accentColor: "#fb7185",
+    deco: "♥ ♥ ♥",
+    badge: "Romântico",
+  },
 ];
 
 const TOTAL_STEPS = 8;
@@ -26,6 +76,129 @@ const defaultData: WizardData = {
 };
 
 const inputClass = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff2d6a] transition-colors";
+
+const MUSIC_EXAMPLES = [
+  { url: "https://open.spotify.com/track/1tmD4Xpd1YNSGCG5AYqHDk", title: "Última Saudade", artist: "Sertanejo", thumb: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e025856830b78bbf4343b9305", platform: "spotify" },
+  { url: "https://open.spotify.com/track/3xgrWGYrqZVL7aAvZTm2MA", title: "Saudade de Quem Eu Sou", artist: "Sertanejo", thumb: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02ea8c31c9f8657e8c3812eb", platform: "spotify" },
+  { url: "https://open.spotify.com/track/5jP9oqulg2Dz6yLwLYj5KO", title: "Seja Ex", artist: "Sertanejo", thumb: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e025856830b78bbf4343b9305", platform: "spotify" },
+  { url: "https://youtu.be/rtOvBOTyX00", title: "A Thousand Years", artist: "Christina Perri", thumb: "https://i.ytimg.com/vi/rtOvBOTyX00/hqdefault.jpg", platform: "youtube" },
+];
+
+function useMusicPreview(url: string) {
+  const [preview, setPreview] = useState<{ title: string; thumb: string } | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setPreview(null);
+    if (!url || (!url.includes("spotify") && !url.includes("youtube") && !url.includes("youtu.be"))) return;
+
+    timerRef.current = setTimeout(async () => {
+      try {
+        const endpoint = url.includes("spotify")
+          ? `https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`
+          : `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
+        const r = await fetch(endpoint);
+        if (!r.ok) return;
+        const d = await r.json() as { title?: string; thumbnail_url?: string };
+        if (d.title) setPreview({ title: d.title, thumb: d.thumbnail_url ?? "" });
+      } catch { /* ignore */ }
+    }, 600);
+
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [url]);
+
+  return preview;
+}
+
+function MusicStep({ plan, value, onChange, onUpgrade }: {
+  plan: string;
+  value: string;
+  onChange: (v: string) => void;
+  onUpgrade: () => void;
+}) {
+  const preview = useMusicPreview(value);
+
+  if (plan !== "premium") {
+    return (
+      <div>
+        <p className="text-xs uppercase tracking-widest text-[#ffb1c9] mb-2">Passo 4</p>
+        <h2 className="font-heading text-2xl sm:text-3xl font-bold text-white mb-2">A música de vocês</h2>
+        <div className="glass rounded-2xl p-6 text-center">
+          <p className="text-amber-400 text-sm font-medium mb-2">🎵 Recurso Premium</p>
+          <p className="text-gray-400 text-sm">Faça upgrade para adicionar música à sua página.</p>
+          <button type="button" onClick={onUpgrade} className="mt-4 px-6 py-2 bg-[#ff2d6a] hover:bg-[#d6195a] text-white text-sm font-semibold rounded-xl transition-all">
+            Upgrade para Premium (R$ 39)
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <p className="text-xs uppercase tracking-widest text-[#ffb1c9] mb-2">Passo 4</p>
+      <h2 className="font-heading text-2xl sm:text-3xl font-bold text-white mb-2">A música de vocês</h2>
+      <p className="text-gray-400 text-sm mb-4">Cole o link do Spotify ou YouTube (opcional).</p>
+
+      {/* Input */}
+      <input
+        type="url"
+        inputMode="url"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="https://open.spotify.com/track/... ou youtu.be/..."
+        className={inputClass}
+      />
+
+      {/* Live preview */}
+      {preview && (
+        <div className="mt-3 flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3">
+          {preview.thumb && (
+            <img src={preview.thumb} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-white text-sm font-medium truncate">{preview.title}</p>
+            <p className="text-white/40 text-xs">
+              {value.includes("spotify") ? "🎵 Spotify" : "▶ YouTube"}
+            </p>
+          </div>
+          <button type="button" onClick={() => onChange("")} className="text-white/30 hover:text-white/60 text-lg leading-none">×</button>
+        </div>
+      )}
+
+      {/* Examples */}
+      <p className="text-white/40 text-xs uppercase tracking-wider mt-5 mb-3">Exemplos populares</p>
+      <div className="grid grid-cols-2 gap-2">
+        {MUSIC_EXAMPLES.map((ex) => (
+          <button
+            type="button"
+            key={ex.url}
+            onClick={() => onChange(ex.url)}
+            className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 border transition-all text-left ${
+              value === ex.url
+                ? "border-[#ff2d6a]/50 bg-[#ff2d6a]/10"
+                : "border-white/8 bg-white/3 hover:border-white/20 hover:bg-white/6"
+            }`}
+          >
+            <img
+              src={ex.thumb}
+              alt=""
+              className="w-9 h-9 rounded-lg object-cover shrink-0"
+              loading="lazy"
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-white text-[11px] font-semibold truncate leading-tight">{ex.title}</p>
+              <p className="text-white/40 text-[10px] mt-0.5">
+                {ex.platform === "spotify" ? "🎵 Spotify" : "▶ YouTube"}
+              </p>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function WizardClient() {
   const router = useRouter();
@@ -231,31 +404,12 @@ export default function WizardClient() {
 
             {/* Step 4: Music */}
             {step === 4 && (
-              <div>
-                <p className="text-xs uppercase tracking-widest text-[#ffb1c9] mb-2">Passo 4</p>
-                <h2 className="font-heading text-2xl sm:text-3xl font-bold text-white mb-2">A música de vocês</h2>
-                <p className="text-gray-400 text-sm mb-6">
-                  {data.plan === "basic" ? "Disponível no plano Premium." : "Cole o link do Spotify ou YouTube (opcional)."}
-                </p>
-                {data.plan === "premium" ? (
-                  <input
-                    type="url"
-                    inputMode="url"
-                    value={data.music_url}
-                    onChange={(e) => update("music_url", e.target.value)}
-                    placeholder="https://open.spotify.com/track/..."
-                    className={inputClass}
-                  />
-                ) : (
-                  <div className="glass rounded-2xl p-6 text-center">
-                    <p className="text-amber-400 text-sm font-medium mb-2">🎵 Recurso Premium</p>
-                    <p className="text-gray-400 text-sm">Faça upgrade para adicionar música à sua página.</p>
-                    <button onClick={() => update("plan", "premium")} className="mt-4 px-6 py-2 bg-[#ff2d6a] hover:bg-[#d6195a] active:bg-[#ad1649] text-white text-sm font-semibold rounded-xl transition-all">
-                      Upgrade para Premium (R$ 39)
-                    </button>
-                  </div>
-                )}
-              </div>
+              <MusicStep
+                plan={data.plan}
+                value={data.music_url}
+                onChange={(v) => update("music_url", v)}
+                onUpgrade={() => update("plan", "premium")}
+              />
             )}
 
             {/* Step 5: Date */}
@@ -279,30 +433,78 @@ export default function WizardClient() {
               <div>
                 <p className="text-xs uppercase tracking-widest text-[#ffb1c9] mb-2">Passo 6</p>
                 <h2 className="font-heading text-2xl sm:text-3xl font-bold text-white mb-2">Escolha o tema</h2>
-                <p className="text-gray-400 text-sm mb-6">
+                <p className="text-gray-400 text-sm mb-5">
                   {data.plan === "basic" ? "2 temas disponíveis no Basic." : "Todos os 4 temas Premium."}
                 </p>
                 <div className="grid grid-cols-2 gap-3">
-                  {THEMES.filter((_, i) => data.plan === "premium" || i < 2).map((theme) => (
-                    <button
-                      key={theme.id}
-                      onClick={() => update("theme", theme.id)}
-                      className={`relative h-24 sm:h-28 rounded-2xl bg-linear-to-br ${theme.bg} border-2 transition-all active:scale-[0.97] ${
-                        data.theme === theme.id ? `${theme.accent} scale-[1.02]` : "border-white/10"
-                      }`}
-                    >
-                      <div className="absolute inset-0 flex flex-col items-start justify-end p-3">
-                        <p className="text-white font-semibold text-sm">{theme.name}</p>
-                        <p className="text-gray-400 text-xs">{theme.description}</p>
-                      </div>
-                      {data.theme === theme.id && (
-                        <div className="absolute top-2 right-2 w-5 h-5 bg-[#ff2d6a] rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs">✓</span>
+                  {THEMES.map((theme, i) => {
+                    const locked = data.plan === "basic" && i >= 2;
+                    const selected = data.theme === theme.id;
+                    return (
+                      <button
+                        key={theme.id}
+                        onClick={() => { if (!locked) update("theme", theme.id); }}
+                        disabled={locked}
+                        className={`relative h-36 sm:h-44 rounded-2xl bg-linear-to-br ${theme.bg} border-2 transition-all duration-200 text-left overflow-hidden
+                          ${selected ? `${theme.accent} shadow-lg` : locked ? "border-white/5 opacity-50" : "border-white/10 hover:border-white/25 active:scale-[0.97]"}
+                        `}
+                        style={selected ? { boxShadow: `0 0 24px ${theme.glow}` } : undefined}
+                      >
+                        {/* Decorative glow blob */}
+                        <div
+                          className="absolute -top-6 -right-6 w-24 h-24 rounded-full blur-2xl opacity-40"
+                          style={{ background: theme.accentColor }}
+                        />
+
+                        {/* Decorative symbols */}
+                        <div className="absolute top-3 left-0 right-0 text-center text-base tracking-[0.3em] opacity-30"
+                          style={{ color: theme.accentColor }}>
+                          {theme.deco}
                         </div>
-                      )}
-                    </button>
-                  ))}
+
+                        {/* Mini page preview */}
+                        <div className="absolute top-9 left-3 right-3 rounded-lg overflow-hidden"
+                          style={{ background: "rgba(255,255,255,0.04)", border: `1px solid rgba(255,255,255,0.07)`, height: "44px" }}>
+                          <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, ${theme.accentColor}, rgba(246,201,134,0.6))` }} />
+                          <div className="px-2 pt-1.5 flex gap-1">
+                            <div className="h-1.5 rounded-full flex-1 opacity-30" style={{ background: theme.accentColor }} />
+                            <div className="h-1.5 rounded-full w-8 opacity-20 bg-white" />
+                          </div>
+                          <div className="px-2 pt-1 flex gap-1">
+                            <div className="h-1 rounded-full w-14 opacity-15 bg-white" />
+                          </div>
+                        </div>
+
+                        {/* Badge */}
+                        <div className="absolute top-3 right-3">
+                          {selected ? (
+                            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
+                              style={{ background: theme.accentColor, color: "#07050a" }}>✓</div>
+                          ) : locked ? (
+                            <span className="text-xs">🔒</span>
+                          ) : (
+                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                              style={{ background: `${theme.accentColor}22`, color: theme.accentColor, border: `1px solid ${theme.accentColor}44` }}>
+                              {theme.badge}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Label */}
+                        <div className="absolute bottom-0 left-0 right-0 px-3 pb-3 pt-6"
+                          style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)" }}>
+                          <p className="text-white font-bold text-sm leading-tight">{theme.name}</p>
+                          <p className="text-xs mt-0.5" style={{ color: `${theme.accentColor}cc` }}>{theme.description}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
+                {data.plan === "basic" && (
+                  <p className="text-center text-xs text-white/30 mt-3">
+                    🔒 Neon Romance e Velvet Dark disponíveis no <span className="text-amber-400">Premium</span>
+                  </p>
+                )}
               </div>
             )}
 

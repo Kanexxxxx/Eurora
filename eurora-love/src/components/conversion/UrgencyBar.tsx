@@ -2,12 +2,24 @@
 
 import { useEffect, useState } from "react";
 
-// Counts down to Valentine's Day in Brazil (June 12, 2026)
 const TARGET = new Date("2026-06-12T19:00:00-03:00").getTime();
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
 }
+
+const BASE_ITEMS = [
+  { icon: "🔥", text: "DIA DOS NAMORADOS" },
+  { icon: "⏱️", text: "COUNTDOWN" },
+  { icon: "💝", text: "Página do Amor com fotos + música + relógio ao vivo" },
+  { icon: "🎁", text: "250+ presentes secretos · desbloqueio via PIX" },
+  { icon: "⚡", text: "Entrega imediata após o pagamento" },
+  { icon: "💌", text: "Mensagem programada para o momento certo" },
+  { icon: "✨", text: "IA Romântica · cartas · poemas · letras de música" },
+  { icon: "🔒", text: "Pagamento 100% seguro — PIX ou cartão" },
+  { icon: "🌹", text: "A página mais bonita que ele(a) já recebeu" },
+  { icon: "💘", text: "Mais de 500 casais já criaram sua página do amor" },
+];
 
 export default function UrgencyBar() {
   const [t, setT] = useState({ d: 0, h: 0, m: 0, s: 0 });
@@ -27,16 +39,32 @@ export default function UrgencyBar() {
     return () => clearInterval(i);
   }, []);
 
+  const countdown = `${pad(t.d)}d ${pad(t.h)}h ${pad(t.m)}m ${pad(t.s)}s`;
+
+  const items = BASE_ITEMS.map((item) =>
+    item.icon === "⏱️"
+      ? { icon: "⏱️", text: `Faltam ${countdown} para o Dia dos Namorados` }
+      : item
+  );
+
+  const allItems = [...items, ...items];
+
   return (
-    <div className="w-full bg-gradient-to-r from-[#d6195a] via-[#ff2d6a] to-[#f6c986] text-white text-xs sm:text-sm py-2 px-4 text-center font-medium animate-gradient-shift relative overflow-hidden">
-      <span className="absolute inset-0 animate-shimmer-bg pointer-events-none" />
-      <span className="relative">
-        🔥 DIA DOS NAMORADOS em{" "}
-        <strong className="font-mono-romantic tabular-nums">
-          {pad(t.d)}d {pad(t.h)}h {pad(t.m)}m {pad(t.s)}s
-        </strong>{" "}
-        · Preços especiais · Entrega imediata após o PIX
-      </span>
+    <div className="urgency-bar-bg w-full overflow-hidden relative py-2.5">
+      <div className="urgency-bar-fade-left absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none" />
+      <div className="urgency-bar-fade-right absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none" />
+
+      <div className="animate-ticker flex items-center whitespace-nowrap">
+        {allItems.map((item, i) => (
+          <span key={i} className="inline-flex items-center gap-2 px-7">
+            <span className="text-xl leading-none">{item.icon}</span>
+            <span className="text-white text-sm font-semibold tracking-wide drop-shadow-sm">
+              {item.text}
+            </span>
+            <span className="text-white/40 text-lg ml-2">·</span>
+          </span>
+        ))}
+      </div>
     </div>
   );
 }

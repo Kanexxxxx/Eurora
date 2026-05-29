@@ -1,72 +1,159 @@
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/server/db/prisma";
 
 const cache = new Map<string, { url: string | null; ts: number }>();
-const TTL = 24 * 60 * 60 * 1000; // 24h in-memory cache
+const TTL = 24 * 60 * 60 * 1000;
+
+const BROWSER_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+  "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+  "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8",
+  "Accept-Encoding": "gzip, deflate, br",
+  "Cache-Control": "no-cache",
+  "Sec-Fetch-Dest": "document",
+  "Sec-Fetch-Mode": "navigate",
+  "Sec-Fetch-Site": "none",
+  "Upgrade-Insecure-Requests": "1",
+};
+
+function extractOgImage(html: string): string | null {
+  const og = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
+    ?? html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
+  if (og?.[1]?.startsWith("http")) return og[1];
+
+  const tw = html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i)
+    ?? html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image["']/i);
+  if (tw?.[1]?.startsWith("http")) return tw[1];
+
+  return null;
+}
+
+function extractAmazonImage(html: string): string | null {
+  const dyn = html.match(/data-a-dynamic-image="([^"]+)"/);
+  if (dyn) {
+    const decoded = dyn[1].replace(/&quot;/g, '"');
+    const m = decoded.match(/(https:\/\/m\.media-amazon\.com\/images\/I\/[^"]+\.jpg)/);
+    if (m) return m[1].replace(/\._[A-Z0-9,_]+_\./, "._SL400_.");
+  }
+  const fb = html.match(/(https:\/\/m\.media-amazon\.com\/images\/I\/[A-Za-z0-9%+_-]+\._[A-Z0-9,_]+_\.(?:jpg|jpeg|png|webp))/);
+  if (fb) return fb[1].replace(/\._[A-Z0-9,_]+_\./, "._SL400_.");
+  return null;
+}
+
+async function fetchImage(targetUrl: string): Promise<string | null> {
+  const res = await fetch(targetUrl, {
+    headers: BROWSER_HEADERS,
+    redirect: "follow",
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!res.ok) return null;
+  const html = await res.text();
+
+  // Amazon-specific extractor first
+  if (targetUrl.includes("amazon")) {
+    const img = extractAmazonImage(html);
+    if (img) return img;
+  }
+
+  return extractOgImage(html);
+}
 
 export async function GET(req: NextRequest) {
-  const asin = req.nextUrl.searchParams.get("asin");
+  const { searchParams } = req.nextUrl;
+  const asin = searchParams.get("asin");
+  const rawUrl = searchParams.get("url");
 
-  if (!asin || !/^[A-Z0-9]{10}$/.test(asin)) {
-    return NextResponse.json({ error: "ASIN inválido" }, { status: 400 });
-  }
-
-  const cached = cache.get(asin);
-  if (cached && Date.now() - cached.ts < TTL) {
-    if (cached.url) return NextResponse.json({ url: cached.url });
-    return NextResponse.json({ error: "Imagem não encontrada" }, { status: 404 });
-  }
-
-  try {
-    const res = await fetch(`https://www.amazon.com.br/dp/${asin}`, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        Accept:
-          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-        "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Cache-Control": "no-cache",
-        "Sec-Fetch-Dest": "document",
-        "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-Site": "none",
-        "Sec-Fetch-User": "?1",
-        "Upgrade-Insecure-Requests": "1",
-      },
-      signal: AbortSignal.timeout(6000),
-    });
-
-    if (!res.ok) {
-      cache.set(asin, { url: null, ts: Date.now() });
-      return NextResponse.json({ error: "Amazon bloqueou" }, { status: 404 });
+  // ── Amazon via ASIN ──────────────────────────────────────────────────────
+  if (asin) {
+    if (!/^[A-Z0-9]{10}$/.test(asin)) {
+      return NextResponse.json({ error: "ASIN inválido" }, { status: 400 });
+    }
+    const cacheKey = `asin:${asin}`;
+    const cached = cache.get(cacheKey);
+    if (cached && Date.now() - cached.ts < TTL) {
+      return cached.url
+        ? NextResponse.json({ url: cached.url })
+        : NextResponse.json({ error: "Não encontrada" }, { status: 404 });
     }
 
-    const html = await res.text();
-
-    // Try data-a-dynamic-image attribute (most reliable — it's in the static HTML)
-    const dynMatch = html.match(/data-a-dynamic-image="([^"]+)"/);
-    if (dynMatch) {
-      const decoded = dynMatch[1].replace(/&quot;/g, '"');
-      const urlMatch = decoded.match(/(https:\/\/m\.media-amazon\.com\/images\/I\/[^"]+\.jpg)/);
-      if (urlMatch) {
-        const url = urlMatch[1].replace(/\._[A-Z0-9,_]+_\./, "._SL400_.");
-        cache.set(asin, { url, ts: Date.now() });
-        return NextResponse.json({ url });
+    // Tenta URL pública do CDN da Amazon (sem scraping, sem bloqueio)
+    const cdnUrl = `https://m.media-amazon.com/images/P/${asin}.01._SL400_.jpg`;
+    try {
+      const probe = await fetch(cdnUrl, { method: "HEAD", signal: AbortSignal.timeout(5000) });
+      if (probe.ok) {
+        cache.set(cacheKey, { url: cdnUrl, ts: Date.now() });
+        return NextResponse.json({ url: cdnUrl });
       }
-    }
+    } catch { /* fallback para scraping */ }
 
-    // Fallback: search for any m.media-amazon product image in the HTML
-    const fallback = html.match(
-      /(https:\/\/m\.media-amazon\.com\/images\/I\/[A-Za-z0-9%+_-]+\._[A-Z0-9,_]+_\.(?:jpg|jpeg|png|webp))/
-    );
-    if (fallback) {
-      const url = fallback[1].replace(/\._[A-Z0-9,_]+_\./, "._SL400_.");
-      cache.set(asin, { url, ts: Date.now() });
-      return NextResponse.json({ url });
+    // Fallback: scraping da página
+    try {
+      const url = await fetchImage(`https://www.amazon.com.br/dp/${asin}`);
+      cache.set(cacheKey, { url, ts: Date.now() });
+      return url
+        ? NextResponse.json({ url })
+        : NextResponse.json({ error: "Não encontrada" }, { status: 404 });
+    } catch {
+      return NextResponse.json({ error: "Erro" }, { status: 500 });
     }
-
-    cache.set(asin, { url: null, ts: Date.now() });
-    return NextResponse.json({ error: "Imagem não encontrada" }, { status: 404 });
-  } catch {
-    return NextResponse.json({ error: "Erro ao buscar imagem" }, { status: 500 });
   }
+
+  // ── Qualquer URL (Shopee, ML, etc.) ─────────────────────────────────────
+  if (rawUrl) {
+    let targetUrl: string;
+    try {
+      targetUrl = decodeURIComponent(rawUrl);
+      const parsed = new URL(targetUrl);
+      const allowed = ["shopee.com.br", "s.shopee.com.br", "amazon.com.br", "amzn.to",
+                       "magazinevoce.com.br", "mercadolivre.com.br", "mercadolibre.com"];
+      if (!allowed.some(d => parsed.hostname === d || parsed.hostname.endsWith("." + d))) {
+        return NextResponse.json({ error: "Domínio não permitido" }, { status: 400 });
+      }
+    } catch {
+      return NextResponse.json({ error: "URL inválida" }, { status: 400 });
+    }
+
+    // 1. Verificar se já está salvo no banco (zero request externo)
+    try {
+      const saved = await prisma.presenteLink.findFirst({
+        where: { url: targetUrl, image_url: { not: null } },
+        select: { image_url: true },
+      });
+      if (saved?.image_url) {
+        cache.set(`url:${targetUrl}`, { url: saved.image_url, ts: Date.now() });
+        return NextResponse.json({ url: saved.image_url });
+      }
+    } catch { /* fallback para fetch */ }
+
+    // 2. Cache em memória
+    const cacheKey = `url:${targetUrl}`;
+    const cached = cache.get(cacheKey);
+    if (cached && Date.now() - cached.ts < TTL) {
+      return cached.url
+        ? NextResponse.json({ url: cached.url })
+        : NextResponse.json({ error: "Não encontrada" }, { status: 404 });
+    }
+
+    // 3. Buscar externamente (só acontece uma vez por produto)
+    try {
+      const url = await fetchImage(targetUrl);
+      cache.set(cacheKey, { url, ts: Date.now() });
+
+      // Salvar no banco para nunca mais buscar externamente
+      if (url) {
+        prisma.presenteLink.updateMany({
+          where: { url: targetUrl, image_url: null },
+          data: { image_url: url },
+        }).catch(() => {});
+      }
+
+      return url
+        ? NextResponse.json({ url })
+        : NextResponse.json({ error: "Não encontrada" }, { status: 404 });
+    } catch {
+      return NextResponse.json({ error: "Erro" }, { status: 500 });
+    }
+  }
+
+  return NextResponse.json({ error: "asin ou url obrigatório" }, { status: 400 });
 }

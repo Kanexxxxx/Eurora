@@ -22,14 +22,20 @@ function ProdutoCard({ p, index }: { p: Produto; index: number }) {
   const plat = PLATFORM_STYLE[p.platform] ?? { bg: "bg-gray-500", label: p.platform };
   const [imgSrc, setImgSrc] = useState<string | null>(p.image ?? null);
   const [imgError, setImgError] = useState(false);
+  const [loading, setLoading] = useState(!p.image);
 
   useEffect(() => {
-    if (imgSrc || !p.asin) return;
-    fetch(`/api/presentes/imagem?asin=${p.asin}`)
+    if (imgSrc) return;
+    let endpoint: string | null = null;
+    if (p.asin) endpoint = `/api/presentes/imagem?asin=${p.asin}`;
+    else if (p.url) endpoint = `/api/presentes/imagem?url=${encodeURIComponent(p.url)}`;
+    if (!endpoint) { setLoading(false); return; }
+    fetch(endpoint)
       .then((r) => (r.ok ? r.json() : null))
       .then((d: { url?: string } | null) => { if (d?.url) setImgSrc(d.url); })
-      .catch(() => {});
-  }, [p.asin, imgSrc]);
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [p.asin, p.url, imgSrc]);
 
   const showImg = imgSrc && !imgError;
 
@@ -41,41 +47,53 @@ function ProdutoCard({ p, index }: { p: Produto; index: number }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.025, 0.4) }}
-      className="group block rounded-2xl overflow-hidden border border-white/8 bg-white/3 hover:border-white/20 transition-all active:scale-[0.98]"
+      className="group flex flex-col rounded-2xl overflow-hidden border border-white/8 bg-white/3 hover:border-rose-400/30 hover:bg-white/6 transition-all duration-200 active:scale-[0.97]"
     >
-      {/* Product image or gradient fallback */}
-      <div className={`relative h-28 overflow-hidden ${showImg ? "" : `bg-linear-to-br ${cat?.gradient ?? "from-gray-700 to-gray-900"}`} flex items-center justify-center`}>
+      {/* Imagem */}
+      <div className={`relative w-full aspect-square overflow-hidden ${!showImg ? `bg-linear-to-br ${cat?.gradient ?? "from-gray-700 to-gray-900"}` : "bg-black"} flex items-center justify-center`}>
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-5 h-5 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
+          </div>
+        )}
         {showImg ? (
           <img
             src={imgSrc}
             alt={p.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
             onError={() => setImgError(true)}
           />
-        ) : (
+        ) : !loading ? (
           <span className="text-5xl drop-shadow-lg group-hover:scale-110 transition-transform duration-300">
             {cat?.emoji ?? "🎁"}
           </span>
-        )}
+        ) : null}
       </div>
 
       {/* Info */}
-      <div className="p-3">
-        <div className="flex items-center gap-1.5 mb-2">
-          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded text-white ${plat.bg}`}>
+      <div className="flex flex-col flex-1 p-3 gap-1.5">
+        <div className="flex items-center gap-1.5">
+          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded text-white shrink-0 ${plat.bg}`}>
             {plat.label}
           </span>
-          <span className="text-[9px] text-gray-500 uppercase tracking-wide truncate">
+          <span className="text-[9px] text-white/40 uppercase tracking-wide truncate">
             {cat?.label ?? p.categoria}
           </span>
         </div>
-        <p className="text-white text-[12px] font-medium leading-snug line-clamp-2 mb-2">
+        <p className="text-white text-[12px] font-medium leading-snug line-clamp-2 flex-1">
           {p.name}
         </p>
-        <p className="text-[#ffb1c9] text-[11px] font-semibold group-hover:text-[#f9d6dc] transition-colors">
-          Ver produto →
-        </p>
+        <div className="flex items-center justify-between mt-auto pt-1">
+          {p.preco ? (
+            <span className="text-emerald-400 text-[11px] font-bold">{p.preco}</span>
+          ) : (
+            <span />
+          )}
+          <span className="text-[#ffb1c9] text-[11px] font-semibold group-hover:text-rose-300 transition-colors">
+            Ver produto →
+          </span>
+        </div>
       </div>
     </motion.a>
   );
@@ -180,11 +198,13 @@ export default function PresentesClient() {
     if (step !== "unlocked") return;
     fetch("/api/presentes/links")
       .then((r) => r.json())
-      .then((data: { links: { id: string; name: string; platform: string; url: string; categoria: string }[]; hiddenIds: number[] }) => {
+      .then((data: { links: { id: string; name: string; platform: string; url: string; categoria: string; image_url?: string | null; preco?: string | null }[]; hiddenIds: number[] }) => {
         setDbLinks(data.links.map((l, i) => ({
           ...l,
           id: 100000 + i,
           platform: l.platform as Produto["platform"],
+          image: l.image_url ?? undefined,
+          preco: l.preco ?? undefined,
         })));
         setHiddenIds(data.hiddenIds ?? []);
       })

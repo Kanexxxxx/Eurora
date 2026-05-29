@@ -32,16 +32,16 @@ const CSS = `
   table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
   img{border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;}
   a{color:#ff2d6a;}
+  body{background-color:#07050a !important;}
 
   @media only screen and (max-width:620px){
-    .ew{padding:20px 12px !important;}
+    .ew{padding:0 !important;}
     .ec{width:100% !important;}
-    .et{font-size:20px !important;line-height:1.4 !important;}
+    .et{font-size:22px !important;line-height:1.4 !important;}
     .em{font-size:16px !important;padding:22px 18px !important;}
     .ep{font-size:14px !important;padding:16px 18px !important;}
-    .eb{padding:13px 22px !important;font-size:14px !important;}
+    .eb{padding:14px 24px !important;font-size:14px !important;}
     .ei{font-size:13px !important;padding:14px 16px !important;}
-    .eicon{font-size:42px !important;}
     .efeat{display:none !important;}
     .efeat-sm{display:table !important;}
   }
@@ -54,51 +54,71 @@ function baseHtml(title: string, preheader: string, body: string, showFeatures =
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="color-scheme" content="dark">
-<meta name="supported-color-schemes" content="dark">
+<meta name="color-scheme" content="dark light">
+<meta name="supported-color-schemes" content="dark light">
 <title>${esc(title)}</title>
 <style type="text/css">${CSS}</style>
 </head>
-<body style="margin:0;padding:0;background-color:#07050a;word-break:break-word;">
+<body style="margin:0;padding:0;background-color:#07050a;word-break:break-word;" bgcolor="#07050a">
 
-<!-- Preheader (hidden preview text) -->
 <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">${esc(preheader)}&nbsp;&#847;&nbsp;&#847;&nbsp;&#847;&nbsp;&#847;&nbsp;&#847;&nbsp;&#847;&nbsp;&#847;&nbsp;&#847;&nbsp;&#847;&nbsp;&#847;</div>
 
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#07050a">
-  <tr><td align="center" class="ew" style="padding:40px 16px;">
-    <table role="presentation" class="ec" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#07050a" style="background-color:#07050a;">
+<tr><td align="center" bgcolor="#07050a" style="background-color:#07050a;">
 
-      <!-- Badge -->
-      <tr><td align="center" style="padding-bottom:28px;">
+  <!-- Hero gradient bar -->
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;">
+    <tr><td style="height:5px;background:linear-gradient(90deg,#d6195a,#ff2d6a,#f6c986,#ff2d6a,#d6195a);font-size:0;line-height:0;">&nbsp;</td></tr>
+  </table>
+
+  <!-- Main card -->
+  <table role="presentation" class="ec" cellpadding="0" cellspacing="0" border="0" bgcolor="#0c0810" style="max-width:600px;width:100%;background-color:#0c0810;border-left:1px solid rgba(246,201,134,0.08);border-right:1px solid rgba(246,201,134,0.08);">
+  <tr><td class="ew" style="padding:36px 32px;">
+
+    <!-- Logo badge -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:32px;">
+      <tr><td align="center">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-          <td style="background:linear-gradient(135deg,#ff2d6a,#f6c986);border-radius:9px;padding:7px 22px;box-shadow:0 4px 18px rgba(255,45,106,0.35);">
-            <span style="color:#07050a;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.26em;text-transform:uppercase;">&#x2665;&nbsp; EURORA LOVE &nbsp;&#x2665;</span>
+          <td style="background:linear-gradient(135deg,#ff2d6a,#f6c986);border-radius:10px;padding:8px 24px;">
+            <span style="color:#07050a;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:800;letter-spacing:0.28em;text-transform:uppercase;">&#x2665;&nbsp; EURORA LOVE &nbsp;&#x2665;</span>
           </td>
         </tr></table>
       </td></tr>
+    </table>
 
-      ${body}
+    ${body}
 
-      ${showFeatures ? `
-      <!-- Divider -->
-      <tr><td style="height:1px;background:linear-gradient(90deg,transparent,rgba(246,201,134,0.20),transparent);font-size:0;line-height:0;padding:0 0 28px;">&nbsp;</td></tr>
-      <!-- Features cross-sell -->
-      ${featureSection()}
-      ` : ""}
+    ${showFeatures ? `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 24px;">
+      <tr><td style="height:1px;background:linear-gradient(90deg,transparent,rgba(246,201,134,0.15),transparent);font-size:0;line-height:0;">&nbsp;</td></tr>
+    </table>
+    ${featureSection()}
+    ` : ""}
 
-      <!-- Footer -->
-      <tr><td align="center" style="padding-top:20px;border-top:1px solid rgba(246,201,134,0.08);">
-        <p style="margin:0 0 8px;color:rgba(255,245,240,0.45);font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.7;">
-          Recebido via <a href="${APP_URL}" style="color:#ff2d6a;text-decoration:none;font-weight:700;">eurora.site</a>
-          &nbsp;&mdash;&nbsp; Feito com amor &#x2665;
+    <!-- Footer -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:32px;border-top:1px solid rgba(246,201,134,0.08);">
+      <tr><td align="center" style="padding-top:20px;">
+        <p style="margin:0 0 6px;color:rgba(255,245,240,0.40);font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.7;">
+          Enviado via <a href="${APP_URL}" style="color:#ff2d6a;text-decoration:none;font-weight:700;">eurora.site</a>
+          &nbsp;&#x2665;&nbsp; Feito com amor
         </p>
-        <p style="margin:0;color:rgba(255,245,240,0.35);font-family:Arial,Helvetica,sans-serif;font-size:11px;">
-          Para cancelar, <a href="${APP_URL}/cancelar" style="color:#ff2d6a;text-decoration:underline;">clique aqui</a>.
+        <p style="margin:0;color:rgba(255,245,240,0.25);font-family:Arial,Helvetica,sans-serif;font-size:11px;">
+          <a href="${APP_URL}/cancelar" style="color:rgba(255,245,240,0.35);text-decoration:underline;">Cancelar recebimento</a>
+          &nbsp;&bull;&nbsp;
+          <a href="${APP_URL}/privacidade" style="color:rgba(255,245,240,0.35);text-decoration:underline;">Privacidade</a>
         </p>
       </td></tr>
-
     </table>
+
   </td></tr>
+  </table>
+
+  <!-- Bottom gradient bar -->
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;">
+    <tr><td style="height:3px;background:linear-gradient(90deg,#d6195a,#ff2d6a,#f6c986);font-size:0;line-height:0;">&nbsp;</td></tr>
+  </table>
+
+</td></tr>
 </table>
 </body>
 </html>`;
@@ -211,26 +231,83 @@ function messagePreviewCard(msg: string, label: string) {
 
 function buildDirectEmail(message: string): { html: string; text: string } {
   const body = `
-  <!-- Icon -->
-  <tr><td align="center" class="eicon" style="padding:8px 0 16px;font-size:52px;line-height:1;">&#x1F48C;</td></tr>
-
-  <!-- Title -->
-  <tr><td align="center" style="padding-bottom:30px;">
-    <h1 class="et" style="margin:0;color:#fff5f0;font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:normal;line-height:1.5;">
-      Uma mensagem especial<br><em style="color:#ff2d6a;">chegou pra voc&#234;</em>
-    </h1>
-  </td></tr>
+  <!-- Hero title -->
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
+    <tr><td align="center">
+      <p style="margin:0 0 10px;font-size:40px;line-height:1;">&#x1F48C;</p>
+      <h1 class="et" style="margin:0;color:#fff5f0;font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:normal;line-height:1.45;">
+        Uma mensagem especial<br><em style="color:#ff2d6a;">chegou pra voc&#234;</em>
+      </h1>
+      <p style="margin:10px 0 0;color:rgba(255,245,240,0.45);font-family:Arial,Helvetica,sans-serif;font-size:13px;">
+        Algu&#233;m pensou muito em voc&#234; antes de escrever isso &#x2665;
+      </p>
+    </td></tr>
+  </table>
 
   <!-- Message card -->
   ${messageCard(message)}
 
-  <!-- CTA to create own page -->
-  <tr><td align="center" style="padding-bottom:10px;">
-    <p style="margin:0 0 16px;color:rgba(255,245,240,0.40);font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.6;text-align:center;">
-      Quer surpreender algu&#233;m especial tamb&#233;m?
-    </p>
-  </td></tr>
-  ${ctaButton(`${APP_URL}/criar`, "&#x1F48C; Criar minha p&#225;gina do amor", "linear-gradient(135deg,#ff2d6a,#f6c986)")}
+  <!-- Divider -->
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+    <tr><td style="height:1px;background:linear-gradient(90deg,transparent,rgba(246,201,134,0.12),transparent);font-size:0;line-height:0;">&nbsp;</td></tr>
+  </table>
+
+  <!-- Cross-sell: criar página -->
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+    style="background:linear-gradient(135deg,rgba(255,45,106,0.08),rgba(246,201,134,0.05));border:1px solid rgba(255,45,106,0.15);border-radius:16px;margin-bottom:24px;">
+    <tr><td style="padding:24px 26px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td style="padding-right:16px;">
+            <p style="margin:0 0 4px;font-size:22px;line-height:1;">&#x2728;</p>
+            <p style="margin:0 0 6px;color:#fff5f0;font-family:Georgia,'Times New Roman',serif;font-size:15px;font-weight:700;">Quer surpreender tamb&#233;m?</p>
+            <p style="margin:0;color:rgba(255,245,240,0.50);font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;">
+              Crie uma p&#225;gina do amor com fotos, m&#250;sica e mensagem. Em minutos.
+            </p>
+          </td>
+        </tr>
+        <tr><td style="padding-top:16px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+            <td style="background:linear-gradient(135deg,#ff2d6a,#f6c986);border-radius:9999px;">
+              <a href="${APP_URL}/criar" class="eb" style="color:#07050a;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:800;text-decoration:none;display:block;padding:12px 28px;border-radius:9999px;white-space:nowrap;">
+                &#x1F48C; Criar minha p&#225;gina
+              </a>
+            </td>
+          </tr></table>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+
+  <!-- 3 features row -->
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:8px;" class="efeat">
+    <tr>
+      <td width="33%" valign="top" style="padding:0 5px 0 0;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(255,255,255,0.03);border:1px solid rgba(246,201,134,0.08);border-radius:12px;">
+          <tr><td align="center" style="padding:16px 12px 8px;font-size:24px;">&#x1F381;</td></tr>
+          <tr><td align="center" style="padding:0 10px 6px;"><p style="margin:0;color:#fff5f0;font-family:Arial,sans-serif;font-size:11px;font-weight:700;">Presentes Secretos</p></td></tr>
+          <tr><td align="center" style="padding:0 10px 12px;"><p style="margin:0;color:rgba(255,245,240,0.40);font-family:Arial,sans-serif;font-size:10px;line-height:1.5;">250+ ideias por R$8</p></td></tr>
+          <tr><td align="center" style="padding:0 10px 14px;"><a href="${APP_URL}/presentes" style="color:#ff2d6a;font-family:Arial,sans-serif;font-size:10px;font-weight:700;text-decoration:none;">Ver &rarr;</a></td></tr>
+        </table>
+      </td>
+      <td width="33%" valign="top" style="padding:0 2px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(255,255,255,0.03);border:1px solid rgba(246,201,134,0.08);border-radius:12px;">
+          <tr><td align="center" style="padding:16px 12px 8px;font-size:24px;">&#x1F4AC;</td></tr>
+          <tr><td align="center" style="padding:0 10px 6px;"><p style="margin:0;color:#fff5f0;font-family:Arial,sans-serif;font-size:11px;font-weight:700;">Mensagem Futura</p></td></tr>
+          <tr><td align="center" style="padding:0 10px 12px;"><p style="margin:0;color:rgba(255,245,240,0.40);font-family:Arial,sans-serif;font-size:10px;line-height:1.5;">Agende para a hora certa</p></td></tr>
+          <tr><td align="center" style="padding:0 10px 14px;"><a href="${APP_URL}/mensagem" style="color:#ff2d6a;font-family:Arial,sans-serif;font-size:10px;font-weight:700;text-decoration:none;">Ver &rarr;</a></td></tr>
+        </table>
+      </td>
+      <td width="33%" valign="top" style="padding:0 0 0 5px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(255,255,255,0.03);border:1px solid rgba(246,201,134,0.08);border-radius:12px;">
+          <tr><td align="center" style="padding:16px 12px 8px;font-size:24px;">&#x1F9E0;</td></tr>
+          <tr><td align="center" style="padding:0 10px 6px;"><p style="margin:0;color:#fff5f0;font-family:Arial,sans-serif;font-size:11px;font-weight:700;">Teste do Casal</p></td></tr>
+          <tr><td align="center" style="padding:0 10px 12px;"><p style="margin:0;color:rgba(255,245,240,0.40);font-family:Arial,sans-serif;font-size:10px;line-height:1.5;">Quanto ele te conhece?</p></td></tr>
+          <tr><td align="center" style="padding:0 10px 14px;"><a href="${APP_URL}/quiz" style="color:#ff2d6a;font-family:Arial,sans-serif;font-size:10px;font-weight:700;text-decoration:none;">Ver &rarr;</a></td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
   `;
 
   const text = [
@@ -240,13 +317,13 @@ function buildDirectEmail(message: string): { html: string; text: string } {
     "",
     message,
     "",
-    "──────────────────────────────",
-    `Crie sua própria página do amor em ${APP_URL}/criar`,
-    `eurora.site — Feito com amor`,
+    "──────────────────",
+    `Crie sua página do amor: ${APP_URL}/criar`,
+    `Presentes secretos: ${APP_URL}/presentes`,
+    `eurora.site ♥`,
   ].join("\n");
 
-  // email direto = mensagem pessoal, sem seção de marketing (evita aba Promoções)
-  return { html: baseHtml("Uma mensagem especial chegou pra você 💌", "Alguém pensou em você e mandou algo especial...", body, false), text };
+  return { html: baseHtml("Uma mensagem especial chegou pra você 💌", "Alguém pensou muito em você antes de escrever isso ♥", body, false), text };
 }
 
 function buildWaReminder(phone: string, message: string): { html: string; text: string } {

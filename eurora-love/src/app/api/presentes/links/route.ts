@@ -7,7 +7,7 @@ export async function GET() {
       prisma.presenteLink.findMany({
         where: { active: true },
         orderBy: [{ order: "asc" }, { created_at: "desc" }],
-        select: { id: true, name: true, platform: true, url: true, categoria: true },
+        select: { id: true, name: true, platform: true, url: true, categoria: true, image_url: true, preco: true },
       }),
       prisma.hiddenProduto.findMany({ select: { produto_id: true } }),
     ]);

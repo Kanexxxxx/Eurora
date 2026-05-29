@@ -484,6 +484,11 @@
     to { transform: translateX(-50%); }
   }
   .animate-marquee { animation: marquee 30s linear infinite; }
+  .animate-ticker  { animation: marquee 42s linear infinite; will-change: transform; }
+
+  .urgency-bar-bg         { background: linear-gradient(90deg,#d6195a 0%,#ff2d6a 40%,#f6a623 80%,#f6c986 100%); }
+  .urgency-bar-fade-left  { background: linear-gradient(to right,#d6195a,transparent); }
+  .urgency-bar-fade-right { background: linear-gradient(to left,#f6c986,transparent); }
 
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
