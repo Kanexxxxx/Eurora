@@ -139,3 +139,106 @@ export const QUESTIONS: { q: string; opts: string[]; dim: number }[] = [
     ],
   },
 ];
+
+// ─── Arquétipos ─────────────────────────────────────────────────────────
+export const ARCHETYPES: Record<
+  ArchetypeId,
+  {
+    name: string;
+    tagline: string;
+    emoji: string;
+    gradient: string;
+    presentes: string;
+    desc: string;
+  }
+> = {
+  cumplices: {
+    name: "Os Cúmplices",
+    tagline: "Se entendem com um olhar",
+    emoji: "🤫",
+    gradient: "from-[#ff2d6a]/30 to-[#ffb1c9]/10",
+    presentes: "cumplices",
+    desc: "Vocês não precisam de palavras pra se entender. Têm uma linguagem própria — silêncios que falam, olhares que traduzem.",
+  },
+  aventureiros: {
+    name: "Os Aventureiros",
+    tagline: "Colecionam experiências, não coisas",
+    emoji: "✈️",
+    gradient: "from-amber-500/30 to-amber-700/10",
+    presentes: "aventureiros",
+    desc: "Pra vocês, amor é movimento. Uma viagem de última hora, um lugar nunca visitado, um plano que nasce na hora.",
+  },
+  ninho: {
+    name: "O Ninho",
+    tagline: "Transformam qualquer lugar em lar",
+    emoji: "🏠",
+    gradient: "from-emerald-500/30 to-teal-700/10",
+    presentes: "ninho",
+    desc: "Vocês não precisam do mundo inteiro — só do espaço de vocês dois. O conforto é a linguagem do amor de vocês.",
+  },
+  intensos: {
+    name: "Os Intensos",
+    tagline: "Amam forte, sentem forte",
+    emoji: "🔥",
+    gradient: "from-orange-500/30 to-red-700/10",
+    presentes: "intensos",
+    desc: "Vocês nunca fazem nada pela metade. O amor de vocês tem volume, tem cor, tem peso. E é exatamente por isso que é inesquecível.",
+  },
+  solares: {
+    name: "Os Solares",
+    tagline: "O amor deles ilumina todo mundo ao redor",
+    emoji: "☀️",
+    gradient: "from-yellow-400/30 to-amber-600/10",
+    presentes: "solares",
+    desc: "Onde vocês aparecem, a energia muda. São o casal que todo mundo quer estar por perto — e que contagia com a própria felicidade.",
+  },
+  silenciosos: {
+    name: "Os Silenciosos",
+    tagline: "O amor deles não precisa de palco",
+    emoji: "🌙",
+    gradient: "from-violet-500/30 to-purple-900/10",
+    presentes: "silenciosos",
+    desc: "Vocês não performam o amor — vivem ele. A profundidade de vocês é o tipo de coisa que só quem está por dentro entende.",
+  },
+};
+
+// ─── Mapeamento de respostas → voto de arquétipo ─────────────────────────
+// [questao][resposta] = ArchetypeId que recebe ponto (peso: questoes 0,1,4,5,8,9 = 2pts; demais = 1pt)
+const Q_ARCH: ArchetypeId[][] = [
+  // Q0: amor — expressão
+  ["intensos", "ninho", "silenciosos", "solares"],
+  // Q1: amor — receber
+  ["ninho", "cumplices", "intensos", "ninho"],
+  // Q2: reacao — silêncio
+  ["intensos", "silenciosos", "cumplices", "ninho"],
+  // Q3: reacao — raiva
+  ["silenciosos", "intensos", "cumplices", "aventureiros"],
+  // Q4: mundo — escape
+  ["ninho", "aventureiros", "silenciosos", "cumplices"],
+  // Q5: mundo — fim de semana
+  ["aventureiros", "ninho", "solares", "silenciosos"],
+  // Q6: energia — dia livre
+  ["aventureiros", "ninho", "silenciosos", "cumplices"],
+  // Q7: energia — festa
+  ["solares", "cumplices", "ninho", "silenciosos"],
+  // Q8: cuidado — dar
+  ["intensos", "cumplices", "solares", "ninho"],
+  // Q9: cuidado — receber
+  ["ninho", "cumplices", "silenciosos", "aventureiros"],
+];
+
+const HIGH_WEIGHT_QS = new Set([0, 1, 4, 5, 8, 9]);
+
+export function calcArchetype(answers: number[]): ArchetypeId {
+  const scores: Record<ArchetypeId, number> = {
+    cumplices: 0, aventureiros: 0, ninho: 0,
+    intensos: 0, solares: 0, silenciosos: 0,
+  };
+  answers.forEach((ans, qi) => {
+    const arch = Q_ARCH[qi]?.[ans];
+    if (arch) scores[arch] += HIGH_WEIGHT_QS.has(qi) ? 2 : 1;
+  });
+  return (
+    Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0] as ArchetypeId
+  );
+}
