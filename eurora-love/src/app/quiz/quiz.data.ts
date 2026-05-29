@@ -242,3 +242,98 @@ export function calcArchetype(answers: number[]): ArchetypeId {
     Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0] as ArchetypeId
   );
 }
+
+// ─── Score Faixa ─────────────────────────────────────────────────────────
+export type ScoreFaixa = "perfect" | "high" | "mid" | "low" | "miss";
+
+export function getScoreFaixa(score: number, total: number): ScoreFaixa {
+  if (score === total) return "perfect";
+  const pct = score / total;
+  if (pct >= 0.8) return "high";
+  if (pct >= 0.6) return "mid";
+  if (pct >= 0.4) return "low";
+  return "miss";
+}
+
+// ─── Templates de Resultado (30 combinações) ─────────────────────────────
+const RESULT_TEMPLATES: Record<ArchetypeId, Record<ScoreFaixa, string>> = {
+  cumplices: {
+    perfect: "{partner} te conhece de um jeito que vai além das palavras. Acertou tudo — incluindo as partes que você raramente conta pra alguém. Isso tem nome: cumplicidade.",
+    high: "{partner} capturou quase tudo de você. Errou só o que você guarda com mais cuidado — e isso faz sentido pra Os Cúmplices. Essas partes se revelam no tempo certo.",
+    mid: "{partner} conhece sua superfície e parte do que está embaixo. As dimensões que faltaram são exatamente onde o amor de vocês ainda vai crescer.",
+    low: "Tem muito de você que {partner} ainda vai descobrir. Pra Os Cúmplices, isso não é falha — é promessa. A linguagem de vocês ainda está sendo escrita.",
+    miss: "{partner} está no começo de te decifrar — e isso é bom. Os Cúmplices de verdade levam tempo pra aprender o idioma um do outro. Vocês estão nesse processo.",
+  },
+  aventureiros: {
+    perfect: "{partner} conhece cada parte do seu universo aventureiro — inclusive as viagens que você ainda não fez. Isso é sintonia de quem foi feito pra explorar junto.",
+    high: "Quase tudo certo. {partner} te acompanha na maioria das aventuras — mas ainda tem rotas que você vai ter que mostrar pessoalmente.",
+    mid: "{partner} conhece seu espírito, mas não todos os seus destinos. A boa notícia: Os Aventureiros aprendem melhor vivendo do que estudando.",
+    low: "{partner} ainda está mapeando seu universo. Mas que viagem melhor do que essa — descobrir você do zero?",
+    miss: "Parece que {partner} tem muito terreno a explorar sobre você. Sugestão: façam uma viagem. É o jeito mais rápido que Os Aventureiros têm pra se conhecer de verdade.",
+  },
+  ninho: {
+    perfect: "{partner} te conhece como conhece o próprio lar — cada canto, cada detalhe, cada silêncio. Isso só vem de quem realmente ficou.",
+    high: "Quase todos os cômodos do seu universo foram encontrados. Faltou um ou dois cantinhos — mas O Ninho tem espaço pra ser descoberto aos poucos.",
+    mid: "{partner} já sabe o essencial — onde você se sente seguro(a), o que te conforta. O resto vem com o tempo de convivência que vocês ainda vão ter.",
+    low: "{partner} ainda está aprendendo a planta do seu mundo. Mas nos casais tipo O Ninho, o lar é construído juntos — não entregue pronto.",
+    miss: "Parece que {partner} ainda está na soleira da porta. A boa notícia é que O Ninho se revela pra quem fica — e vocês claramente ficaram.",
+  },
+  intensos: {
+    perfect: "{partner} te conhece forte — do jeito que Os Intensos merecem ser conhecidos. Sem meias palavras, sem suavizar. Inteiro(a).",
+    high: "Quase tudo acertado. {partner} sente você — não só entende. Isso é raro. Muito mais do que um quiz consegue medir.",
+    mid: "{partner} sente sua energia, mas ainda está aprendendo os detalhes. Os Intensos são complexos — e o amor de vocês tem camadas.",
+    low: "{partner} ainda está aprendendo a intensidade de você. Faz sentido — Os Intensos não se revelam de uma vez. São muitas ondas.",
+    miss: "Tem muito volume em você que {partner} ainda não ouviu. Isso vai mudar — Os Intensos têm jeito de se fazer entender quando é pra valer.",
+  },
+  solares: {
+    perfect: "{partner} te conhece de fora a dentro — a parte que brilha pra todo mundo e a que só aparece no privado. Sintonia total.",
+    high: "Quase perfeito. {partner} sabe o que te acende — faltou só um detalhe da sua luz mais interna. Logo logo vai encontrar.",
+    mid: "{partner} conhece sua energia pública — mas o brilho mais íntimo ainda está pra ser revelado. Os Solares guardam uma chama só pra quem fica de verdade.",
+    low: "{partner} viu você brilhar, mas ainda não sabe exatamente de onde vem essa luz. Vai descobrir — e vai ser bonito.",
+    miss: "Parece que {partner} ainda está no processo de entender como você funciona. Os Solares parecem simples por fora — mas têm muito mais dentro.",
+  },
+  silenciosos: {
+    perfect: "{partner} te conhece sem precisar de declaração. Entendeu o que você não disse, sentiu o que você não explicou. Isso é tudo.",
+    high: "Quase tudo captado — e o que faltou provavelmente ainda nem foi dito em voz alta. Os Silenciosos guardam as partes mais bonitas por mais tempo.",
+    mid: "{partner} já entrou em partes de você que poucas pessoas acessam. O que faltou ainda está esperando ser revelado — no tempo certo, do jeito certo.",
+    low: "{partner} está na superfície do seu universo — mas a parte mais profunda de Os Silenciosos só aparece quando a confiança está bem construída.",
+    miss: "Você tem um mundo interno imenso que {partner} ainda vai descobrir. Isso não é distância — é o começo de uma das histórias mais bonitas.",
+  },
+};
+
+export function getResultText(
+  arch: ArchetypeId,
+  score: number,
+  total: number,
+  name: string,
+  partner: string
+): string {
+  const faixa = getScoreFaixa(score, total);
+  const template = RESULT_TEMPLATES[arch][faixa];
+  return template
+    .replace(/\{name\}/g, name)
+    .replace(/\{partner\}/g, partner);
+}
+
+// ─── Cálculo de score por dimensão ────────────────────────────────────────
+// Retorna array de 5 valores [0.0, 0.5, 1.0] — um por dimensão
+export function calcDimScores(
+  answers: number[],
+  correctAnswers: number[]
+): [number, number, number, number, number] {
+  const hits = [0, 0, 0, 0, 0];
+  QUESTIONS.forEach((q, i) => {
+    if (answers[i] === correctAnswers[i]) hits[q.dim]++;
+  });
+  // Cada dimensão tem 2 perguntas → 0, 0.5 ou 1.0
+  return hits.map((h) => h / 2) as [number, number, number, number, number];
+}
+
+// ─── Dimensões (labels para o radar) ─────────────────────────────────────
+export const DIM_LABELS = [
+  "Linguagem\ndo Amor",
+  "Como\nReage",
+  "Universo\nPessoal",
+  "Energia\ndo Casal",
+  "Forma de\nCuidar",
+];
