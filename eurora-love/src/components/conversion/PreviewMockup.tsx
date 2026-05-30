@@ -101,6 +101,32 @@ const SONGS = [
       { at: 20.4, text: "Se presente bom e aquele que a pessoa sente antes de entender, espero que voce sinta isso aqui antes mesmo de terminar de ler." },
     ],
   },
+  {
+    id: "0V3wPSX9ygBnCm8psDIegu",
+    type: "track",
+    title: "Perfect",
+    artist: "Ed Sheeran",
+    cover: "https://i.scdn.co/image/ab67616d00001e02ba5db46f4b838ef6027e6f96",
+    captions: [
+      { at: 1.8, text: "Voce e tudo que eu queria mas nunca soube pedir. E agora que te encontrei, nao consigo mais imaginar um caminho sem voce." },
+      { at: 8.0, text: "Dancar contigo sem musica, rir do nada, ficar em silencio sem precisar preencher — isso e o que eu chamo de perfeito." },
+      { at: 14.2, text: "Eu escolheria voce em qualquer versao dessa historia. Com cabelo bagunçado, nos dias dificeis, sempre com voce." },
+      { at: 20.4, text: "Que a gente nunca perca isso: a vontade de olhar um pro outro e sentir que chegamos em casa." },
+    ],
+  },
+  {
+    id: "2takcwOaAZWiXQijPHIx7B",
+    type: "track",
+    title: "Can't Help Falling in Love",
+    artist: "Elvis Presley",
+    cover: "https://i.scdn.co/image/ab67616d00001e02bfec73f3af08be3a33bfb44e",
+    captions: [
+      { at: 1.8, text: "Algumas coisas a gente nao escolhe. Simplesmente acontecem, chegam devagarinho e de repente fazem parte de tudo." },
+      { at: 8.0, text: "Que bom que eu nao resisti. Que bom que eu deixei voce chegar, ficar, e transformar cada coisa simples em algo que vale guardar." },
+      { at: 14.2, text: "Voce nao chegou com fanfarra. Chegou com calma, com presenca, com aquele jeito de fazer o dia parecer mais leve so de estar." },
+      { at: 20.4, text: "E eu caindo assim, de novo e de novo, toda vez que voce sorri — que jeito mais bonito de envelhecer ao seu lado." },
+    ],
+  },
 ] satisfies SongPreview[];
 
 const SLIDES = [

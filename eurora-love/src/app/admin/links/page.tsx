@@ -9,6 +9,7 @@ type LinkItem = {
   platform: string;
   url: string;
   categoria: string;
+  image_url?: string | null;
   preco?: string | null;
   active: boolean;
   order: number;
@@ -16,7 +17,7 @@ type LinkItem = {
 };
 
 const PLATAFORMAS = ["Amazon", "Shopee", "ML"];
-const EMPTY = { name: "", platform: "Amazon", url: "", categoria: "Presentes em Geral", preco: "", active: true, order: 0 };
+const EMPTY = { name: "", platform: "Amazon", url: "", categoria: "Presentes em Geral", image_url: "", active: true, order: 0 };
 type Tab = "adicionados" | "estaticos";
 
 function PlatBadge({ platform }: { platform: string }) {
@@ -205,12 +206,19 @@ export default function AdminLinks() {
                 ))}
               </select>
               <input
-                type="text"
-                placeholder="Preço (ex: R$ 49,90) — opcional"
-                value={form.preco ?? ""}
-                onChange={(e) => setForm({ ...form, preco: e.target.value })}
+                type="url"
+                placeholder="URL da imagem (opcional — cola direto da loja)"
+                value={form.image_url ?? ""}
+                onChange={(e) => setForm({ ...form, image_url: e.target.value })}
                 className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:border-rose-500"
               />
+              {form.image_url && form.image_url.startsWith("http") && (
+                <div className="flex items-center gap-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={form.image_url} alt="Preview" className="w-14 h-14 object-cover rounded-lg border border-white/10" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                  <span className="text-white/40 text-xs">Preview da imagem</span>
+                </div>
+              )}
               <input
                 type="number"
                 placeholder="Ordem (0 = primeiro)"
@@ -283,7 +291,7 @@ export default function AdminLinks() {
                     {item.active ? "Ativo" : "Inativo"}
                   </button>
                   <button
-                    onClick={() => setForm({ ...item, preco: item.preco ?? "" })}
+                    onClick={() => setForm({ ...item, image_url: item.image_url ?? "" })}
                     className="text-white/40 hover:text-white px-2 py-1 transition-colors"
                     title="Editar"
                   >

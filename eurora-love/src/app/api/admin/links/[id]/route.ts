@@ -20,7 +20,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 
   const body = await req.json().catch(() => ({})) as Record<string, unknown>;
-  const { name, platform, url, categoria, active, order } = body;
+  const { name, platform, url, categoria, active, order, image_url } = body;
 
   if (url !== undefined && (typeof url !== "string" || !isValidUrl(url))) {
     return NextResponse.json({ error: "URL não permitida." }, { status: 400 });
@@ -33,6 +33,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (typeof categoria === "string" && categoria.trim()) data.categoria = categoria.trim().slice(0, 100);
   if (typeof active === "boolean") data.active = active;
   if (typeof order === "number") data.order = order;
+  if (typeof image_url === "string") data.image_url = image_url.startsWith("http") ? image_url.trim() : null;
 
   const item = await prisma.presenteLink.update({ where: { id }, data });
   return NextResponse.json(item);

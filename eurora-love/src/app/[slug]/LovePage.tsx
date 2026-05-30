@@ -93,7 +93,6 @@ function IslandCover({ src, title }: { src: string; title: string }) {
     // eslint-disable-next-line @next/next/no-img-element
     <img src={src} alt={`Capa de ${title}`}
       className="h-5.5 w-5.5 shrink-0 rounded-[7px] object-cover"
-      crossOrigin="anonymous" referrerPolicy="no-referrer"
       onError={() => setFailed(true)} />
   );
 }
@@ -312,7 +311,7 @@ export default function LovePage({ couple, musicMeta }: Props) {
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.2 }}>
               <div className="flex-1 text-center">
                 <p className="font-heading text-[26px] font-bold text-gradient-rosegold">
-                  {together.years > 0 ? `${together.years}a` : `${together.months}m`}
+                  {together.years > 0 ? `${together.years}a` : together.months > 0 ? `${together.months}m` : `${together.days}d`}
                 </p>
                 <p className="text-white/35 text-[10px] uppercase tracking-[0.2em] mt-0.5">juntos</p>
               </div>
