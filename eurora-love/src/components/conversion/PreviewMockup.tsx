@@ -102,11 +102,11 @@ const SONGS = [
     ],
   },
   {
-    id: "0V3wPSX9ygBnCm8psDIegu",
+    id: "0tgVpDi06FyKpA1z0VMD4v",
     type: "track",
     title: "Perfect",
     artist: "Ed Sheeran",
-    cover: "https://i.ytimg.com/vi/2Vv-BfVoq4g/hqdefault.jpg",
+    cover: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02ba5db46f4b838ef6027e6f96",
     captions: [
       { at: 1.8, text: "Voce e tudo que eu queria mas nunca soube pedir. E agora que te encontrei, nao consigo mais imaginar um caminho sem voce." },
       { at: 8.0, text: "Dancar contigo sem musica, rir do nada, ficar em silencio sem precisar preencher — isso e o que eu chamo de perfeito." },
@@ -115,11 +115,11 @@ const SONGS = [
     ],
   },
   {
-    id: "2takcwOaAZWiXQijPHIx7B",
+    id: "44AyOl4qVkzS48vBsbNXaC",
     type: "track",
     title: "Can't Help Falling in Love",
     artist: "Elvis Presley",
-    cover: "https://i.ytimg.com/vi/vGJTaP6anOU/hqdefault.jpg",
+    cover: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02b184226408f981e3dd17c606",
     captions: [
       { at: 1.8, text: "Algumas coisas a gente nao escolhe. Simplesmente acontecem, chegam devagarinho e de repente fazem parte de tudo." },
       { at: 8.0, text: "Que bom que eu nao resisti. Que bom que eu deixei voce chegar, ficar, e transformar cada coisa simples em algo que vale guardar." },
