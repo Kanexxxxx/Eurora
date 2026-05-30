@@ -51,57 +51,64 @@ function ProdutoCard({ p, index }: { p: Produto; index: number }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.025, 0.4) }}
-      className="group flex flex-col rounded-2xl overflow-hidden border border-white/8 bg-white/3 hover:border-rose-400/30 hover:bg-white/6 transition-all duration-200 active:scale-[0.97]"
+      className="group flex flex-col rounded-2xl overflow-hidden border border-white/8 bg-white/4 hover:border-rose-500/35 hover:bg-white/7 hover:shadow-[0_8px_32px_-8px_rgba(244,63,94,0.2)] transition-all duration-200 active:scale-[0.97]"
     >
-      {/* Imagem */}
-      <div className={`relative w-full overflow-hidden bg-linear-to-br ${cat?.gradient ?? "from-gray-700 to-gray-900"} flex items-center justify-center ${showImg ? "aspect-square" : "h-28"}`}>
+      {/* Imagem — aspect ratio consistente */}
+      <div className={`relative w-full aspect-4/3 overflow-hidden bg-linear-to-br ${cat?.gradient ?? "from-gray-700 to-gray-900"} flex items-center justify-center`}>
         {loading && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-5 h-5 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+            <div className="w-5 h-5 rounded-full border-2 border-white/20 border-t-white/70 animate-spin" />
           </div>
         )}
         {showImg && (
           <img
             src={imgSrc}
             alt={p.name}
-            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-400"
             loading="lazy"
             onError={() => { setImgError(true); setImgSrc(null); }}
           />
         )}
         {!loading && !showImg && (
-          <div className="flex flex-col items-center gap-2">
-            <span className="text-5xl drop-shadow-lg group-hover:scale-110 transition-transform duration-300">
+          <div className="flex flex-col items-center gap-2 px-2">
+            <span className="text-4xl drop-shadow-lg group-hover:scale-110 transition-transform duration-300">
               {cat?.emoji ?? "🎁"}
             </span>
-            <span className="text-white/50 text-[10px] font-medium uppercase tracking-wider px-3 text-center line-clamp-2">
+            <span className="text-white/60 text-[9px] font-medium uppercase tracking-wider text-center line-clamp-2 leading-tight">
               {p.name}
             </span>
+          </div>
+        )}
+        {/* Badge plataforma — canto superior esquerdo */}
+        <div className="absolute top-2 left-2">
+          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md text-white shadow ${plat.bg}`}>
+            {plat.label}
+          </span>
+        </div>
+        {/* Preço sobreposto quando tem imagem */}
+        {showImg && preco && (
+          <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/80 to-transparent px-3 pt-6 pb-2">
+            <span className="text-emerald-300 text-[12px] font-bold drop-shadow">{preco}</span>
           </div>
         )}
       </div>
 
       {/* Info */}
-      <div className="flex flex-col flex-1 p-3 gap-1.5">
-        <div className="flex items-center gap-1.5">
-          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded text-white shrink-0 ${plat.bg}`}>
-            {plat.label}
-          </span>
-          <span className="text-[9px] text-white/40 uppercase tracking-wide truncate">
-            {cat?.label ?? p.categoria}
-          </span>
-        </div>
-        <p className="text-white text-[12px] font-medium leading-snug line-clamp-2 flex-1">
+      <div className="flex flex-col flex-1 px-3 pt-2.5 pb-3 gap-1">
+        <span className="text-[9px] text-white/35 uppercase tracking-wide truncate">
+          {cat?.label ?? p.categoria}
+        </span>
+        <p className="text-white/90 text-[12px] font-medium leading-snug line-clamp-2 flex-1">
           {p.name}
         </p>
-        <div className="flex items-center justify-between mt-auto pt-1">
-          {preco ? (
+        <div className="flex items-center justify-between mt-1">
+          {!showImg && preco ? (
             <span className="text-emerald-400 text-[11px] font-bold">{preco}</span>
           ) : (
             <span />
           )}
-          <span className="text-[#ffb1c9] text-[11px] font-semibold group-hover:text-rose-300 transition-colors">
-            Ver produto →
+          <span className="text-rose-400/80 text-[10px] font-semibold group-hover:text-rose-300 transition-colors ml-auto flex items-center gap-0.5">
+            Ver <span className="group-hover:translate-x-0.5 transition-transform inline-block">→</span>
           </span>
         </div>
       </div>
@@ -253,7 +260,7 @@ export default function PresentesClient() {
         >
           <p className="pill pill-gold mb-4 mx-auto">✨ Curadoria desbloqueada</p>
           <h1 className="font-heading text-4xl sm:text-5xl text-white font-bold mb-3">
-            {PRODUTOS.length} ideias de presentes
+            {todosOsProdutos.length}+ ideias de presentes
           </h1>
           <p className="text-white/55 text-sm">
             Clique em qualquer produto para abrir direto na loja.
@@ -364,7 +371,7 @@ export default function PresentesClient() {
               <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black via-black/80 to-transparent rounded-2xl">
                 <div className="relative rounded-[28px] p-8 sm:p-10 text-center max-w-sm w-full mx-4 bg-gradient-to-br from-amber-950/80 via-zinc-900 to-black border border-amber-500/40 shadow-[0_0_60px_-10px_rgba(245,158,11,0.4)]">
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-400 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider whitespace-nowrap">
-                    {PRODUTOS.length} presentes selecionados
+                    {todosOsProdutos.length}+ presentes selecionados
                   </div>
                   <p className="text-5xl mb-4 mt-2">🎁</p>
                   <h2 className="font-heading text-2xl text-white font-bold mb-2">

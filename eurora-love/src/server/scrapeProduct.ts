@@ -21,15 +21,20 @@ function makeHeaders(ua: string, referer?: string): Record<string, string> {
   };
 }
 
+// Rejeita imagens genéricas da Shopee (logo do app, ícones de campanha)
+function isGenericShopeeImage(url: string): boolean {
+  return url.includes("deo.shopeemobile.com") || url.includes("homepagefe/") || url.includes("shopee-mobilemall");
+}
+
 function extractOgImage(html: string): string | null {
   // og:image pode estar em tag separada do content — busca o content logo após og:image
   const og = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
     ?? html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
-  if (og?.[1]?.startsWith("http")) return og[1];
+  if (og?.[1]?.startsWith("http") && !isGenericShopeeImage(og[1])) return og[1];
 
   const tw = html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i)
     ?? html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image["']/i);
-  if (tw?.[1]?.startsWith("http")) return tw[1];
+  if (tw?.[1]?.startsWith("http") && !isGenericShopeeImage(tw[1])) return tw[1];
 
   return null;
 }

@@ -81,3 +81,17 @@ model PresenteLink {
 
   @@map("presente_links")
 }
+
+model PresentePayment {
+  id                  String   @id @default(uuid())
+  payment_id          String   @unique
+  email               String
+  name                String
+  pix_copia_cola      String?
+  email_pix_sent      Boolean  @default(false)
+  email_confirm_sent  Boolean  @default(false)
+  paid                Boolean  @default(false)
+  created_at          DateTime @default(now())
+
+  @@map("presente_payments")
+}

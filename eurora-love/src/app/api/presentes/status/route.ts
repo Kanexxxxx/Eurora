@@ -1,11 +1,11 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { requiredEnv } from "@/server/env";
 import { asaasRequest, isAsaasPaidStatus } from "@/server/payments/asaas";
+import { prisma } from "@/server/db/prisma";
+import { sendConfirmationEmail } from "@/server/presenteEmail";
 
-function secret() {
-  return requiredEnv("CRON_SECRET");
-}
+function secret() { return requiredEnv("CRON_SECRET"); }
 
 function signToken(): string {
   const payload = Buffer.from(
@@ -23,41 +23,40 @@ function verifyToken(token: string): boolean {
   if (sig !== expected) return false;
   try {
     const data = JSON.parse(Buffer.from(payload, "base64url").toString()) as {
-      type?: string;
-      exp?: number;
+      type?: string; exp?: number;
     };
     return data.type === "presentes" && !!data.exp && data.exp > Date.now();
-  } catch {
-    return false;
-  }
+  } catch { return false; }
 }
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
-  // Verify existing token (page reload)
   const token = searchParams.get("token");
-  if (token) {
-    const valid = verifyToken(token);
-    return NextResponse.json({ valid });
-  }
+  if (token) return NextResponse.json({ valid: verifyToken(token) });
 
-  // Poll Asaas for payment status
   const payment_id = searchParams.get("payment_id");
   if (!payment_id)
-    return NextResponse.json({ error: "payment_id obrigatório" }, { status: 400 });
+    return NextResponse.json({ error: "payment_id obrigatorio" }, { status: 400 });
 
   try {
-    const payment = await asaasRequest<{ status?: string }>(
-      `/payments/${payment_id}`
-    );
+    const payment = await asaasRequest<{ status?: string }>(`/payments/${payment_id}`);
     const paid = isAsaasPaidStatus(payment.status);
-    return NextResponse.json({
-      paid,
-      token: paid ? signToken() : null,
-    });
+
+    if (paid) {
+      // Envia email de confirmação apenas uma vez
+      const record = await prisma.presentePayment.findUnique({ where: { payment_id } }).catch(() => null);
+      if (record && !record.email_confirm_sent) {
+        await prisma.presentePayment.update({
+          where: { payment_id },
+          data: { paid: true, email_confirm_sent: true },
+        }).catch(() => {});
+        sendConfirmationEmail(record.email, record.name).catch(() => {});
+      }
+    }
+
+    return NextResponse.json({ paid, token: paid ? signToken() : null });
   } catch {
     return NextResponse.json({ error: "Erro ao verificar pagamento" }, { status: 502 });
   }
 }
-

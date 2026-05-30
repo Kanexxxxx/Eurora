@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { asaasRequest, onlyDigits, todayIsoDate } from "@/server/payments/asaas";
 import { checkRateLimit } from "@/server/rateLimit";
+import { prisma } from "@/server/db/prisma";
+import { sendPixEmail } from "@/server/presenteEmail";
 
 const schema = z.object({
   name: z.string().min(2).max(120),
@@ -24,34 +26,33 @@ export async function POST(req: NextRequest) {
     const customer = await asaasRequest<{ id: string }>("/customers", {
       method: "POST",
       body: JSON.stringify({
-        name,
-        cpfCnpj: cpf,
-        email,
+        name, cpfCnpj: cpf, email,
         externalReference: `presentes:${email}`,
         notificationDisabled: true,
       }),
     });
 
-    const payment = await asaasRequest<{ id: string; status?: string }>(
-      "/payments",
-      {
-        method: "POST",
-        body: JSON.stringify({
-          customer: customer.id,
-          billingType: "PIX",
-          value: 8,
-          dueDate: todayIsoDate(),
-          description: "EURORA LOVE - Curadoria 250 Presentes",
-          externalReference: `presentes:${Date.now()}`,
-        }),
-      }
+    const payment = await asaasRequest<{ id: string; status?: string }>("/payments", {
+      method: "POST",
+      body: JSON.stringify({
+        customer: customer.id, billingType: "PIX", value: 8,
+        dueDate: todayIsoDate(),
+        description: "EURORA LOVE - Curadoria de Presentes",
+        externalReference: `presentes:${Date.now()}`,
+      }),
+    });
+
+    const pix = await asaasRequest<{ encodedImage: string; payload: string }>(
+      `/payments/${payment.id}/pixQrCode`
     );
 
-    const pix = await asaasRequest<{
-      encodedImage: string;
-      payload: string;
-      expirationDate?: string;
-    }>(`/payments/${payment.id}/pixQrCode`);
+    // Salva para rastrear confirmação de email
+    await prisma.presentePayment.create({
+      data: { payment_id: payment.id, email, name, pix_copia_cola: pix.payload },
+    });
+
+    // Envia email com QR code (sem bloquear a resposta)
+    sendPixEmail(email, name, pix.payload, pix.encodedImage).catch(() => {});
 
     return NextResponse.json({
       payment_id: payment.id,
@@ -59,8 +60,7 @@ export async function POST(req: NextRequest) {
       pix_copia_cola: pix.payload,
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Erro ao gerar PIX.";
+    const message = error instanceof Error ? error.message : "Erro ao gerar PIX.";
     return NextResponse.json({ error: message }, { status: 502 });
   }
 }
