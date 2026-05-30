@@ -1,12 +1,14 @@
 const USER_AGENTS = [
   // Desktop Chrome
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-  // Mobile Chrome (Amazon muitas vezes responde melhor)
+  // Mobile Chrome
   "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
-  // Googlebot (alguns sites liberam para crawlers)
+  // Googlebot
   "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
   // Safari mobile
   "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+  // Facebook crawler — Shopee serve imagens reais para este UA
+  "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
 ];
 
 function makeHeaders(ua: string, referer?: string): Record<string, string> {
@@ -20,12 +22,29 @@ function makeHeaders(ua: string, referer?: string): Record<string, string> {
 }
 
 function extractOgImage(html: string): string | null {
+  // og:image pode estar em tag separada do content — busca o content logo após og:image
   const og = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
     ?? html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
   if (og?.[1]?.startsWith("http")) return og[1];
+
   const tw = html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i)
     ?? html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image["']/i);
   if (tw?.[1]?.startsWith("http")) return tw[1];
+
+  return null;
+}
+
+// Para Shopee: busca imagem real do produto no HTML (ignora banners promocionais)
+function extractShopeeHtmlImage(html: string): string | null {
+  // Pega todas as URLs susercontent no HTML
+  const matches = [...html.matchAll(/https:\/\/down-br\.img\.susercontent\.com\/file\/([^"'<\s]+)/g)];
+  for (const m of matches) {
+    const path = m[1];
+    // Ignora banners promocionais (promo-dim, cover, banner)
+    if (/promo-dim|cover-|banner/i.test(path)) continue;
+    const url = `https://down-br.img.susercontent.com/file/${path.split(".")[0]}`;
+    return url;
+  }
   return null;
 }
 
@@ -90,7 +109,12 @@ async function tryFetch(url: string, ua: string, referer?: string): Promise<{ im
     if (!res.ok) return { image: null, price: null };
     const html = await res.text();
     const isAmazon = res.url.includes("amazon.com") || url.includes("amazon") || url.includes("amzn.to");
-    const image = isAmazon ? extractAmazonImage(html) : extractOgImage(html);
+    const isShopee = res.url.includes("shopee") || url.includes("shopee");
+    const image = isAmazon
+      ? extractAmazonImage(html)
+      : isShopee
+        ? (extractShopeeHtmlImage(html) ?? extractOgImage(html))
+        : extractOgImage(html);
     const price = extractPrice(html);
     return { image, price };
   } catch {
