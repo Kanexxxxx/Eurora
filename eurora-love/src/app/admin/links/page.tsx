@@ -40,6 +40,8 @@ export default function AdminLinks() {
   const [saving, setSaving] = useState(false);
   const [busca, setBusca] = useState("");
   const [catFiltro, setCatFiltro] = useState("Todos");
+  const [reimportando, setReimportando] = useState(false);
+  const [reimportMsg, setReimportMsg] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const [linksRes, hiddenRes] = await Promise.all([
@@ -95,6 +97,21 @@ export default function AdminLinks() {
     void load();
   }
 
+  async function handleReimportar() {
+    setReimportando(true);
+    setReimportMsg(null);
+    try {
+      const r = await fetch("/api/admin/links/reimportar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
+      const d = await r.json() as { processados?: number; comImagem?: number };
+      setReimportMsg(`✅ ${d.comImagem ?? 0} de ${d.processados ?? 0} produtos tiveram foto importada`);
+      void load();
+    } catch {
+      setReimportMsg("❌ Erro ao importar fotos");
+    } finally {
+      setReimportando(false);
+    }
+  }
+
   async function handleDelete(id: string) {
     if (!confirm("Excluir este produto?")) return;
     await fetch(`/api/admin/links/${id}`, { method: "DELETE" });
@@ -130,15 +147,29 @@ export default function AdminLinks() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-2 gap-3 flex-wrap">
         <h1 className="text-white text-2xl font-bold">Produtos do catálogo</h1>
-        <button
-          onClick={() => setForm({ ...EMPTY })}
-          className="bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
-        >
-          + Novo produto
-        </button>
+        <div className="flex gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={handleReimportar}
+            disabled={reimportando}
+            className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+          >
+            {reimportando ? "Importando..." : "📷 Importar fotos"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setForm({ ...EMPTY })}
+            className="bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+          >
+            + Novo produto
+          </button>
+        </div>
       </div>
+      {reimportMsg && (
+        <p className="text-sm mb-4 text-white/70">{reimportMsg}</p>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-1 mb-6 bg-white/4 rounded-xl p-1 w-fit">
@@ -269,12 +300,22 @@ export default function AdminLinks() {
             {items.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center gap-3 bg-white/4 border border-white/8 rounded-xl px-4 py-3"
+                className="flex items-center gap-3 bg-white/4 border border-white/8 rounded-xl px-3 py-3"
               >
+                {/* Thumbnail */}
+                <div className="w-10 h-10 rounded-lg bg-white/8 border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
+                  {item.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={item.image_url} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                  ) : (
+                    <span className="text-white/20 text-lg">📦</span>
+                  )}
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
                     <PlatBadge platform={item.platform} />
                     <span className="text-white/40 text-xs truncate">{item.categoria}</span>
+                    {item.preco && <span className="text-emerald-400 text-xs font-bold shrink-0">{item.preco}</span>}
                   </div>
                   <p className="text-white text-sm font-medium truncate">{item.name}</p>
                   <p className="text-white/30 text-xs truncate">{item.url}</p>
