@@ -324,10 +324,10 @@ export default function PreviewMockup({}: Props) {
                     src={slide.photoUrl}
                     alt=""
                     aria-hidden="true"
-                    className="absolute inset-0 h-full w-full object-cover opacity-50"
-                    style={{ filter: "blur(18px)", transform: "scale(1.15)" }}
+                    className="absolute inset-0 h-full w-full object-cover object-center opacity-35"
+                    style={{ filter: "blur(22px)", transform: "scale(1.12)" }}
                     initial={{ opacity: 0 }}
-                    animate={{ opacity: 0.5 }}
+                    animate={{ opacity: 0.35 }}
                     transition={{ duration: 0.8 }}
                   />
                   {/* Main photo */}
@@ -335,11 +335,12 @@ export default function PreviewMockup({}: Props) {
                     key={photoIndex}
                     src={slide.photoUrl}
                     alt={`${slide.name1} e ${slide.name2}`}
-                    className="absolute inset-0 m-auto h-full w-full object-contain object-center"
-                    initial={{ opacity: 0, scale: 1.04 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    className="absolute inset-0 h-full w-full object-cover object-center"
+                    initial={{ opacity: 0, scale: 1.08 }}
+                    animate={{ opacity: 1, scale: 1.02 }}
                     transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
                   />
+                  <div className="absolute inset-0 bg-black/20" />
                   {/* Full overlay gradient */}
                   <div className="mockup-photo-gradient absolute inset-0" />
 

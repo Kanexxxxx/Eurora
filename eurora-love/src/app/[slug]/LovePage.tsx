@@ -126,23 +126,24 @@ function HeroPhoto({ src, alt }: { src: string; alt: string }) {
       exit={{ opacity: 0, scale: 0.99 }}
       transition={{ opacity: { duration: 1.25, ease: "easeInOut" }, scale: { duration: 5.5, ease: "linear" } }}
     >
-      {/* Blurred fill keeps the phone frame rich without cropping the real uploaded photo. */}
+      {/* Soft fill keeps depth behind the main photo without creating visible side borders. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
         alt=""
         aria-hidden="true"
-        className="absolute inset-0 h-full w-full scale-110 object-cover object-center blur-2xl opacity-70"
+        className="absolute inset-0 h-full w-full scale-110 object-cover object-center blur-2xl opacity-35"
       />
-      <div className="absolute inset-0 bg-black/25" />
+      <div className="absolute inset-0 bg-black/15" />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
         alt={alt}
-        className="absolute inset-0 m-auto h-full w-full object-contain object-center"
+        className="absolute inset-0 h-full w-full object-cover object-center"
         loading="eager"
         decoding="async"
       />
+      <div className="absolute inset-0 bg-black/20" />
     </motion.div>
   );
 }
