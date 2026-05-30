@@ -112,6 +112,82 @@ function isSafeUrl(raw: string): boolean {
   }
 }
 
+// Extrai shopid e itemid de uma URL da Shopee
+// Formatos: /product-name-i.SHOPID.ITEMID  ou  /SHOPID/ITEMID
+function parseShopeeIds(url: string): { shopId: string; itemId: string } | null {
+  try {
+    const path = new URL(url).pathname;
+    // Formato: -i.SHOPID.ITEMID no final do path
+    const m1 = path.match(/-i\.(\d+)\.(\d+)/);
+    if (m1) return { shopId: m1[1], itemId: m1[2] };
+    // Formato: /SHOPID/ITEMID
+    const m2 = path.match(/^\/(\d+)\/(\d+)/);
+    if (m2) return { shopId: m2[1], itemId: m2[2] };
+  } catch { /* ignore */ }
+  return null;
+}
+
+// Busca imagem real via API interna da Shopee (retorna foto do produto, não logo)
+async function fetchShopeeImage(targetUrl: string): Promise<{ image: string | null; price: string | null }> {
+  try {
+    // Seguir redirect para obter URL final (para links curtos s.shopee.com.br)
+    let finalUrl = targetUrl;
+    if (targetUrl.includes("s.shopee.com.br") || !parseShopeeIds(targetUrl)) {
+      const res = await fetch(targetUrl, {
+        redirect: "follow",
+        signal: AbortSignal.timeout(8000),
+        headers: { "User-Agent": USER_AGENTS[0] },
+      });
+      finalUrl = res.url;
+    }
+
+    const ids = parseShopeeIds(finalUrl);
+    if (!ids) return { image: null, price: null };
+
+    // API interna da Shopee — retorna JSON com imagens reais do produto
+    const apiUrl = `https://shopee.com.br/api/v4/item/get?itemid=${ids.itemId}&shopid=${ids.shopId}`;
+    const apiRes = await fetch(apiUrl, {
+      headers: {
+        "User-Agent": USER_AGENTS[1], // Mobile UA funciona melhor
+        "Referer": "https://shopee.com.br/",
+        "Accept": "application/json",
+        "x-api-source": "pc",
+      },
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (!apiRes.ok) return { image: null, price: null };
+
+    const json = await apiRes.json() as {
+      data?: {
+        images?: string[];
+        image?: string;
+        price?: number;
+        price_min?: number;
+      };
+    };
+
+    const data = json?.data;
+    if (!data) return { image: null, price: null };
+
+    // Primeira imagem do produto (hash → CDN URL)
+    const imageHash = data.images?.[0] ?? data.image;
+    const image = imageHash
+      ? `https://cf.shopee.com.br/file/${imageHash}`
+      : null;
+
+    // Preço em centavos dividido por 100000
+    const rawPrice = data.price ?? data.price_min;
+    const price = rawPrice && rawPrice > 0
+      ? `R$ ${(rawPrice / 100000).toFixed(2).replace(".", ",")}`
+      : null;
+
+    return { image, price };
+  } catch {
+    return { image: null, price: null };
+  }
+}
+
 export async function scrapeProductImageAndPrice(targetUrl: string): Promise<{ image: string | null; price: string | null }> {
   if (!isSafeUrl(targetUrl)) return { image: null, price: null };
 
@@ -119,12 +195,18 @@ export async function scrapeProductImageAndPrice(targetUrl: string): Promise<{ i
   const isShopee = targetUrl.includes("shopee");
   const isML = targetUrl.includes("mercadolivre") || targetUrl.includes("mercadolibre");
 
+  // Shopee: API interna primeiro (imagem real do produto)
+  if (isShopee) {
+    const result = await fetchShopeeImage(targetUrl);
+    if (result.image) return result;
+  }
+
   const referer = isAmazon ? "https://www.amazon.com.br/"
     : isShopee ? "https://shopee.com.br/"
     : isML ? "https://www.mercadolivre.com.br/"
     : undefined;
 
-  // Tenta com múltiplos User-Agents até ter sucesso
+  // Fallback: scraping HTML com múltiplos User-Agents
   for (const ua of USER_AGENTS) {
     const result = await tryFetch(targetUrl, ua, referer);
     if (result.image) return result;
