@@ -399,7 +399,7 @@ export default function CheckoutClient() {
                   <img
                     src={`data:image/png;base64,${payment.pix_qr_code}`}
                     alt="QR Code Pix"
-                    className="w-48 h-48"
+                    className="w-48 h-48 max-w-full"
                   />
                 </div>
                 <div className="space-y-3">

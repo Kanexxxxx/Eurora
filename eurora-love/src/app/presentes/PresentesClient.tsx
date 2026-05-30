@@ -482,7 +482,7 @@ export default function PresentesClient() {
                 <img
                   src={`data:image/png;base64,${pix.qr_code}`}
                   alt="QR Code PIX"
-                  className="w-48 h-48"
+                  className="w-48 h-48 max-w-full"
                 />
               </div>
               <h2 className="font-heading text-xl text-white font-bold mb-1">

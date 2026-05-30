@@ -21,6 +21,9 @@ function base64UrlDecode(value: string) {
 }
 
 function sessionSecret() {
+  if (!process.env.ADMIN_SESSION_SECRET && process.env.NODE_ENV === "production") {
+    console.warn("[admin-auth] ADMIN_SESSION_SECRET não definido — usando ADMIN_PASSWORD como fallback. Defina ADMIN_SESSION_SECRET separadamente para maior segurança.");
+  }
   return process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_PASSWORD || "";
 }
 

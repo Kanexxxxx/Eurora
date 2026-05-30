@@ -111,7 +111,7 @@ function RadarChart({
               textAnchor="middle"
               dominantBaseline="middle"
               fill="rgba(255,255,255,0.5)"
-              fontSize="8"
+              fontSize="11"
             >
               {DIM_LABELS[i].split("\n").map((line, li) => (
                 <tspan key={li} x={lx} dy={li === 0 ? 0 : 10}>

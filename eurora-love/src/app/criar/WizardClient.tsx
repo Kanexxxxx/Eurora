@@ -427,7 +427,7 @@ export default function WizardClient() {
                         <button
                           onClick={() => removePhoto(i)}
                           aria-label={`Remover foto ${i + 1}`}
-                          className="absolute top-1 right-1 bg-black/70 text-white text-sm rounded-full w-7 h-7 flex items-center justify-center hover:bg-black/90 active:bg-black transition-colors"
+                          className="absolute top-1 right-1 bg-black/70 text-white text-sm rounded-full w-9 h-9 flex items-center justify-center hover:bg-black/90 active:bg-black transition-colors"
                         >
                           ×
                         </button>

@@ -665,7 +665,7 @@ export default function MensagemClient() {
                         <img
                           src={`data:image/png;base64,${paymentPix.qr}`}
                           alt="QR Code PIX"
-                          className="w-48 h-48"
+                          className="w-48 h-48 max-w-full"
                         />
                       </div>
                       <h3 className="font-heading text-lg text-white font-bold text-center">

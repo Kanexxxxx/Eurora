@@ -98,7 +98,23 @@ async function tryFetch(url: string, ua: string, referer?: string): Promise<{ im
   }
 }
 
+// IPs privados e de metadados cloud — nunca devem ser acessados pelo scraper
+const BLOCKED_HOSTS = /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|0\.0\.0\.0|::1|fc00:|fd)/i;
+
+function isSafeUrl(raw: string): boolean {
+  try {
+    const { hostname, protocol } = new URL(raw);
+    if (protocol !== "https:" && protocol !== "http:") return false;
+    if (BLOCKED_HOSTS.test(hostname)) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function scrapeProductImageAndPrice(targetUrl: string): Promise<{ image: string | null; price: string | null }> {
+  if (!isSafeUrl(targetUrl)) return { image: null, price: null };
+
   const isAmazon = targetUrl.includes("amazon") || targetUrl.includes("amzn.to");
   const isShopee = targetUrl.includes("shopee");
   const isML = targetUrl.includes("mercadolivre") || targetUrl.includes("mercadolibre");
