@@ -78,13 +78,13 @@ const defaultData: WizardData = {
 const inputClass = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff2d6a] transition-colors";
 
 const ALL_MUSIC_EXAMPLES = [
-  { url: "https://open.spotify.com/track/1tmD4Xpd1YNSGCG5AYqHDk", title: "Última Saudade", artist: "Sertanejo", thumb: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e025856830b78bbf4343b9305", platform: "spotify" },
-  { url: "https://open.spotify.com/track/3xgrWGYrqZVL7aAvZTm2MA", title: "Saudade de Quem Eu Sou", artist: "Sertanejo", thumb: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02ea8c31c9f8657e8c3812eb", platform: "spotify" },
-  { url: "https://open.spotify.com/track/5jP9oqulg2Dz6yLwLYj5KO", title: "Seja Ex", artist: "Sertanejo", thumb: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e025856830b78bbf4343b9305", platform: "spotify" },
-  { url: "https://youtu.be/rtOvBOTyX00", title: "A Thousand Years", artist: "Christina Perri", thumb: "https://i.ytimg.com/vi/rtOvBOTyX00/hqdefault.jpg", platform: "youtube" },
+  { url: "https://open.spotify.com/track/1tmD4Xpd1YNSGCG5AYqHDk", title: "Última Saudade", artist: "Henrique & Juliano", thumb: "https://i.scdn.co/image/ab67616d00001e0241cff60938ad31c4c7c1a1e7", platform: "spotify" },
+  { url: "https://open.spotify.com/track/5jP9oqulg2Dz6yLwLYj5KO", title: "Seja Ex", artist: "Marília Mendonça", thumb: "https://i.scdn.co/image/ab67616d00001e02ff9ca10b55ce82a5796a799e", platform: "spotify" },
+  { url: "https://open.spotify.com/track/587Lf3LyhC8smoFnNIQtn3", title: "Eu Te Seguro", artist: "Veigh", thumb: "https://i.scdn.co/image/ab67616d00001e02bfd85a89e28cbbc84b1d1ae3", platform: "spotify" },
+  { url: "https://open.spotify.com/track/6dOtVTDdiauQNBQEDOtlAB", title: "BIRDS OF A FEATHER", artist: "Billie Eilish", thumb: "https://i.scdn.co/image/ab67616d00001e0271d62ea7ea8a5be92d3c1f62", platform: "spotify" },
   { url: "https://open.spotify.com/track/0V3wPSX9ygBnCm8psDIegu", title: "Perfect", artist: "Ed Sheeran", thumb: "https://i.scdn.co/image/ab67616d00001e02ba5db46f4b838ef6027e6f96", platform: "spotify" },
   { url: "https://open.spotify.com/track/7qiZfU4dY1lWllzX7mPBI3", title: "Shape of You", artist: "Ed Sheeran", thumb: "https://i.scdn.co/image/ab67616d00001e02ba5db46f4b838ef6027e6f96", platform: "spotify" },
-  { url: "https://open.spotify.com/track/2takcwOaAZWiXQijPHIx7B", title: "Can't Help Falling in Love", artist: "Elvis Presley", thumb: "https://i.scdn.co/image/ab67616d00001e02bfec73f3af08be3a33bfb44e", platform: "spotify" },
+  { url: "https://open.spotify.com/track/2takcwOaAZWiXQijPHIx7B", title: "Can't Help Falling in Love", artist: "Elvis Presley", thumb: "https://i.scdn.co/image/ab67616d00001e023b9bb70fa48ae55e0f25e59b", platform: "spotify" },
   { url: "https://open.spotify.com/track/6AQbmUe0Qwf5PZnt4HmTXv", title: "Lover", artist: "Taylor Swift", thumb: "https://i.scdn.co/image/ab67616d00001e0291563e3dc63dc903d0e79e47", platform: "spotify" },
 ];
 
@@ -100,31 +100,28 @@ function shuffleExamples() {
 
 const MUSIC_EXAMPLES = shuffleExamples();
 
-function useMusicPreview(url: string) {
-  const [preview, setPreview] = useState<{ title: string; thumb: string } | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    setPreview(null);
-    if (!url || (!url.includes("spotify") && !url.includes("youtube") && !url.includes("youtu.be"))) return;
-
-    timerRef.current = setTimeout(async () => {
-      try {
-        const endpoint = url.includes("spotify")
-          ? `https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`
-          : `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
-        const r = await fetch(endpoint);
-        if (!r.ok) return;
-        const d = await r.json() as { title?: string; thumbnail_url?: string };
-        if (d.title) setPreview({ title: d.title, thumb: d.thumbnail_url ?? "" });
-      } catch { /* ignore */ }
-    }, 600);
-
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [url]);
-
-  return preview;
+function getEmbedUrl(url: string): { src: string; type: "spotify" | "youtube" } | null {
+  if (!url) return null;
+  try {
+    const p = new URL(url);
+    if (p.hostname.includes("spotify.com")) {
+      const parts = p.pathname.split("/").filter(Boolean);
+      const TYPES = ["track", "album", "playlist", "episode", "show"];
+      const typeIdx = parts.findIndex(s => TYPES.includes(s));
+      if (typeIdx === -1 || typeIdx + 1 >= parts.length) return null;
+      const id = parts[typeIdx + 1].split("?")[0];
+      if (!id) return null;
+      return { src: `https://open.spotify.com/embed/${parts[typeIdx]}/${id}?theme=0`, type: "spotify" };
+    }
+    if (p.hostname.includes("youtube.com") || p.hostname.includes("youtu.be")) {
+      let vid: string | null = null;
+      if (p.hostname.includes("youtu.be")) vid = p.pathname.slice(1).split("?")[0];
+      else vid = p.searchParams.get("v");
+      if (!vid) return null;
+      return { src: `https://www.youtube.com/embed/${vid}`, type: "youtube" };
+    }
+  } catch { /* ignore */ }
+  return null;
 }
 
 function MusicStep({ plan, value, onChange, onUpgrade }: {
@@ -133,7 +130,7 @@ function MusicStep({ plan, value, onChange, onUpgrade }: {
   onChange: (v: string) => void;
   onUpgrade: () => void;
 }) {
-  const preview = useMusicPreview(value);
+  const embed = getEmbedUrl(value);
 
   if (plan !== "premium") {
     return (
@@ -167,19 +164,40 @@ function MusicStep({ plan, value, onChange, onUpgrade }: {
         className={inputClass}
       />
 
-      {/* Live preview */}
-      {preview && (
-        <div className="mt-3 flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3">
-          {preview.thumb && (
-            <img src={preview.thumb} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
+      {/* Player embed — aparece assim que a URL é válida */}
+      {embed && (
+        <div className="mt-3 rounded-2xl overflow-hidden border border-white/10">
+          {embed.type === "spotify" ? (
+            <iframe
+              key={embed.src}
+              src={embed.src}
+              width="100%"
+              height="80"
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+              className="block"
+              title="Player da música"
+            />
+          ) : (
+            <div className="aspect-video">
+              <iframe
+                key={embed.src}
+                src={embed.src}
+                width="100%"
+                height="100%"
+                allow="autoplay; fullscreen"
+                allowFullScreen
+                className="block w-full h-full"
+                title="Player do vídeo"
+              />
+            </div>
           )}
-          <div className="flex-1 min-w-0">
-            <p className="text-white text-sm font-medium truncate">{preview.title}</p>
-            <p className="text-white/40 text-xs">
-              {value.includes("spotify") ? "🎵 Spotify" : "▶ YouTube"}
-            </p>
-          </div>
-          <button type="button" onClick={() => onChange("")} className="text-white/30 hover:text-white/60 text-lg leading-none">×</button>
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="w-full py-2 text-white/30 hover:text-white/50 text-xs text-center border-t border-white/8 transition-colors"
+          >
+            × Remover música
+          </button>
         </div>
       )}
 
@@ -197,12 +215,19 @@ function MusicStep({ plan, value, onChange, onUpgrade }: {
                 : "border-white/8 bg-white/3 hover:border-white/20 hover:bg-white/6"
             }`}
           >
-            <img
-              src={ex.thumb}
-              alt=""
-              className="w-9 h-9 rounded-lg object-cover shrink-0"
-              loading="lazy"
-            />
+            <div className="w-9 h-9 rounded-lg shrink-0 overflow-hidden bg-white/10 flex items-center justify-center">
+              <img
+                src={ex.thumb}
+                alt=""
+                className="w-full h-full object-cover"
+                loading="lazy"
+                onError={(e) => {
+                  const el = e.currentTarget;
+                  el.style.display = "none";
+                  (el.parentElement as HTMLElement).innerHTML = "<span style='font-size:18px'>🎵</span>";
+                }}
+              />
+            </div>
             <div className="flex-1 min-w-0">
               <p className="text-white text-[11px] font-semibold truncate leading-tight">{ex.title}</p>
               <p className="text-white/40 text-[10px] mt-0.5">
