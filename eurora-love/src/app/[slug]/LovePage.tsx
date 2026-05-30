@@ -131,9 +131,13 @@ function formatSince(d: string) {
 
 function calcTogether(d: string) {
   const start = new Date(d + "T12:00:00");
-  const ms = Date.now() - start.getTime();
+  const ms = Math.max(0, Date.now() - start.getTime());
+  const totalSecs = Math.floor(ms / 1000);
   const days = Math.floor(ms / 86400000);
-  return { days, years: Math.floor(days / 365), months: Math.floor((days % 365) / 30) };
+  const hours = Math.floor((ms % 86400000) / 3600000);
+  const mins = Math.floor((ms % 3600000) / 60000);
+  const secs = totalSecs % 60;
+  return { days, hours, mins, secs, years: Math.floor(days / 365), months: Math.floor((days % 365) / 30) };
 }
 
 function calcNextAnn(d: string) {
@@ -141,8 +145,13 @@ function calcNextAnn(d: string) {
   const now = new Date();
   const thisYear = new Date(now.getFullYear(), start.getMonth(), start.getDate());
   const next = thisYear <= now ? new Date(now.getFullYear() + 1, start.getMonth(), start.getDate()) : thisYear;
+  const ms = Math.max(0, next.getTime() - now.getTime());
+  const days = Math.floor(ms / 86400000);
+  const hours = Math.floor((ms % 86400000) / 3600000);
+  const mins = Math.floor((ms % 3600000) / 60000);
+  const secs = Math.floor((ms % 60000) / 1000);
   return {
-    days: Math.ceil((next.getTime() - now.getTime()) / 86400000),
+    days, hours, mins, secs,
     label: `${next.getDate()} de ${next.toLocaleDateString("pt-BR", { month: "long" })}`,
   };
 }
@@ -156,8 +165,8 @@ export default function LovePage({ couple, musicMeta }: Props) {
   const [copied, setCopied] = useState(false);
   const [heroIdx, setHeroIdx] = useState(0);
   const [clock, setClock] = useState("");
-  const [together, setTogether] = useState({ days: 0, years: 0, months: 0 });
-  const [nextAnn, setNextAnn] = useState({ days: 0, label: "" });
+  const [together, setTogether] = useState({ days: 0, hours: 0, mins: 0, secs: 0, years: 0, months: 0 });
+  const [nextAnn, setNextAnn] = useState({ days: 0, hours: 0, mins: 0, secs: 0, label: "" });
   const [musicExpanded, setMusicExpanded] = useState(false);
   const [albumColor, setAlbumColor] = useState(styles.accentHex);
 
@@ -176,7 +185,7 @@ export default function LovePage({ couple, musicMeta }: Props) {
       setNextAnn(calcNextAnn(couple.relationship_date));
     };
     tick();
-    const id = setInterval(tick, 30_000);
+    const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [couple.relationship_date]);
 
@@ -307,25 +316,52 @@ export default function LovePage({ couple, musicMeta }: Props) {
               style={{ backgroundImage: "radial-gradient(rgba(255,177,201,0.12) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
 
             {/* ── Stats strip ── */}
-            <motion.div className="relative flex items-center justify-center py-2"
+            <motion.div className="relative space-y-3"
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.2 }}>
-              <div className="flex-1 text-center">
-                <p className="font-heading text-[26px] font-bold text-gradient-rosegold">
-                  {together.years > 0 ? `${together.years}a` : together.months > 0 ? `${together.months}m` : `${together.days}d`}
-                </p>
-                <p className="text-white/35 text-[10px] uppercase tracking-[0.2em] mt-0.5">juntos</p>
+
+              {/* Tempo juntos — linha completa */}
+              <div className="rounded-2xl border border-white/8 bg-white/3 px-4 py-3 text-center">
+                <p className="text-white/35 text-[9px] uppercase tracking-[0.25em] mb-1.5">Juntos há</p>
+                <div className="flex items-end justify-center gap-3">
+                  <div className="text-center">
+                    <p className="font-heading text-[28px] font-bold text-gradient-rosegold tabular-nums leading-none">
+                      {together.days.toLocaleString("pt-BR")}
+                    </p>
+                    <p className="text-white/35 text-[9px] uppercase tracking-wider mt-0.5">dias</p>
+                  </div>
+                  <div className="text-white/20 text-xl mb-1">·</div>
+                  <div className="text-center">
+                    <p className="font-heading text-[28px] font-bold text-gradient-rosegold tabular-nums leading-none">
+                      {String(together.hours).padStart(2, "0")}
+                    </p>
+                    <p className="text-white/35 text-[9px] uppercase tracking-wider mt-0.5">h</p>
+                  </div>
+                  <div className="text-white/20 text-xl mb-1">·</div>
+                  <div className="text-center">
+                    <p className="font-heading text-[28px] font-bold text-gradient-rosegold tabular-nums leading-none">
+                      {String(together.mins).padStart(2, "0")}
+                    </p>
+                    <p className="text-white/35 text-[9px] uppercase tracking-wider mt-0.5">min</p>
+                  </div>
+                  <div className="text-white/20 text-xl mb-1">·</div>
+                  <div className="text-center">
+                    <p className="font-heading text-[28px] font-bold text-gradient-rosegold tabular-nums leading-none">
+                      {String(together.secs).padStart(2, "0")}
+                    </p>
+                    <p className="text-white/35 text-[9px] uppercase tracking-wider mt-0.5">seg</p>
+                  </div>
+                </div>
               </div>
-              <div className="w-px h-10 bg-white/10 shrink-0" />
-              <div className="flex-1 text-center">
-                <p className="font-heading text-[26px] font-bold text-gradient-rosegold">
-                  {together.days.toLocaleString("pt-BR")}
-                </p>
-                <p className="text-white/35 text-[10px] uppercase tracking-[0.2em] mt-0.5">dias</p>
-              </div>
-              <div className="w-px h-10 bg-white/10 shrink-0" />
-              <div className="flex-1 text-center">
-                <p className="font-heading text-[26px] font-bold text-gradient-rosegold">{nextAnn.days}d</p>
-                <p className="text-white/35 text-[10px] uppercase tracking-[0.2em] mt-0.5">p/ aniv.</p>
+
+              {/* Aniversário — linha */}
+              <div className="flex items-center justify-center gap-4 px-2">
+                <div className="flex-1 text-center rounded-2xl border border-white/8 bg-white/3 px-3 py-2.5">
+                  <p className="text-white/35 text-[9px] uppercase tracking-[0.2em] mb-1">Aniversário</p>
+                  <p className="font-heading text-[13px] font-bold text-gradient-rosegold">{nextAnn.label}</p>
+                  <p className="text-white/40 text-[10px] tabular-nums mt-0.5">
+                    {nextAnn.days}d {String(nextAnn.hours).padStart(2,"0")}h {String(nextAnn.mins).padStart(2,"0")}m {String(nextAnn.secs).padStart(2,"0")}s
+                  </p>
+                </div>
               </div>
             </motion.div>
 
