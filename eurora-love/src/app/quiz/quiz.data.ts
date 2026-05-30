@@ -169,8 +169,8 @@ export const ARCHETYPES: Record<
     desc: "Pra vocês, amor é movimento. Uma viagem de última hora, um lugar nunca visitado, um plano que nasce na hora.",
   },
   ninho: {
-    name: "O Ninho",
-    tagline: "Transformam qualquer lugar em lar",
+    name: "Casal Ninho",
+    tagline: "Vocês transformam qualquer lugar em lar",
     emoji: "🏠",
     gradient: "from-emerald-500/30 to-teal-700/10",
     presentes: "ninho",
@@ -273,10 +273,10 @@ const RESULT_TEMPLATES: Record<ArchetypeId, Record<ScoreFaixa, string>> = {
   },
   ninho: {
     perfect: "{partner} te conhece como conhece o próprio lar — cada canto, cada detalhe, cada silêncio. Isso só vem de quem realmente ficou.",
-    high: "Quase todos os cômodos do seu universo foram encontrados. Faltou um ou dois cantinhos — mas O Ninho tem espaço pra ser descoberto aos poucos.",
+    high: "Quase todos os cômodos do seu universo foram encontrados. Faltou um ou dois cantinhos — mas o Casal Ninho tem espaço pra ser descoberto aos poucos.",
     mid: "{partner} já sabe o essencial — onde você se sente seguro(a), o que te conforta. O resto vem com o tempo de convivência que vocês ainda vão ter.",
-    low: "{partner} ainda está aprendendo a planta do seu mundo. Mas nos casais tipo O Ninho, o lar é construído juntos — não entregue pronto.",
-    miss: "Parece que {partner} ainda está na soleira da porta. A boa notícia é que O Ninho se revela pra quem fica — e vocês claramente ficaram.",
+    low: "{partner} ainda está aprendendo a planta do seu mundo. Mas no Casal Ninho, o lar é construído juntos — não entregue pronto.",
+    miss: "Parece que {partner} ainda está na soleira da porta. A boa notícia é que o Casal Ninho se revela pra quem fica — e vocês claramente ficaram.",
   },
   intensos: {
     perfect: "{partner} te conhece forte — do jeito que Os Intensos merecem ser conhecidos. Sem meias palavras, sem suavizar. Inteiro(a).",

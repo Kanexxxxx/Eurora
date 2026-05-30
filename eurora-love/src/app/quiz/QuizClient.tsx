@@ -159,7 +159,7 @@ function CreatorView() {
 
   const whatsappMsg =
     `Será que você me conhece mesmo? 🤔\n` +
-    `Tenho um arquétipo secreto aqui. Descobre →\n${origin}/quiz?t=${encoded}`;
+    `Fiz um Teste do Amor sobre mim. Tenta acertar minhas respostas e ver nosso tipo de casal →\n${origin}/quiz?t=${encoded}`;
 
   function handleAnswer(idx: number) {
     const next = [...answers, idx];
@@ -205,10 +205,22 @@ function CreatorView() {
             Ele/ela te<br />
             <span className="text-gradient-rose">conhece bem?</span>
           </h1>
-          <p className="text-white/60 text-lg mb-10 leading-relaxed">
-            Responda perguntas sobre você, gere um link e manda no WhatsApp.
-            O resultado revela o <span className="text-[#ffb1c9] font-medium">arquétipo do casal</span>.
+          <p className="text-white/60 text-lg mb-8 leading-relaxed">
+            Responda sobre você, mande o link para quem você ama e veja se a pessoa acerta.
+            No final, o teste revela o <span className="text-[#ffb1c9] font-medium">tipo de casal</span> de vocês.
           </p>
+
+          <div className="grid gap-2 mb-6 text-left">
+            {[
+              "1. Você responde 10 perguntas sobre seu jeito de amar.",
+              "2. A outra pessoa tenta adivinhar suas respostas.",
+              "3. O resultado mostra a sintonia e o tipo de casal de vocês.",
+            ].map((text) => (
+              <div key={text} className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-white/60">
+                {text}
+              </div>
+            ))}
+          </div>
 
           <div className="card-premium p-6 mb-5 space-y-4">
             <div>
@@ -414,7 +426,7 @@ function CreatorView() {
             onClick={() => setStep("preview")}
             className="btn-premium w-full text-base"
           >
-            Ver meu arquétipo →
+            Ver meu tipo no Teste do Amor →
           </button>
         </motion.section>
       )}
@@ -428,8 +440,14 @@ function CreatorView() {
           exit={{ opacity: 0, y: -30 }}
           className="relative px-4 pt-16 pb-24 max-w-xl mx-auto text-center"
         >
-          <p className="text-white/50 text-xs uppercase tracking-wider mb-6">
-            Com base em você, {name}...
+          <p className="text-white/50 text-xs uppercase tracking-wider mb-3">
+            Teste do Amor de {name}
+          </p>
+          <h2 className="font-heading text-3xl sm:text-4xl text-white mb-3 tracking-tight">
+            Seu tipo de casal foi definido.
+          </h2>
+          <p className="text-white/55 text-sm leading-relaxed mb-6">
+            Isso não é uma nota. É o perfil emocional que a outra pessoa vai tentar descobrir respondendo o seu teste.
           </p>
 
           <motion.div
@@ -439,7 +457,7 @@ function CreatorView() {
             className={`relative rounded-[28px] p-8 bg-linear-to-br ${archData.gradient} border border-white/10 mb-8`}
           >
             <p className="text-6xl mb-4">{archData.emoji}</p>
-            <p className="text-white/50 text-xs uppercase tracking-wider mb-2">Seu arquétipo</p>
+            <p className="text-white/50 text-xs uppercase tracking-wider mb-2">Seu tipo no Teste do Amor</p>
             <h2 className="font-heading text-3xl text-white mb-2 tracking-tight">
               {archData.name}
             </h2>
@@ -447,7 +465,8 @@ function CreatorView() {
           </motion.div>
 
           <p className="text-white/55 mb-8 leading-relaxed">
-            Agora vamos ver se <span className="text-[#ffb1c9] font-medium">{nick || "seu parceiro(a)"}</span> te conhece.
+            Agora envie para <span className="text-[#ffb1c9] font-medium">{nick || "seu parceiro(a)"}</span>.
+            A pessoa vai tentar acertar suas respostas e revelar a sintonia de vocês.
           </p>
 
           <button
@@ -455,7 +474,7 @@ function CreatorView() {
             onClick={() => setStep("share")}
             className="btn-premium w-full text-base"
           >
-            Gerar link do teste →
+            Gerar link para responder →
           </button>
         </motion.section>
       )}
@@ -481,7 +500,7 @@ function CreatorView() {
           </h2>
           <p className="text-white/55 mb-8 leading-relaxed">
             Manda pro {nick || "seu parceiro(a)"} e descobre se ele/ela<br className="hidden sm:block" />
-            conhece o seu arquétipo. 💕
+            acerta seu jeito de amar. 💕
           </p>
 
           <div className="card-premium p-4 mb-3 flex items-center gap-3">
@@ -616,10 +635,11 @@ function PartnerView({ encoded }: { encoded: string }) {
             um teste pra você!
           </h1>
           <p className="text-white/60 text-lg mb-8 leading-relaxed">
-            {partnerName} tem um arquétipo secreto. Você consegue descobrir qual é?
+            Responda como você acha que {partnerName} responderia.
+            No final, o teste mostra quantas você acertou e qual é o tipo de casal de vocês.
           </p>
 
-          {/* Arquétipo desfocado (só v2) */}
+          {/* Tipo de casal desfocado (só v2) */}
           {v2 && (
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -636,7 +656,7 @@ function PartnerView({ encoded }: { encoded: string }) {
               </div>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <p className="text-5xl">🔒</p>
-                <p className="text-white/70 text-sm mt-2 font-medium">Responda pra revelar</p>
+                <p className="text-white/70 text-sm mt-2 font-medium">Responda para revelar o tipo de casal</p>
               </div>
             </motion.div>
           )}
@@ -652,7 +672,7 @@ function PartnerView({ encoded }: { encoded: string }) {
             </div>
             <div className="text-center px-2">
               <p className="text-2xl mb-1">💕</p>
-              <p className="text-white/70 text-xs">100% revelador</p>
+              <p className="text-white/70 text-xs">Resultado divertido</p>
             </div>
           </div>
 
@@ -744,6 +764,19 @@ function PartnerView({ encoded }: { encoded: string }) {
           {v2 ? (
             /* ─── RESULTADO V2 (novo) ─── */
             <>
+              <div className="text-center mb-6">
+                <p className="pill pill-live mx-auto mb-4">
+                  <span className="live-dot" /> Resultado do Teste do Amor
+                </p>
+                <h1 className="font-heading text-3xl sm:text-5xl text-white font-bold tracking-tight mb-3">
+                  Ele/ela acertou {score} de {total}
+                </h1>
+                <p className="text-white/55 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
+                  O teste compara as respostas de vocês e transforma o resultado em um tipo de casal.
+                  É um jeito divertido de ver onde existe sintonia e onde ainda tem coisa para descobrir.
+                </p>
+              </div>
+
               {/* Card do Arquétipo */}
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
@@ -754,7 +787,7 @@ function PartnerView({ encoded }: { encoded: string }) {
                 <div className="absolute inset-0 bg-linear-to-br from-[#ff2d6a] via-[#ffb1c9] to-[#f6c986] opacity-80" />
                 <div className="relative rounded-[35px] bg-[#0a0710]/90 backdrop-blur-md p-8 sm:p-12 text-center">
                   <p className="text-white/50 text-xs uppercase tracking-wider mb-4">
-                    Vocês são
+                    Tipo de casal de vocês
                   </p>
                   <motion.p
                     initial={{ scale: 0 }}
@@ -767,7 +800,10 @@ function PartnerView({ encoded }: { encoded: string }) {
                   <h3 className="font-heading text-3xl sm:text-4xl text-white mb-2 tracking-tight">
                     {archData.name}
                   </h3>
-                  <p className="text-[#ffb1c9] text-sm italic mb-6">{archData.tagline}</p>
+                  <p className="text-[#ffb1c9] text-sm italic mb-3">{archData.tagline}</p>
+                  <p className="text-white/45 text-xs leading-relaxed max-w-sm mx-auto mb-6">
+                    Esse nome resume o clima do relacionamento de vocês com base nas respostas do Teste do Amor.
+                  </p>
                   <p className="text-white/70 leading-relaxed max-w-md mx-auto text-sm sm:text-base">
                     {getResultText(arch, score, total, partnerName, nick)}
                   </p>
@@ -782,11 +818,14 @@ function PartnerView({ encoded }: { encoded: string }) {
                 className="card-premium p-6 mb-6 flex flex-col items-center"
               >
                 <p className="text-white/40 text-xs uppercase tracking-wider mb-4">
-                  Radar de Sintonia
+                  Mapa do que foi descoberto
                 </p>
                 <RadarChart dims={dimScores} size={220} />
-                <p className="text-white/50 text-sm mt-4">
-                  {score}/{total} dimensões descobertas
+                <p className="text-white/60 text-sm mt-4 font-semibold">
+                  {score} de {total} respostas certas
+                </p>
+                <p className="text-white/35 text-xs mt-2 text-center max-w-sm">
+                  Cada ponta mostra uma área do relacionamento: linguagem do amor, reação, mundo pessoal, energia e cuidado.
                 </p>
               </motion.div>
 
