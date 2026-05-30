@@ -152,17 +152,7 @@ const SLIDES = [
 ];
 
 function getNextSongIndex() {
-  if (typeof window === "undefined") return 0;
-
-  try {
-    const prev = Number.parseInt(window.localStorage.getItem("eurora_song") ?? "-1", 10);
-    const safePrev = Number.isFinite(prev) && prev >= 0 && prev < SONGS.length ? prev : -1;
-    const next = (safePrev + 1) % SONGS.length;
-    window.localStorage.setItem("eurora_song", String(next));
-    return next;
-  } catch {
-    return Math.abs(Date.now()) % SONGS.length;
-  }
+  return Math.floor(Math.random() * SONGS.length);
 }
 
 function PoemOverlay({ song }: { song: SongPreview }) {
