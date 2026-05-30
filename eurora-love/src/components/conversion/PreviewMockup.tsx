@@ -130,26 +130,40 @@ const SONGS = [
 ] satisfies SongPreview[];
 
 const SLIDES = [
-  { name1: "Sofia",     name2: "Kaique",   date: "desde 09.2023", photoUrl: "/2a3b54514bbd74ff3a9a60f733fe8ef1.jpg",  phrase: "Te escolho todo dia, sem hesitar.", songIndex: 6 },
-  { name1: "Fernanda",  name2: "Eduardo",  date: "desde 04.2020", photoUrl: "/casal-02.jpg",                          phrase: "Ao seu lado, tudo faz mais sentido.", songIndex: 7 },
-  { name1: "Camila",    name2: "Rodrigo",  date: "desde 12.2021", photoUrl: "/casal-03.jpg",                          phrase: "Você é minha paz e minha aventura.", songIndex: 0 },
-  { name1: "Isabela",   name2: "Gabriel",  date: "desde 02.2022", photoUrl: "/casal-beijo-chuva.jpg",                 phrase: "Com você, até a chuva é um presente.", songIndex: 1 },
-  { name1: "Carol",     name2: "Felipe",   date: "desde 07.2019", photoUrl: "/casal-beijo-classico.jpg",              phrase: "Um beijo seu vale uma vida inteira.", songIndex: 2 },
-  { name1: "Letícia",   name2: "Mateus",   date: "desde 05.2021", photoUrl: "/casal-por-sol-abraco.jpg",              phrase: "Cada pôr do sol contigo é inesquecível.", songIndex: 3 },
-  { name1: "Mariana",   name2: "Bruno",    date: "desde 02.2024", photoUrl: "/casal-praia-abraco.jpg",                phrase: "No seu abraço encontrei meu lar.", songIndex: 4 },
-  { name1: "Natália",   name2: "Diego",    date: "desde 08.2020", photoUrl: "/casal-praia-por-sol.jpg",               phrase: "Você é a cor mais bonita da minha história.", songIndex: 5 },
-  { name1: "Ana",       name2: "Lucas",    date: "desde 03.2023", photoUrl: "/casal-silhueta-beijo.jpg",              phrase: "Nosso amor é maior que qualquer distância.", songIndex: 7 },
-  { name1: "Bia",       name2: "Rafael",   date: "desde 11.2021", photoUrl: "/couple-pool-night.png",                 phrase: "A noite fica mais bonita quando estamos juntos.", songIndex: 0 },
-  { name1: "Lara",      name2: "Miguel",   date: "desde 01.2022", photoUrl: "/couple-slide-2-enhanced.webp",          phrase: "Você é o que eu não sabia que precisava.", songIndex: 1 },
-  { name1: "Vitória",   name2: "Thiago",   date: "desde 10.2020", photoUrl: "/couple-slide-3-enhanced.webp",          phrase: "Com você aprendi o que é felicidade de verdade.", songIndex: 2 },
-  { name1: "Beatriz",   name2: "Henrique", date: "desde 06.2021", photoUrl: "/couple-slide-4-enhanced.webp",          phrase: "Você é meu lar favorito.", songIndex: 3 },
-  { name1: "Aline",     name2: "Vinícius", date: "desde 03.2024", photoUrl: "/couple-slide-6.jpg",                   phrase: "A melhor decisão que tomei foi te escolher.", songIndex: 4 },
-  { name1: "Priya",     name2: "João",     date: "desde 07.2022", photoUrl: "/couple-slide-8.jpg",                   phrase: "Você chegou e mudou tudo pra melhor.", songIndex: 5 },
-  { name1: "Rayssa",    name2: "Arthur",   date: "desde 05.2023", photoUrl: "/d4597315b4074cc60367064d095f3632.jpg", phrase: "Todo amor que sinto, sinto por você.", songIndex: 6 },
-  { name1: "Laura",     name2: "Caio",     date: "desde 11.2022", photoUrl: "/download.jpg",                         phrase: "Você é meu começo, meu meio e meu fim.", songIndex: 7 },
-  { name1: "Valentina", name2: "Lucas",    date: "desde 08.2023", photoUrl: "/e4b32e592f9f24692b77348f6955581c.jpg", phrase: "Com você o tempo passa rápido demais.", songIndex: 0 },
-  { name1: "Camila",    name2: "Davi",     date: "desde 02.2023", photoUrl: "/images.jpg",                           phrase: "Nosso amor é a história mais bonita que vivo.", songIndex: 1 },
+  { name1: "Sofia",     name2: "Kaique",   date: "desde 09.2023", photoUrl: "/2a3b54514bbd74ff3a9a60f733fe8ef1.jpg",  phrase: "Te escolho todo dia, sem hesitar." },
+  { name1: "Fernanda",  name2: "Eduardo",  date: "desde 04.2020", photoUrl: "/casal-02.jpg",                          phrase: "Ao seu lado, tudo faz mais sentido." },
+  { name1: "Camila",    name2: "Rodrigo",  date: "desde 12.2021", photoUrl: "/casal-03.jpg",                          phrase: "Você é minha paz e minha aventura." },
+  { name1: "Isabela",   name2: "Gabriel",  date: "desde 02.2022", photoUrl: "/casal-beijo-chuva.jpg",                 phrase: "Com você, até a chuva é um presente." },
+  { name1: "Carol",     name2: "Felipe",   date: "desde 07.2019", photoUrl: "/casal-beijo-classico.jpg",              phrase: "Um beijo seu vale uma vida inteira." },
+  { name1: "Letícia",   name2: "Mateus",   date: "desde 05.2021", photoUrl: "/casal-por-sol-abraco.jpg",              phrase: "Cada pôr do sol contigo é inesquecível." },
+  { name1: "Mariana",   name2: "Bruno",    date: "desde 02.2024", photoUrl: "/casal-praia-abraco.jpg",                phrase: "No seu abraço encontrei meu lar." },
+  { name1: "Natália",   name2: "Diego",    date: "desde 08.2020", photoUrl: "/casal-praia-por-sol.jpg",               phrase: "Você é a cor mais bonita da minha história." },
+  { name1: "Ana",       name2: "Lucas",    date: "desde 03.2023", photoUrl: "/casal-silhueta-beijo.jpg",              phrase: "Nosso amor é maior que qualquer distância." },
+  { name1: "Bia",       name2: "Rafael",   date: "desde 11.2021", photoUrl: "/couple-pool-night.png",                 phrase: "A noite fica mais bonita quando estamos juntos." },
+  { name1: "Lara",      name2: "Miguel",   date: "desde 01.2022", photoUrl: "/couple-slide-2-enhanced.webp",          phrase: "Você é o que eu não sabia que precisava." },
+  { name1: "Vitória",   name2: "Thiago",   date: "desde 10.2020", photoUrl: "/couple-slide-3-enhanced.webp",          phrase: "Com você aprendi o que é felicidade de verdade." },
+  { name1: "Beatriz",   name2: "Henrique", date: "desde 06.2021", photoUrl: "/couple-slide-4-enhanced.webp",          phrase: "Você é meu lar favorito." },
+  { name1: "Aline",     name2: "Vinícius", date: "desde 03.2024", photoUrl: "/couple-slide-6.jpg",                   phrase: "A melhor decisão que tomei foi te escolher." },
+  { name1: "Priya",     name2: "João",     date: "desde 07.2022", photoUrl: "/couple-slide-8.jpg",                   phrase: "Você chegou e mudou tudo pra melhor." },
+  { name1: "Rayssa",    name2: "Arthur",   date: "desde 05.2023", photoUrl: "/d4597315b4074cc60367064d095f3632.jpg", phrase: "Todo amor que sinto, sinto por você." },
+  { name1: "Laura",     name2: "Caio",     date: "desde 11.2022", photoUrl: "/download.jpg",                         phrase: "Você é meu começo, meu meio e meu fim." },
+  { name1: "Valentina", name2: "Lucas",    date: "desde 08.2023", photoUrl: "/e4b32e592f9f24692b77348f6955581c.jpg", phrase: "Com você o tempo passa rápido demais." },
+  { name1: "Camila",    name2: "Davi",     date: "desde 02.2023", photoUrl: "/images.jpg",                           phrase: "Nosso amor é a história mais bonita que vivo." },
 ];
+
+function getNextSongIndex() {
+  if (typeof window === "undefined") return 0;
+
+  try {
+    const prev = Number.parseInt(window.localStorage.getItem("eurora_song") ?? "-1", 10);
+    const safePrev = Number.isFinite(prev) && prev >= 0 && prev < SONGS.length ? prev : -1;
+    const next = (safePrev + 1) % SONGS.length;
+    window.localStorage.setItem("eurora_song", String(next));
+    return next;
+  } catch {
+    return Math.abs(Date.now()) % SONGS.length;
+  }
+}
 
 function PoemOverlay({ song }: { song: SongPreview }) {
   const [captionIndex, setCaptionIndex] = useState(0);
@@ -216,11 +230,18 @@ function IslandCover({ src, title }: { src: string; title: string }) {
 export default function PreviewMockup({}: Props) {
   const [photoIndex, setPhotoIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState("9:41");
+  const [songIndex, setSongIndex] = useState(0);
 
   const slide = SLIDES[photoIndex];
-  const songIndex = slide.songIndex;
   const song = SONGS[songIndex];
   const embedUrl = `https://open.spotify.com/embed/${song.type}/${song.id}?utm_source=generator`;
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setSongIndex(getNextSongIndex());
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   // Photo slideshow
   useEffect(() => {
