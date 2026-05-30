@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { WizardData, Theme, Plan } from "@/lib/types";
@@ -101,6 +101,16 @@ function shuffleExamples() {
 }
 
 const MUSIC_EXAMPLES = shuffleExamples();
+void MUSIC_EXAMPLES;
+
+const CURATED_MUSIC_EXAMPLES = [
+  { url: "https://www.youtube.com/watch?v=2Vv-BfVoq4g", title: "Perfect", artist: "Ed Sheeran", platform: "youtube" },
+  { url: "https://www.youtube.com/watch?v=450p7goxZqg", title: "All of Me", artist: "John Legend", platform: "youtube" },
+  { url: "https://www.youtube.com/watch?v=rtOvBOTyX00", title: "A Thousand Years", artist: "Christina Perri", platform: "youtube" },
+  { url: "https://www.youtube.com/watch?v=lp-EO5I60KA", title: "Thinking Out Loud", artist: "Ed Sheeran", platform: "youtube" },
+  { url: "https://www.youtube.com/watch?v=YQHsXMglC9A", title: "Make You Feel My Love", artist: "Adele", platform: "youtube" },
+  { url: "https://www.youtube.com/watch?v=vGJTaP6anOU", title: "Can't Help Falling in Love", artist: "Elvis Presley", platform: "youtube" },
+];
 
 function getEmbedUrl(url: string): { src: string; type: "spotify" | "youtube" } | null {
   if (!url) return null;
@@ -206,7 +216,7 @@ function MusicStep({ plan, value, onChange, onUpgrade }: {
       {/* Examples */}
       <p className="text-white/40 text-xs uppercase tracking-wider mt-5 mb-3">Exemplos populares</p>
       <div className="grid grid-cols-2 gap-2">
-        {MUSIC_EXAMPLES.map((ex) => (
+        {CURATED_MUSIC_EXAMPLES.map((ex) => (
           <button
             type="button"
             key={ex.url}
@@ -219,7 +229,7 @@ function MusicStep({ plan, value, onChange, onUpgrade }: {
           >
             <div className="w-9 h-9 rounded-lg shrink-0 overflow-hidden bg-white/10 flex items-center justify-center">
               <img
-                src={ex.thumb}
+                src={`https://i.ytimg.com/vi/${ex.url.match(/[?&]v=([^&]+)/)?.[1] ?? ""}/mqdefault.jpg`}
                 alt=""
                 className="w-full h-full object-cover"
                 loading="lazy"

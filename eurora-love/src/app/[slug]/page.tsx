@@ -30,8 +30,8 @@ async function getMusicMeta(url: string | null): Promise<MusicMeta | null> {
     if (!endpoint) return null;
 
     const res = await fetch(endpoint, {
-      next: { revalidate: 86400 },
-      signal: AbortSignal.timeout(4000),
+      next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) return null;
 

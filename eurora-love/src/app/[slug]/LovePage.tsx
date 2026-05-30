@@ -84,16 +84,66 @@ function getDominantAlbumColor(src: string, fallback: string, onColor: (c: strin
   img.onerror = () => onColor(fallback);
 }
 
-function IslandCover({ src, title }: { src: string; title: string }) {
+function getYoutubeVideoId(url?: string | null) {
+  if (!url) return null;
+  try {
+    const p = new URL(url);
+    if (p.hostname.includes("youtu.be")) return p.pathname.slice(1).split("?")[0] || null;
+    if (p.hostname.includes("youtube.com")) {
+      const watchId = p.searchParams.get("v");
+      if (watchId) return watchId;
+      const m = p.pathname.match(/\/(?:shorts|embed)\/([^/?]+)/);
+      return m?.[1] ?? null;
+    }
+  } catch { /* ignore invalid URLs */ }
+  return null;
+}
+
+function fallbackAlbumArt(url?: string | null) {
+  const youtubeId = getYoutubeVideoId(url);
+  return youtubeId ? `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg` : null;
+}
+
+function IslandCover({ src, title }: { src?: string | null; title: string }) {
   const [failed, setFailed] = useState(false);
-  if (failed) return (
+  if (!src || failed) return (
     <span className="flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-[7px] bg-white/10 text-[12px]">♪</span>
   );
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img src={src} alt={`Capa de ${title}`}
-      className="h-5.5 w-5.5 shrink-0 rounded-[7px] object-cover"
+      className="h-[22px] w-[22px] shrink-0 rounded-[7px] object-cover object-center"
       onError={() => setFailed(true)} />
+  );
+}
+
+function HeroPhoto({ src, alt }: { src: string; alt: string }) {
+  return (
+    <motion.div
+      className="absolute inset-0"
+      initial={{ opacity: 0, scale: 1.03 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.99 }}
+      transition={{ opacity: { duration: 1.25, ease: "easeInOut" }, scale: { duration: 5.5, ease: "linear" } }}
+    >
+      {/* Blurred fill keeps the phone frame rich without cropping the real uploaded photo. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full scale-110 object-cover object-center blur-2xl opacity-70"
+      />
+      <div className="absolute inset-0 bg-black/25" />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={alt}
+        className="absolute inset-0 m-auto h-full w-full object-contain object-center"
+        loading="eager"
+        decoding="async"
+      />
+    </motion.div>
   );
 }
 
@@ -207,7 +257,9 @@ export default function LovePage({ couple, musicMeta }: Props) {
     ? { src: musicMeta.embedUrl, type: musicMeta.embedType ?? "spotify" as const }
     : null;
   const musicEmbed = serverEmbed ?? getMusicEmbed(couple.music_url);
-  const hasMeta = !!(musicMeta?.albumArt);
+  const musicTitle = musicMeta?.title?.trim() || "Nossa música";
+  const islandAlbumArt = musicMeta?.albumArt?.trim() || fallbackAlbumArt(couple.music_url);
+  const showMusicIsland = Boolean(couple.music_url);
 
   return (
     <div className={`min-h-screen ${styles.bg} ${styles.text} sm:bg-[#03020a] sm:flex sm:items-center sm:justify-center sm:py-10 sm:px-4`}>
@@ -242,10 +294,7 @@ export default function LovePage({ couple, musicMeta }: Props) {
 
             {couple.photo_urls.length > 0 ? (
               <AnimatePresence initial={false}>
-                <motion.img key={heroIdx} src={couple.photo_urls[heroIdx]} alt={`Foto ${heroIdx + 1}`}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  initial={{ opacity: 0, scale: 1.06 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ opacity: { duration: 1.4, ease: "easeInOut" }, scale: { duration: 6, ease: "linear" } }} />
+                <HeroPhoto key={heroIdx} src={couple.photo_urls[heroIdx]} alt={`Foto ${heroIdx + 1}`} />
               </AnimatePresence>
             ) : (
               <div className="absolute inset-0 bg-linear-to-br from-[#1a0e14] to-[#0a060a]" />
@@ -262,13 +311,13 @@ export default function LovePage({ couple, musicMeta }: Props) {
             </div>
 
             {/* Dynamic Island music pill */}
-            {hasMeta && (
+            {showMusicIsland && (
               <motion.button type="button" onClick={() => setMusicExpanded(v => !v)} aria-expanded={musicExpanded}
                 className="absolute top-4 left-1/2 z-20 flex h-8 min-w-33 -translate-x-1/2 items-center gap-2 rounded-full border border-white/10 bg-black/90 px-2 backdrop-blur-md"
                 style={{ boxShadow: `0 10px 26px rgba(0,0,0,.6), 0 0 22px color-mix(in srgb, ${albumColor} 22%, transparent)` }}
                 initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2 }}>
-                <IslandCover src={musicMeta!.albumArt} title={musicMeta!.title} />
-                <span className="max-w-21.5 truncate text-[10px] font-semibold text-white/90">{musicMeta!.title}</span>
+                <IslandCover src={islandAlbumArt} title={musicTitle} />
+                <span className="max-w-21.5 truncate text-[10px] font-semibold text-white/90">{musicTitle}</span>
                 <div className="ml-auto flex h-4 shrink-0 items-end gap-0.5">
                   {WAVEFORM.slice(0, 5).map((h, i) => (
                     <motion.span key={i} className="w-0.5 rounded-full"
@@ -400,7 +449,7 @@ export default function LovePage({ couple, musicMeta }: Props) {
                         className="shrink-0 relative overflow-hidden rounded-2xl shadow-xl"
                         style={{ width: 170, height: 226, transform: `rotate(${i % 2 === 0 ? -1.5 : 1.5}deg)` }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={url} alt={`Momento ${(i % gallery.length) + 1}`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                        <img src={url} alt={`Momento ${(i % gallery.length) + 1}`} className="w-full h-full object-cover object-center" loading="lazy" decoding="async" />
                         <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent" />
                       </div>
                     ))}
