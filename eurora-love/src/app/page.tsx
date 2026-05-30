@@ -33,10 +33,6 @@ function twoDigits(value: number) {
   return String(value).padStart(2, "0");
 }
 
-function formatCountdown(countdown: ValentinesCountdown) {
-  return `${countdown.days}d ${twoDigits(countdown.hours)}h ${twoDigits(countdown.minutes)}m ${twoDigits(countdown.seconds)}s`;
-}
-
 const FloatingHearts = dynamic(() => import("@/components/effects/FloatingHearts"), { ssr: false });
 const NoiseOverlay = dynamic(() => import("@/components/effects/NoiseOverlay"), { ssr: false });
 const LiveCounter = dynamic(() => import("@/components/conversion/LiveCounter"), { ssr: false });
@@ -213,7 +209,13 @@ export default function LandingPage() {
             <span className="text-xs sm:text-sm text-white/80 font-medium">
               <span className="text-[#ffb1c9] font-bold">1.247</span> casais criando agora
               {!countdown.isToday ? (
-                <> · Dia dos Namorados em <span className="text-amber-300 font-bold tabular-nums">{formatCountdown(countdown)}</span></>
+                <>
+                  {" "}· Dia dos Namorados em{" "}
+                  <span className="font-bold tabular-nums">
+                    <span className="text-amber-300">{countdown.days}d</span>
+                    <span className="text-white/90"> {twoDigits(countdown.hours)}h {twoDigits(countdown.minutes)}m {twoDigits(countdown.seconds)}s</span>
+                  </span>
+                </>
               ) : (
                 <> · <span className="text-amber-300 font-bold">Hoje é Dia dos Namorados! 💕</span></>
               )}
