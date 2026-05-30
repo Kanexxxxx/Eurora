@@ -42,15 +42,16 @@ jobs:
             npm run prisma:generate
             npx prisma db push
 
-            # Remove DB product links — catalog is managed via src/data/presentes.ts
-            echo 'DELETE FROM "PresenteLink"; DELETE FROM "HiddenProduto";' | npx prisma db execute --stdin || true
-
             npm run build
 
             # Prepare standalone deployment
             cp .env .next/standalone/.env
             cp -r public .next/standalone/public
             cp -r .next/static .next/standalone/.next/static
+
+            # Copiar Prisma client para standalone (necessário para funcionar)
+            rm -rf .next/standalone/node_modules/.prisma
+            cp -r node_modules/.prisma .next/standalone/node_modules/.prisma
 
             if pm2 describe eurora-love >/dev/null 2>&1; then
               PORT=4000 pm2 restart eurora-love --update-env
