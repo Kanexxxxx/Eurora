@@ -222,7 +222,6 @@ function IslandCover({ src, title }: { src: string; title: string }) {
       src={src}
       alt={`Capa de ${title}`}
       className="h-[22px] w-[22px] shrink-0 rounded-[7px] object-cover"
-      crossOrigin="anonymous"
       onError={() => setFailedSrc(src)}
     />
   );
@@ -357,11 +356,10 @@ export default function PreviewMockup({}: Props) {
                     key={photoIndex}
                     src={slide.photoUrl}
                     alt={`${slide.name1} e ${slide.name2}`}
-                    className="absolute inset-0 h-full w-full object-cover"
+                    className="absolute inset-0 m-auto h-full w-full object-contain object-center"
                     initial={{ opacity: 0, scale: 1.04 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
-                    style={{ objectPosition: "center top" }}
                   />
                   {/* Full overlay gradient */}
                   <div className="mockup-photo-gradient absolute inset-0" />

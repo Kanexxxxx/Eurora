@@ -107,7 +107,7 @@ function fallbackAlbumArt(url?: string | null) {
 function IslandCover({ src, title }: { src?: string | null; title: string }) {
   const [failed, setFailed] = useState(false);
   if (!src || failed) return (
-    <span className="flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-[7px] bg-white/10 text-[12px]">♪</span>
+    <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[7px] bg-white/10 text-[12px] text-white/90">♪</span>
   );
   return (
     // eslint-disable-next-line @next/next/no-img-element
