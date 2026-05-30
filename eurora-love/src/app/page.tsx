@@ -5,13 +5,36 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+type ValentinesCountdown = {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+  isToday: boolean;
+};
+
 function calcCountdownJun12() {
   const now = new Date();
-  const year = now.getMonth() >= 5 && now.getDate() > 12 ? now.getFullYear() + 1 : now.getFullYear();
+  const endOfValentinesDay = new Date(now.getFullYear(), 5, 12, 23, 59, 59, 999);
+  const year = now > endOfValentinesDay ? now.getFullYear() + 1 : now.getFullYear();
   const target = new Date(year, 5, 12, 0, 0, 0);
-  const diffMs = target.getTime() - now.getTime();
-  const days = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
-  return days;
+  const diffMs = Math.max(0, target.getTime() - now.getTime());
+
+  return {
+    days: Math.floor(diffMs / 86_400_000),
+    hours: Math.floor((diffMs % 86_400_000) / 3_600_000),
+    minutes: Math.floor((diffMs % 3_600_000) / 60_000),
+    seconds: Math.floor((diffMs % 60_000) / 1_000),
+    isToday: diffMs === 0,
+  };
+}
+
+function twoDigits(value: number) {
+  return String(value).padStart(2, "0");
+}
+
+function formatCountdown(countdown: ValentinesCountdown) {
+  return `${countdown.days}d ${twoDigits(countdown.hours)}h ${twoDigits(countdown.minutes)}m ${twoDigits(countdown.seconds)}s`;
 }
 
 const FloatingHearts = dynamic(() => import("@/components/effects/FloatingHearts"), { ssr: false });
@@ -147,10 +170,12 @@ const STATS = [
 ];
 
 export default function LandingPage() {
-  const [daysLeft, setDaysLeft] = useState(calcCountdownJun12());
+  const [countdown, setCountdown] = useState(calcCountdownJun12());
 
   useEffect(() => {
-    const id = setInterval(() => setDaysLeft(calcCountdownJun12()), 60_000);
+    const tick = () => setCountdown(calcCountdownJun12());
+    tick();
+    const id = setInterval(tick, 1_000);
     return () => clearInterval(id);
   }, []);
 
@@ -187,8 +212,8 @@ export default function LandingPage() {
             <span className="live-dot" />
             <span className="text-xs sm:text-sm text-white/80 font-medium">
               <span className="text-[#ffb1c9] font-bold">1.247</span> casais criando agora
-              {daysLeft > 0 ? (
-                <> · Dia dos Namorados em <span className="text-amber-300 font-bold">{daysLeft} dias</span></>
+              {!countdown.isToday ? (
+                <> · Dia dos Namorados em <span className="text-amber-300 font-bold tabular-nums">{formatCountdown(countdown)}</span></>
               ) : (
                 <> · <span className="text-amber-300 font-bold">Hoje é Dia dos Namorados! 💕</span></>
               )}
