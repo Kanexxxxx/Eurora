@@ -261,6 +261,7 @@ export default function LovePage({ couple, musicMeta }: Props) {
   const musicTitle = musicMeta?.title?.trim() || "Nossa música";
   const islandAlbumArt = musicMeta?.albumArt?.trim() || fallbackAlbumArt(couple.music_url);
   const showMusicIsland = Boolean(couple.music_url);
+  const qrCodeUrl = couple.qr_code_url || `/api/qrcode/${couple.slug}`;
 
   return (
     <div className={`min-h-screen ${styles.bg} ${styles.text} sm:bg-[#03020a] sm:flex sm:items-center sm:justify-center sm:py-10 sm:px-4`}>
@@ -486,7 +487,7 @@ export default function LovePage({ couple, musicMeta }: Props) {
             )}
 
             {/* ── QR Code ── */}
-            {couple.qr_code_url && (
+            {qrCodeUrl && (
               <motion.div className="glass-premium-warm rounded-3xl p-6 text-center"
                 style={{ border: `1px solid rgba(${styles.glowRgb}, 0.20)`, boxShadow: `0 0 50px rgba(${styles.glowRgb}, 0.06)` }}
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.7 }}>
@@ -495,7 +496,7 @@ export default function LovePage({ couple, musicMeta }: Props) {
                 </p>
                 <div className="bg-white rounded-2xl p-4 inline-block mb-3 shadow-lg">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={couple.qr_code_url} alt="QR Code" className="w-32 h-32" />
+                  <img src={qrCodeUrl} alt="QR Code" className="w-32 h-32" />
                 </div>
                 <p className="text-white/30 text-xs font-heading italic">Leve essa página para onde você for</p>
               </motion.div>

@@ -2,7 +2,7 @@ import { optionalEnv } from "@/server/env";
 import { prisma } from "@/server/db/prisma";
 import { saveUpload } from "@/server/storage/local";
 
-async function generateAndStoreQR(slug: string): Promise<string | null> {
+export async function generateAndStoreQR(slug: string): Promise<string | null> {
   try {
     const pageUrl = `${optionalEnv("NEXT_PUBLIC_APP_URL", "https://eurora.site")}/${slug}`;
     const QRCode = await import("qrcode");

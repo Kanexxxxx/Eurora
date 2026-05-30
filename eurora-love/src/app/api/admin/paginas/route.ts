@@ -4,6 +4,7 @@ import { coupleFieldsSchema } from "@/lib/validations";
 import { generateSlug } from "@/lib/utils/slug";
 import { isAdminRequest } from "@/server/auth/admin";
 import { prisma } from "@/server/db/prisma";
+import { generateAndStoreQR } from "@/server/payments/activateCouple";
 import { createUploadKey, extensionFromMime, saveUpload } from "@/server/storage/local";
 
 const THEME_MAP: Record<string, Theme> = {
@@ -92,9 +93,12 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  const slug = generateSlug(fields.person1, fields.person2);
+  const qrCodeUrl = await generateAndStoreQR(slug);
+
   const couple = await prisma.couple.create({
     data: {
-      slug: generateSlug(fields.person1, fields.person2),
+      slug,
       person1: fields.person1,
       person2: fields.person2,
       message: fields.message,
@@ -105,6 +109,7 @@ export async function POST(req: NextRequest) {
       photo_urls: photoUrls,
       paid: true,
       payment_id: "admin-demo",
+      qr_code_url: qrCodeUrl,
     },
     select: {
       id: true,
