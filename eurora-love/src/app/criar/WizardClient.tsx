@@ -77,15 +77,17 @@ const defaultData: WizardData = {
 
 const inputClass = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff2d6a] transition-colors";
 
+// Thumbs via image-cdn-ak.spotifycdn.com (funciona em todos os browsers sem CORS)
+// Para YouTube: i.ytimg.com/vi/{id}/mqdefault.jpg (sempre público)
 const ALL_MUSIC_EXAMPLES = [
-  { url: "https://open.spotify.com/track/1tmD4Xpd1YNSGCG5AYqHDk", title: "Última Saudade", artist: "Henrique & Juliano", thumb: "https://i.scdn.co/image/ab67616d00001e0241cff60938ad31c4c7c1a1e7", platform: "spotify" },
-  { url: "https://open.spotify.com/track/5jP9oqulg2Dz6yLwLYj5KO", title: "Seja Ex", artist: "Marília Mendonça", thumb: "https://i.scdn.co/image/ab67616d00001e02ff9ca10b55ce82a5796a799e", platform: "spotify" },
-  { url: "https://open.spotify.com/track/587Lf3LyhC8smoFnNIQtn3", title: "Eu Te Seguro", artist: "Veigh", thumb: "https://i.scdn.co/image/ab67616d00001e02bfd85a89e28cbbc84b1d1ae3", platform: "spotify" },
-  { url: "https://open.spotify.com/track/6dOtVTDdiauQNBQEDOtlAB", title: "BIRDS OF A FEATHER", artist: "Billie Eilish", thumb: "https://i.scdn.co/image/ab67616d00001e0271d62ea7ea8a5be92d3c1f62", platform: "spotify" },
-  { url: "https://open.spotify.com/track/0V3wPSX9ygBnCm8psDIegu", title: "Perfect", artist: "Ed Sheeran", thumb: "https://i.scdn.co/image/ab67616d00001e02ba5db46f4b838ef6027e6f96", platform: "spotify" },
-  { url: "https://open.spotify.com/track/7qiZfU4dY1lWllzX7mPBI3", title: "Shape of You", artist: "Ed Sheeran", thumb: "https://i.scdn.co/image/ab67616d00001e02ba5db46f4b838ef6027e6f96", platform: "spotify" },
-  { url: "https://open.spotify.com/track/2takcwOaAZWiXQijPHIx7B", title: "Can't Help Falling in Love", artist: "Elvis Presley", thumb: "https://i.scdn.co/image/ab67616d00001e023b9bb70fa48ae55e0f25e59b", platform: "spotify" },
-  { url: "https://open.spotify.com/track/6AQbmUe0Qwf5PZnt4HmTXv", title: "Lover", artist: "Taylor Swift", thumb: "https://i.scdn.co/image/ab67616d00001e0291563e3dc63dc903d0e79e47", platform: "spotify" },
+  { url: "https://open.spotify.com/track/1tmD4Xpd1YNSGCG5AYqHDk", title: "Última Saudade", artist: "Henrique & Juliano", thumb: "https://i.ytimg.com/vi/xnFRqKhxSyk/mqdefault.jpg", platform: "spotify" },
+  { url: "https://open.spotify.com/track/5jP9oqulg2Dz6yLwLYj5KO", title: "Seja Ex", artist: "Marília Mendonça", thumb: "https://i.ytimg.com/vi/lBLFNb7LYCA/mqdefault.jpg", platform: "spotify" },
+  { url: "https://open.spotify.com/track/587Lf3LyhC8smoFnNIQtn3", title: "Eu Te Seguro", artist: "Veigh", thumb: "https://i.ytimg.com/vi/jnqiJyibVxE/mqdefault.jpg", platform: "spotify" },
+  { url: "https://open.spotify.com/track/6dOtVTDdiauQNBQEDOtlAB", title: "BIRDS OF A FEATHER", artist: "Billie Eilish", thumb: "https://i.ytimg.com/vi/UzRBp5eMcTo/mqdefault.jpg", platform: "spotify" },
+  { url: "https://open.spotify.com/track/0V3wPSX9ygBnCm8psDIegu", title: "Perfect", artist: "Ed Sheeran", thumb: "https://i.ytimg.com/vi/2vidB6OAupk/mqdefault.jpg", platform: "spotify" },
+  { url: "https://open.spotify.com/track/7qiZfU4dY1lWllzX7mPBI3", title: "Shape of You", artist: "Ed Sheeran", thumb: "https://i.ytimg.com/vi/JGwWNGJdvx8/mqdefault.jpg", platform: "spotify" },
+  { url: "https://open.spotify.com/track/2takcwOaAZWiXQijPHIx7B", title: "Can't Help Falling in Love", artist: "Elvis Presley", thumb: "https://i.ytimg.com/vi/vGJTaP6anOU/mqdefault.jpg", platform: "spotify" },
+  { url: "https://open.spotify.com/track/6AQbmUe0Qwf5PZnt4HmTXv", title: "Lover", artist: "Taylor Swift", thumb: "https://i.ytimg.com/vi/Dkk9gvTmCXY/mqdefault.jpg", platform: "spotify" },
 ];
 
 // Shuffle determinístico por sessão (muda a cada reload)
