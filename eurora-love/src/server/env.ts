@@ -14,7 +14,11 @@ type EnvKey =
   | "ADMIN_PASSWORD"
   | "ADMIN_SESSION_SECRET"
   | "UPLOAD_DIR"
-  | "UPLOAD_PUBLIC_URL";
+  | "UPLOAD_PUBLIC_URL"
+  | "EMAIL_USER"
+  | "EMAIL_PASS"
+  | "EMAIL_HOST"
+  | "EMAIL_PORT";
 
 export function requiredEnv(key: EnvKey) {
   const value = process.env[key];

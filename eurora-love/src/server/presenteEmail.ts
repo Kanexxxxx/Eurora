@@ -1,10 +1,13 @@
 import nodemailer from "nodemailer";
 import { optionalEnv, requiredEnv } from "@/server/env";
 
-const GMAIL_USER  = optionalEnv("GMAIL_USER", "eurora.com.br@gmail.com");
+const EMAIL_USER  = optionalEnv("EMAIL_USER", optionalEnv("GMAIL_USER", "eurora@eurora.site"));
+const EMAIL_PASS  = optionalEnv("EMAIL_PASS", optionalEnv("GMAIL_APP_PASSWORD", ""));
+const EMAIL_HOST  = optionalEnv("EMAIL_HOST", "smtp.hostinger.com");
+const EMAIL_PORT  = parseInt(optionalEnv("EMAIL_PORT", "465"), 10);
 const APP_URL     = optionalEnv("NEXT_PUBLIC_APP_URL", "https://eurora.site");
-const FROM        = `EURORA LOVE <${GMAIL_USER}>`;
-const REPLY_TO    = GMAIL_USER;
+const FROM        = `EURORA LOVE <${EMAIL_USER}>`;
+const REPLY_TO    = EMAIL_USER;
 
 // Paleta de cores
 const C_ROSE = "#d6195a";
@@ -19,10 +22,10 @@ function esc(s: string) {
 
 function transporter() {
   return nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
+    host: EMAIL_HOST,
+    port: EMAIL_PORT,
     secure: true,
-    auth: { user: GMAIL_USER, pass: requiredEnv("GMAIL_APP_PASSWORD") },
+    auth: { user: EMAIL_USER, pass: EMAIL_PASS },
   });
 }
 
@@ -90,7 +93,7 @@ ${esc(preheader)}&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#820
     Este é um email transacional da EURORA LOVE.<br>
     <a href="${APP_URL}" style="color:${C_MUTE};">eurora.site</a>
     &nbsp;·&nbsp;
-    <a href="mailto:${GMAIL_USER}" style="color:${C_MUTE};">Contato</a>
+    <a href="mailto:${EMAIL_USER}" style="color:${C_MUTE};">Contato</a>
   </td></tr>
   </table>
 
@@ -149,7 +152,7 @@ ${pixCopiaECola}
 
 Após o pagamento, os presentes aparecem automaticamente na página.
 
-Dúvidas: ${GMAIL_USER}
+Dúvidas: ${EMAIL_USER}
 EURORA LOVE — eurora.site`;
 
   await transporter().sendMail({
@@ -161,7 +164,7 @@ EURORA LOVE — eurora.site`;
     text,
     headers: {
       "X-Mailer": "EURORA LOVE Mailer",
-      "List-Unsubscribe": `<mailto:${GMAIL_USER}?subject=Cancelar>`,
+      "List-Unsubscribe": `<mailto:${EMAIL_USER}?subject=Cancelar>`,
       "Precedence": "transactional",
     },
     attachments: [{
@@ -225,7 +228,7 @@ eurora.site`;
     text,
     headers: {
       "X-Mailer": "EURORA LOVE Mailer",
-      "List-Unsubscribe": `<mailto:${GMAIL_USER}?subject=Cancelar>`,
+      "List-Unsubscribe": `<mailto:${EMAIL_USER}?subject=Cancelar>`,
       "Precedence": "transactional",
     },
   });

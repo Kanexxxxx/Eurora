@@ -3,17 +3,17 @@ import { prisma } from "@/server/db/prisma";
 import nodemailer from "nodemailer";
 import { optionalEnv, requiredEnv } from "@/server/env";
 
-const GMAIL_USER = optionalEnv("GMAIL_USER", "eurora.com.br@gmail.com");
+const GMAIL_USER = optionalEnv("EMAIL_USER", optionalEnv("GMAIL_USER", "eurora@eurora.site"));
 const FROM = `EURORA LOVE <${GMAIL_USER}>`;
 const APP_URL = optionalEnv("NEXT_PUBLIC_APP_URL", "https://eurora.site");
 const ADMIN_EMAIL = "eurora.com.br@gmail.com";
 
 function createTransporter() {
   return nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
+    host: optionalEnv("EMAIL_HOST", "smtp.hostinger.com"),
+    port: parseInt(optionalEnv("EMAIL_PORT", "465"), 10),
     secure: true,
-    auth: { user: GMAIL_USER, pass: requiredEnv("GMAIL_APP_PASSWORD") },
+    auth: { user: GMAIL_USER, pass: optionalEnv("EMAIL_PASS", optionalEnv("GMAIL_APP_PASSWORD", "")) },
   });
 }
 
