@@ -38,3 +38,25 @@ docs/roteiro/*.srt
 /_fetch*.js
 /_fetch*.py
 /_images*.json
+
+# Scripts de manutencao com credenciais — nao subir
+fix_shopee.mjs
+fix_shopee2.mjs
+fix_names.mjs
+inserir_produtos.sql
+
+# Dados de afiliados e listas de produtos — dados de negocio, nao codigo
+amazon_afiliados_FINAL.txt
+amazon_dia_dos_namorados.csv
+mercadolivre_afiliados_FINAL.txt
+mercadolivre_afiliados_ok.txt
+mercadolivre_dia_dos_namorados.csv
+mercadolivre_novos.csv
+mercadolivre_corrigido.csv
+shopee_afiliados_ok.txt
+shopee_dia_dos_namorados.csv
+amazon_afiliados_FINAL.txt
+
+# Templates e arquivos de trabalho locais
+assinatura-email.html
+dns-import-eurora.txt
