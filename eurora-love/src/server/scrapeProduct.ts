@@ -22,11 +22,11 @@ function makeHeaders(ua: string, referer?: string): Record<string, string> {
 }
 
 // Rejeita imagens genéricas da Shopee (logo do app, ícones de campanha)
-function isGenericShopeeImage(url: string): boolean {
+export function isGenericShopeeImage(url: string): boolean {
   return url.includes("deo.shopeemobile.com") || url.includes("homepagefe/") || url.includes("shopee-mobilemall");
 }
 
-function extractOgImage(html: string): string | null {
+export function extractOgImage(html: string): string | null {
   // og:image pode estar em tag separada do content — busca o content logo após og:image
   const og = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
     ?? html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
@@ -72,7 +72,7 @@ function extractAmazonImage(html: string): string | null {
   return extractOgImage(html);
 }
 
-function extractPrice(html: string): string | null {
+export function extractPrice(html: string): string | null {
   // JSON-LD offers.price
   const ldMatch = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
   if (ldMatch) {
@@ -104,33 +104,48 @@ function extractPrice(html: string): string | null {
   return null;
 }
 
-async function tryFetch(url: string, ua: string, referer?: string): Promise<{ image: string | null; price: string | null }> {
-  try {
-    const res = await fetch(url, {
-      headers: makeHeaders(ua, referer),
-      redirect: "follow",
-      signal: AbortSignal.timeout(10000),
-    });
-    if (!res.ok) return { image: null, price: null };
-    const html = await res.text();
-    const isAmazon = res.url.includes("amazon.com") || url.includes("amazon") || url.includes("amzn.to");
-    const isShopee = res.url.includes("shopee") || url.includes("shopee");
-    const image = isAmazon
-      ? extractAmazonImage(html)
-      : isShopee
-        ? (extractShopeeHtmlImage(html) ?? extractOgImage(html))
-        : extractOgImage(html);
-    const price = extractPrice(html);
-    return { image, price };
-  } catch {
-    return { image: null, price: null };
+async function tryFetch(url: string, ua: string, referer?: string, retries = 2): Promise<{ image: string | null; price: string | null }> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, {
+        headers: makeHeaders(ua, referer),
+        redirect: "follow",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!res.ok) {
+        // 429 = rate limit: aguarda antes de retry
+        if (res.status === 429 && attempt < retries) {
+          await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+          continue;
+        }
+        return { image: null, price: null };
+      }
+      const html = await res.text();
+      const isAmazon = res.url.includes("amazon.com") || url.includes("amazon") || url.includes("amzn.to");
+      const isShopee = res.url.includes("shopee") || url.includes("shopee");
+      const image = isAmazon
+        ? extractAmazonImage(html)
+        : isShopee
+          ? (extractShopeeHtmlImage(html) ?? extractOgImage(html))
+          : extractOgImage(html);
+      const price = extractPrice(html);
+      return { image, price };
+    } catch {
+      if (attempt < retries) {
+        // backoff exponencial: 500ms, 1s
+        await new Promise(r => setTimeout(r, 500 * Math.pow(2, attempt)));
+        continue;
+      }
+      return { image: null, price: null };
+    }
   }
+  return { image: null, price: null };
 }
 
 // IPs privados e de metadados cloud — nunca devem ser acessados pelo scraper
 const BLOCKED_HOSTS = /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|0\.0\.0\.0|::1|fc00:|fd)/i;
 
-function isSafeUrl(raw: string): boolean {
+export function isSafeUrl(raw: string): boolean {
   try {
     const { hostname, protocol } = new URL(raw);
     if (protocol !== "https:" && protocol !== "http:") return false;
@@ -143,7 +158,7 @@ function isSafeUrl(raw: string): boolean {
 
 // Extrai shopid e itemid de uma URL da Shopee
 // Formatos: /product-name-i.SHOPID.ITEMID  ou  /SHOPID/ITEMID
-function parseShopeeIds(url: string): { shopId: string; itemId: string } | null {
+export function parseShopeeIds(url: string): { shopId: string; itemId: string } | null {
   try {
     const path = new URL(url).pathname;
     // Formato: -i.SHOPID.ITEMID no final do path

@@ -34,7 +34,6 @@ const BG_CARD   = "#ffffff";  // card branco
 const BG_ACCENT = "#fff0f5";  // seções de destaque rose tint
 const C_ROSE    = "#d6195a";  // rosa principal
 const C_ROSE2   = "#ff2d6a";  // rosa vibrante
-const C_GOLD    = "#c7860a";  // dourado legível no branco
 const C_TEXT    = "#1a0a10";  // texto escuro quase preto rose-tinted
 const C_MUTED   = "#6b3047";  // texto secundário rose escuro
 

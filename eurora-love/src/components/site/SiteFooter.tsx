@@ -4,24 +4,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { isLovePage } from "@/lib/utils/isLovePage";
 
-const PRODUCTS = [
-  { href: "/criar", label: "Página do Amor" },
-  { href: "/presentes", label: "Presentes Secretos" },
-  { href: "/mensagem", label: "Mensagem Programada" },
-  { href: "/ia", label: "IA Romântica" },
-  { href: "/quiz", label: "Teste de Compatibilidade" },
-];
-
 const WA = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "5511999999999";
 const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "oi@eurora.site";
 
-const SUPPORT = [
-  { href: `mailto:${SUPPORT_EMAIL}`, label: "Contato" },
-  { href: `https://wa.me/${WA}`, label: "WhatsApp" },
-];
-
-const LEGAL = [
-  { href: "/termos", label: "Termos de uso" },
+const NAV_LINKS = [
+  { href: "/criar", label: "Página do Amor" },
+  { href: "/presentes", label: "Presentes" },
+  { href: "/mensagem", label: "Mensagem" },
+  { href: "/ia", label: "IA Romântica" },
+  { href: "/quiz", label: "Quiz" },
+  { href: `mailto:${SUPPORT_EMAIL}`, label: "Contato", external: true },
+  { href: `https://wa.me/${WA}`, label: "WhatsApp", external: true },
+  { href: "/termos", label: "Termos" },
   { href: "/privacidade", label: "Privacidade" },
 ];
 
@@ -31,107 +25,85 @@ export default function SiteFooter() {
   if (isLovePage(pathname)) return null;
 
   return (
-    <footer className="relative mt-20 pt-14 pb-10 px-4 border-t border-white/5 overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-[#ff2d6a]/8 rounded-full blur-[100px]" />
-      </div>
+    <footer className="relative mt-24 pb-10 px-4 overflow-hidden">
+      {/* Glow decorativo */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#ff2d6a]/30 to-transparent" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 w-[700px] h-[260px] bg-[#ff2d6a]/6 rounded-full blur-[120px]" />
 
-      <div className="relative max-w-7xl mx-auto">
-        {/* Mobile: stacked brand + 3 cols | Desktop: 1 brand + 3 cols */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-          {/* Brand */}
-          <div className="sm:col-span-2 lg:col-span-1">
-            <Link href="/" className="inline-flex items-center gap-2.5 mb-5">
-              <svg width="36" height="36" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      {/* Divider topo */}
+      <div className="relative max-w-4xl mx-auto">
+        <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-14" />
+
+        {/* Logo + tagline centrados */}
+        <div className="flex flex-col items-center text-center mb-12">
+          <Link href="/" className="inline-flex items-center gap-3 mb-4 group">
+            <div className="relative">
+              <div className="absolute inset-0 bg-[#ff2d6a]/30 rounded-full blur-md scale-125 group-hover:scale-150 transition-transform duration-500" />
+              <svg width="40" height="40" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative" aria-hidden="true">
                 <defs>
-                  <linearGradient id="hgf" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+                  <linearGradient id="footer-hg" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
                     <stop offset="0%" stopColor="#ff2d6a"/>
                     <stop offset="100%" stopColor="#f6c986"/>
                   </linearGradient>
                 </defs>
-                <circle cx="17" cy="17" r="17" fill="url(#hgf)" opacity="0.15"/>
-                <path d="M17 25.5C17 25.5 7 19.3 7 13.5C7 10.5 9.5 8 12.5 8C14.2 8 15.8 8.9 17 10.2C18.2 8.9 19.8 8 21.5 8C24.5 8 27 10.5 27 13.5C27 19.3 17 25.5 17 25.5Z" fill="url(#hgf)"/>
+                <circle cx="17" cy="17" r="17" fill="url(#footer-hg)" opacity="0.18"/>
+                <path d="M17 25.5C17 25.5 7 19.3 7 13.5C7 10.5 9.5 8 12.5 8C14.2 8 15.8 8.9 17 10.2C18.2 8.9 19.8 8 21.5 8C24.5 8 27 10.5 27 13.5C27 19.3 17 25.5 17 25.5Z" fill="url(#footer-hg)"/>
               </svg>
-              <span className="font-heading text-xl">
-                <span className="text-white">EURORA</span>{" "}
-                <span className="text-gradient-warm-ember">LOVE</span>
-              </span>
-            </Link>
-            <p className="text-white/55 text-sm leading-relaxed max-w-xs">
-              Transforma o amor em uma experiência digital cinematográfica.
-              Feito com 💗 no Brasil.
-            </p>
-            <div className="mt-5 inline-flex items-center gap-2 pill pill-gold">
-              <span>★ ★ ★ ★ ★</span>
-              <span>4.96/5</span>
             </div>
-          </div>
+            <span className="font-heading text-2xl tracking-wide">
+              <span className="text-white">EURORA</span>{" "}
+              <span className="text-gradient-warm-ember">LOVE</span>
+            </span>
+          </Link>
 
-          {/* Produtos */}
-          <div>
-            <h3 className="text-white font-semibold mb-4 text-sm tracking-wide">Produtos</h3>
-            <ul className="space-y-2.5">
-              {PRODUCTS.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-white/55 hover:text-[#ffb1c9] text-sm transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <p className="text-white/45 text-sm leading-relaxed max-w-sm">
+            Cada detalhe foi pensado para tornar o amor <br className="hidden sm:block" />
+            uma experiência inesquecível.
+          </p>
 
-          {/* Suporte */}
-          <div>
-            <h3 className="text-white font-semibold mb-4 text-sm tracking-wide">Suporte</h3>
-            <ul className="space-y-2.5">
-              {SUPPORT.map((link) => (
-                <li key={link.href}>
-                  <a
-                    href={link.href}
-                    target={link.href.startsWith("http") ? "_blank" : undefined}
-                    rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                    className="text-white/55 hover:text-[#ffb1c9] text-sm transition-colors"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Legal */}
-          <div>
-            <h3 className="text-white font-semibold mb-4 text-sm tracking-wide">Legal</h3>
-            <ul className="space-y-2.5">
-              {LEGAL.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-white/55 hover:text-[#ffb1c9] text-sm transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+          <div className="mt-5 inline-flex items-center gap-2 pill pill-gold text-xs">
+            <span className="tracking-widest">★ ★ ★ ★ ★</span>
+            <span className="text-white/70">4.96 / 5</span>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-white/5">
-          <p className="text-white/40 text-xs text-center sm:text-left">
-            © 2026 EURORA LOVE · eurora.site
-          </p>
-          <div className="flex items-center gap-4 text-xs">
-            <span className="flex items-center gap-1.5 text-white/40">
-              <span className="text-emerald-400">●</span> Sistema online
+        {/* Links centralizados em linha */}
+        <nav className="flex flex-wrap justify-center gap-x-6 gap-y-3 mb-12">
+          {NAV_LINKS.map((link) =>
+            link.external ? (
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white/40 hover:text-[#ffb1c9] text-xs transition-colors duration-200"
+              >
+                {link.label}
+              </a>
+            ) : (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-white/40 hover:text-[#ffb1c9] text-xs transition-colors duration-200"
+              >
+                {link.label}
+              </Link>
+            )
+          )}
+        </nav>
+
+        {/* Bottom bar */}
+        <div className="h-px bg-gradient-to-r from-transparent via-white/8 to-transparent mb-8" />
+
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/30">
+          <span>© 2026 EURORA LOVE · Feito com 💗 no Brasil</span>
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Sistema online
             </span>
-            <span className="text-white/30">•</span>
-            <span className="flex items-center gap-1 text-white/40">
-              🔒 Pagamento criptografado
+            <span className="flex items-center gap-1.5">
+              🔒 Pagamento seguro
             </span>
           </div>
         </div>

@@ -18,8 +18,6 @@ import {
   decodeQuiz,
   isV2,
   type ArchetypeId,
-  type QuizData,
-  type QuizDataV2,
   type CustomQ,
 } from "./quiz.data";
 

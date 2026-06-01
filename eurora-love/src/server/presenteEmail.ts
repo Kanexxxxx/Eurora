@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { optionalEnv, requiredEnv } from "@/server/env";
+import { optionalEnv } from "@/server/env";
 
 const EMAIL_USER  = optionalEnv("EMAIL_USER", optionalEnv("GMAIL_USER", "eurora@eurora.site"));
 const EMAIL_PASS  = optionalEnv("EMAIL_PASS", optionalEnv("GMAIL_APP_PASSWORD", ""));

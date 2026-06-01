@@ -5,13 +5,6 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-type ValentinesCountdown = {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-  isToday: boolean;
-};
 
 function calcCountdownJun12() {
   const now = new Date();

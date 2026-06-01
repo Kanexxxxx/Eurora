@@ -228,6 +228,7 @@ function MusicStep({ plan, value, onChange, onUpgrade }: {
             }`}
           >
             <div className="w-9 h-9 rounded-lg shrink-0 overflow-hidden bg-white/10 flex items-center justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={`https://i.ytimg.com/vi/${ex.url.match(/[?&]v=([^&]+)/)?.[1] ?? ""}/mqdefault.jpg`}
                 alt=""

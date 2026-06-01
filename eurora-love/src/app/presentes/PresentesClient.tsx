@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PRODUTOS, CATEGORIAS, type Produto } from "@/data/presentes";
@@ -30,7 +31,11 @@ function ProdutoCard({ p, index }: { p: Produto; index: number }) {
     let endpoint: string | null = null;
     if (p.asin) endpoint = `/api/presentes/imagem?asin=${p.asin}`;
     else if (p.url) endpoint = `/api/presentes/imagem?url=${encodeURIComponent(p.url)}`;
-    if (!endpoint) { setLoading(false); return; }
+    if (!endpoint) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLoading(false);
+      return;
+    }
     fetch(endpoint)
       .then((r) => (r.ok ? r.json() : null))
       .then((d: { url?: string; preco?: string } | null) => {
@@ -61,11 +66,12 @@ function ProdutoCard({ p, index }: { p: Produto; index: number }) {
           </div>
         )}
         {showImg && (
-          <img
-            src={imgSrc}
+          <Image
+            src={imgSrc!}
             alt={p.name}
-            className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-400"
-            loading="lazy"
+            fill
+            unoptimized
+            className="object-cover group-hover:scale-[1.06] transition-transform duration-400"
             onError={() => { setImgError(true); setImgSrc(null); }}
           />
         )}
@@ -368,9 +374,9 @@ export default function PresentesClient() {
               </div>
 
               {/* Overlay */}
-              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black via-black/80 to-transparent rounded-2xl">
-                <div className="relative rounded-[28px] p-8 sm:p-10 text-center max-w-sm w-full mx-4 bg-gradient-to-br from-amber-950/80 via-zinc-900 to-black border border-amber-500/40 shadow-[0_0_60px_-10px_rgba(245,158,11,0.4)]">
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-400 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider whitespace-nowrap">
+              <div className="absolute inset-0 flex items-center justify-center bg-linear-to-t from-black via-black/80 to-transparent rounded-2xl">
+                <div className="relative rounded-[28px] p-8 sm:p-10 text-center max-w-sm w-full mx-4 bg-linear-to-br from-amber-950/80 via-zinc-900 to-black border border-amber-500/40 shadow-[0_0_60px_-10px_rgba(245,158,11,0.4)]">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-linear-to-r from-amber-500 to-orange-400 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider whitespace-nowrap">
                     {todosOsProdutos.length}+ presentes selecionados
                   </div>
                   <p className="text-5xl mb-4 mt-2">🎁</p>
@@ -388,7 +394,7 @@ export default function PresentesClient() {
                   <button
                     type="button"
                     onClick={() => setStep("form")}
-                    className="w-full py-4 rounded-full text-white font-bold text-base bg-gradient-to-r from-amber-500 to-orange-400 hover:from-amber-400 hover:to-orange-300 shadow-[0_8px_30px_-8px_rgba(245,158,11,0.8)] hover:shadow-[0_12px_40px_-8px_rgba(245,158,11,1)] transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    className="w-full py-4 rounded-full text-white font-bold text-base bg-linear-to-r from-amber-500 to-orange-400 hover:from-amber-400 hover:to-orange-300 shadow-[0_8px_30px_-8px_rgba(245,158,11,0.8)] hover:shadow-[0_12px_40px_-8px_rgba(245,158,11,1)] transition-all hover:scale-[1.02] active:scale-[0.98]"
                   >
                     Quero ver os presentes →
                   </button>
