@@ -97,6 +97,9 @@ ${esc(preheader)}&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#820
     style="max-width:560px;width:100%;margin-top:20px;">
   <tr><td align="center" style="font-family:Arial,sans-serif;font-size:11px;color:${C_MUTE};
     line-height:1.6;padding:0 16px;">
+    <p style="margin:0 0 6px;background:#fff8e1;border:1px solid #ffe082;border-radius:6px;padding:8px 12px;color:#7a6000;font-size:11px;">
+      📬 Nao encontrou este email? Verifique sua <strong>pasta de spam</strong> e marque como <strong>"Nao e spam"</strong>.
+    </p>
     Este é um email transacional da EURORA LOVE.<br>
     <a href="${APP_URL}" style="color:${C_MUTE};">eurora.site</a>
     &nbsp;·&nbsp;

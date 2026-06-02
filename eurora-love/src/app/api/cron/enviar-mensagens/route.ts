@@ -103,6 +103,9 @@ function baseHtml(title: string, preheader: string, body: string, showFeatures =
 
     <!-- FOOTER -->
     <tr><td bgcolor="${BG_OUTER}" style="background-color:${BG_OUTER};border:1px solid #f3d0da;border-top:0;border-radius:0 0 18px 18px;padding:20px 24px;" align="center">
+      <p style="margin:0 0 10px;background:#fff8e1;border:1px solid #ffe082;border-radius:6px;padding:8px 12px;color:#7a6000;font-family:Arial,sans-serif;font-size:11px;line-height:1.6;text-align:center;">
+        📬 Nao encontrou este email? Verifique a <strong>pasta de spam</strong> e marque como <strong>"Nao e spam"</strong>.
+      </p>
       <p style="margin:0 0 6px;color:${C_MUTED};font-family:Arial,sans-serif;font-size:12px;line-height:1.7;text-align:center;">
         Enviado via <a href="${APP_URL}" style="color:${C_ROSE};text-decoration:none;font-weight:700;">eurora.site</a>
         &nbsp;&#x2665;&nbsp; Feito com amor
