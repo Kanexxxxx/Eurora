@@ -9,6 +9,13 @@ const APP_URL     = optionalEnv("NEXT_PUBLIC_APP_URL", "https://eurora.site");
 const FROM        = `EURORA LOVE <${EMAIL_USER}>`;
 const REPLY_TO    = EMAIL_USER;
 
+// Headers anti-spam comuns a todos os emails
+const BASE_HEADERS = {
+  "List-Unsubscribe": `<mailto:${EMAIL_USER}?subject=Cancelar>, <${APP_URL}/cancelar>`,
+  "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+  "X-Priority": "3",
+};
+
 // Paleta de cores
 const C_ROSE = "#d6195a";
 const C_BG   = "#fdf0f4";
@@ -159,14 +166,10 @@ EURORA LOVE — eurora.site`;
     from: FROM,
     to,
     replyTo: REPLY_TO,
-    subject: `Seu código de acesso — EURORA LOVE`,
+    subject: `Seu codigo PIX - EURORA LOVE`,
     html,
     text,
-    headers: {
-      "X-Mailer": "EURORA LOVE Mailer",
-      "List-Unsubscribe": `<mailto:${EMAIL_USER}?subject=Cancelar>`,
-      "Precedence": "transactional",
-    },
+    headers: { ...BASE_HEADERS },
     attachments: [{
       filename: "qrcode.png",
       content: Buffer.from(pixQrBase64, "base64"),
@@ -223,13 +226,9 @@ eurora.site`;
     from: FROM,
     to,
     replyTo: REPLY_TO,
-    subject: `Acesso liberado — EURORA LOVE`,
+    subject: `Acesso liberado - EURORA LOVE`,
     html,
     text,
-    headers: {
-      "X-Mailer": "EURORA LOVE Mailer",
-      "List-Unsubscribe": `<mailto:${EMAIL_USER}?subject=Cancelar>`,
-      "Precedence": "transactional",
-    },
+    headers: { ...BASE_HEADERS },
   });
 }

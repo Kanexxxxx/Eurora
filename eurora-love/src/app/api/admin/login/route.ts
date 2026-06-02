@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import {
   adminCookieName,
@@ -16,8 +17,13 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => ({})) as { password?: string };
   const correct = process.env.ADMIN_PASSWORD;
+  const attempt = body.password ?? "";
 
-  if (!correct || body.password !== correct) {
+  const valid = Boolean(correct) &&
+    attempt.length === correct!.length &&
+    timingSafeEqual(Buffer.from(attempt), Buffer.from(correct!));
+
+  if (!valid) {
     return NextResponse.json({ error: "Senha incorreta" }, { status: 401 });
   }
 

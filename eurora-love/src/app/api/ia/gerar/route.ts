@@ -746,19 +746,8 @@ async function callDeepSeek(tipo: string, campos: Record<string, string>): Promi
   }
 }
 
-// ─── SESSION TRACKING (server-side, corrige bypass de paywall) ───────────────
-// Usa header Cookie/Set-Cookie diretamente para evitar dependência de
-// next/dist/compiled/cookie que pode falhar em builds standalone.
-
-const SESSION_MAP = new Map<string, number>();
-
-function getSessionCount(sessionId: string): number {
-  return SESSION_MAP.get(sessionId) ?? 0;
-}
-
-function incrementSession(sessionId: string): void {
-  SESSION_MAP.set(sessionId, (SESSION_MAP.get(sessionId) ?? 0) + 1);
-}
+// ─── SESSION TRACKING (banco de dados — resistente a restart e bypass) ────────
+import { prisma } from "@/server/db/prisma";
 
 function parseCookieHeader(header: string | null, name: string): string | null {
   if (!header) return null;
@@ -767,6 +756,23 @@ function parseCookieHeader(header: string | null, name: string): string | null {
     if (k.trim() === name) return v?.trim() ?? null;
   }
   return null;
+}
+
+async function getSessionCount(sessionId: string): Promise<number> {
+  try {
+    const rec = await prisma.aiSession.findUnique({ where: { id: sessionId } });
+    return rec?.count ?? 0;
+  } catch { return 0; }
+}
+
+async function incrementSession(sessionId: string): Promise<void> {
+  try {
+    await prisma.aiSession.upsert({
+      where: { id: sessionId },
+      update: { count: { increment: 1 } },
+      create: { id: sessionId, count: 1 },
+    });
+  } catch { /* não bloqueia se o banco falhar */ }
 }
 
 const FREE_AI_GENERATIONS = 1;
@@ -796,14 +802,14 @@ export async function POST(req: NextRequest) {
   const cookieHeader = req.headers.get("cookie");
   const existingId = parseCookieHeader(cookieHeader, "ia_sid");
   const sessionId = existingId ?? crypto.randomUUID();
-  const count = getSessionCount(sessionId);
+  const count = await getSessionCount(sessionId);
 
   if (count >= FREE_AI_GENERATIONS) {
     return NextResponse.json({ error: "Limite gratuito atingido.", paywall: true }, { status: 403 });
   }
 
   const texto = await callDeepSeek(tipo, campos);
-  incrementSession(sessionId);
+  await incrementSession(sessionId);
 
   const response = NextResponse.json({ texto, source: "ai" });
   // Set-Cookie via header raw — sem depender de next/dist/compiled/cookie

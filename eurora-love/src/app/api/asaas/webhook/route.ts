@@ -1,4 +1,5 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+﻿import { timingSafeEqual } from "crypto";
+import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { optionalEnv } from "@/server/env";
 import { activateCouplePage } from "@/server/payments/activateCouple";
@@ -46,7 +47,9 @@ const PAID_EVENTS = new Set(["PAYMENT_CONFIRMED", "PAYMENT_RECEIVED"]);
 
 function verifyWebhookToken(req: NextRequest) {
   const expected = optionalEnv("ASAAS_WEBHOOK_TOKEN");
-  return Boolean(expected) && req.headers.get("asaas-access-token") === expected;
+  const received = req.headers.get("asaas-access-token") ?? "";
+  if (!expected || expected.length !== received.length) return false;
+  return timingSafeEqual(Buffer.from(received), Buffer.from(expected));
 }
 
 export async function POST(req: NextRequest) {

@@ -425,8 +425,9 @@ export async function GET(req: NextRequest) {
 
   // Headers para lembretes (remetente) — canal de notificação transacional
   const reminderHeaders = {
-    "List-Unsubscribe": `<mailto:${ADMIN_EMAIL}?subject=Cancelar%20emails>`,
-    "X-Mailer": "EURORA LOVE",
+    "List-Unsubscribe": `<mailto:${ADMIN_EMAIL}?subject=Cancelar%20emails>, <${APP_URL}/cancelar>`,
+    "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    "X-Priority": "3",
   };
 
   for (const msg of pending) {

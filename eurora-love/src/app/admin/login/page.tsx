@@ -21,7 +21,9 @@ function AdminLoginForm() {
       body: JSON.stringify({ password }),
     });
     if (res.ok) {
-      router.push(params.get("from") ?? "/admin");
+      const raw = params.get("from") ?? "/admin";
+      const safe = raw.startsWith("/") && !raw.startsWith("//") ? raw : "/admin";
+      router.push(safe);
     } else {
       setError("Senha incorreta");
     }
