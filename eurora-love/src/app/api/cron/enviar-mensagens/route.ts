@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/server/db/prisma";
 import nodemailer from "nodemailer";
@@ -408,8 +409,11 @@ function buildCorreiosAdmin(address: string, message: string, clientEmail: strin
 // ─── Cron handler ────────────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${requiredEnv("CRON_SECRET")}`) {
+  const authHeader = req.headers.get("authorization") ?? "";
+  const expected = `Bearer ${requiredEnv("CRON_SECRET")}`;
+  const valid = authHeader.length === expected.length &&
+    timingSafeEqual(Buffer.from(authHeader), Buffer.from(expected));
+  if (!valid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -21,10 +21,11 @@ function base64UrlDecode(value: string) {
 }
 
 function sessionSecret() {
-  if (!process.env.ADMIN_SESSION_SECRET && process.env.NODE_ENV === "production") {
-    console.warn("[admin-auth] ADMIN_SESSION_SECRET não definido — usando ADMIN_PASSWORD como fallback. Defina ADMIN_SESSION_SECRET separadamente para maior segurança.");
+  const secret = process.env.ADMIN_SESSION_SECRET;
+  if (!secret) {
+    throw new Error("[admin-auth] ADMIN_SESSION_SECRET não definido. Defina esta variável de ambiente separadamente de ADMIN_PASSWORD.");
   }
-  return process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_PASSWORD || "";
+  return secret;
 }
 
 async function hmac(value: string) {
