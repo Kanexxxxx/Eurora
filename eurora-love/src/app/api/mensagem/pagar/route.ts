@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
         name,
         cpfCnpj: cpf,
         email,
-        externalReference: `msg:correios:${cpf}`,
+        externalReference: `msg:correios:customer`,
         notificationDisabled: true,
       }),
     });
