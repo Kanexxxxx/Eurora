@@ -1,8 +1,9 @@
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { WizardData, Theme, Plan } from "@/lib/types";
+import { onMetaPixelReady, planName, planValue, trackMetaPixelOnce } from "@/lib/metaPixel";
 
 const THEMES: {
   id: Theme;
@@ -264,6 +265,20 @@ export default function WizardClient() {
   const [data, setData] = useState<WizardData>({ ...defaultData, plan: initialPlan, theme: initialTheme });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const track = () =>
+      trackMetaPixelOnce(`viewcontent-create-${initialPlan}`, "ViewContent", {
+        content_name: planName(initialPlan),
+        content_category: "love_page_creation",
+        content_ids: [`eurora-${initialPlan}`],
+        value: planValue(initialPlan),
+        currency: "BRL",
+      });
+
+    track();
+    return onMetaPixelReady(track);
+  }, [initialPlan]);
 
   const update = useCallback(<K extends keyof WizardData>(key: K, value: WizardData[K]) => {
     setData((prev) => ({ ...prev, [key]: value }));

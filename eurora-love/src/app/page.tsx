@@ -34,6 +34,7 @@ const PreviewMockup = dynamic(() => import("@/components/conversion/PreviewMocku
 const StickyMobileCTA = dynamic(() => import("@/components/conversion/StickyMobileCTA"), { ssr: false });
 import UrgencyBar from "@/components/conversion/UrgencyBar";
 import TrustStrip from "@/components/conversion/TrustStrip";
+import { onMetaPixelReady, trackMetaPixelOnce } from "@/lib/metaPixel";
 
 const FEATURES = [
   {
@@ -160,6 +161,20 @@ const STATS = [
 
 export default function LandingPage() {
   const [countdown, setCountdown] = useState(calcCountdownJun12());
+
+  useEffect(() => {
+    const track = () =>
+      trackMetaPixelOnce("viewcontent-home-love-page", "ViewContent", {
+        content_name: "Pagina do Amor",
+        content_category: "love_page",
+        content_ids: ["eurora-love-page"],
+        value: 19,
+        currency: "BRL",
+      });
+
+    track();
+    return onMetaPixelReady(track);
+  }, []);
 
   useEffect(() => {
     const tick = () => setCountdown(calcCountdownJun12());

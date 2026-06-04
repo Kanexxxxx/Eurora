@@ -3,6 +3,7 @@ import { Fraunces, Geist } from "next/font/google";
 import "./globals.css";
 import SiteHeader from "@/components/site/SiteHeader";
 import SiteFooter from "@/components/site/SiteFooter";
+import CookieBanner from "@/components/lgpd/CookieBanner";
 
 const geist = Geist({
   variable: "--font-geist",
@@ -62,6 +63,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${geist.variable} ${fraunces.variable} h-full`}>
       <body className="min-h-full flex flex-col bg-background text-foreground antialiased">
+        <CookieBanner />
         <SiteHeader />
         <div className="flex-1">{children}</div>
         <SiteFooter />

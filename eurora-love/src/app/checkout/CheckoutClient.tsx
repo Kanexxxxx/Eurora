@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
+import { planName, planValue, trackMetaPixelOnce } from "@/lib/metaPixel";
 
 type Method = "pix" | "credit_card";
 
@@ -85,7 +86,7 @@ export default function CheckoutClient() {
         const data = await res.json();
         if (data.paid) {
           clearInterval(pollingRef.current!);
-          router.push(`/sucesso?slug=${data.slug}`);
+          router.push(`/sucesso?slug=${data.slug}&plan=${plan}`);
         }
       }, 3000);
     },
@@ -153,8 +154,20 @@ export default function CheckoutClient() {
         throw new Error(data.error || "Erro ao processar pagamento.");
       }
 
+      const value = planValue(plan);
+      trackMetaPixelOnce(`initiate-checkout-${page_id}`, "InitiateCheckout", {
+        content_name: planName(plan),
+        content_category: "love_page",
+        content_ids: [`eurora-${plan}`],
+        contents: [{ id: `eurora-${plan}`, quantity: 1, item_price: value }],
+        value,
+        currency: "BRL",
+        num_items: 1,
+        payment_method: method,
+      });
+
       if (data.paid && data.slug) {
-        router.push(`/sucesso?slug=${data.slug}`);
+        router.push(`/sucesso?slug=${data.slug}&plan=${plan}`);
         return;
       }
 

@@ -5,10 +5,12 @@ import { motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import FloatingHearts from "@/components/effects/FloatingHearts";
+import { onMetaPixelReady, planName, planValue, trackMetaPixelOnce } from "@/lib/metaPixel";
 
 export default function SucessoClient() {
   const searchParams = useSearchParams();
   const slug = searchParams.get("slug") || "";
+  const plan = searchParams.get("plan") || "premium";
   const [copied, setCopied] = useState(false);
   const [confetti, setConfetti] = useState(true);
   const [origin] = useState(() => typeof window !== "undefined" ? window.location.origin : "");
@@ -20,6 +22,30 @@ export default function SucessoClient() {
     const t = setTimeout(() => setConfetti(false), 4000);
     return () => clearTimeout(t);
   }, []);
+
+  useEffect(() => {
+    if (!slug) return;
+
+    const value = planValue(plan);
+    const track = () =>
+      trackMetaPixelOnce(
+        `purchase-${slug}`,
+        "Purchase",
+        {
+          content_name: planName(plan),
+          content_category: "love_page",
+          content_ids: [`eurora-${plan}`],
+          contents: [{ id: `eurora-${plan}`, quantity: 1, item_price: value }],
+          value,
+          currency: "BRL",
+          num_items: 1,
+        },
+        "local",
+      );
+
+    track();
+    return onMetaPixelReady(track);
+  }, [plan, slug]);
 
   const copy = () => {
     navigator.clipboard.writeText(pageUrl);
