@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/server/db/prisma";
 import LovePage from "./LovePage";
 
+// Sempre lê do banco sem cache — garante que páginas ativadas pelo admin aparecem na hora
+export const dynamic = "force-dynamic";
+
 interface Props {
   params: Promise<{ slug: string }>;
 }

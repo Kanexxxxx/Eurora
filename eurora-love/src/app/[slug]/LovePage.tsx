@@ -209,6 +209,119 @@ function calcNextAnn(d: string) {
 
 const GALLERY_ITEM_W = 182; // 170px wide + 12px gap
 
+// ── MusicCard ────────────────────────────────────────────────────────────────
+function MusicCard({
+  musicUrl,
+  musicMeta,
+  musicEmbed,
+  albumColor,
+  islandAlbumArt,
+  musicTitle,
+}: {
+  musicUrl: string;
+  musicMeta?: MusicMeta | null;
+  musicEmbed: { src: string; type: "spotify" | "youtube" } | null;
+  albumColor: string;
+  islandAlbumArt: string | null;
+  musicTitle: string;
+}) {
+  const [ytPlaying, setYtPlaying] = useState(false);
+
+  /* eslint-disable react/forbid-dom-props */
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 2.5 }}
+      className="rounded-3xl overflow-hidden"
+      style={{ boxShadow: `0 0 40px ${albumColor}30` }}
+    >
+      {musicEmbed?.type === "spotify" && (
+        <div
+          style={{ background: `linear-gradient(180deg, ${albumColor}22 0%, transparent 100%)` }}
+          className="rounded-3xl overflow-hidden p-0.75"
+        >
+          <iframe
+            title="Nossa música"
+            src={musicEmbed.src}
+            width="100%"
+            height="152"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            className="block rounded-[22px]"
+          />
+        </div>
+      )}
+
+      {musicEmbed?.type === "youtube" && !ytPlaying && (
+        <button
+          type="button"
+          onClick={() => setYtPlaying(true)}
+          aria-label={`Tocar ${musicTitle}`}
+          className="relative w-full flex items-center gap-4 p-4 rounded-3xl overflow-hidden text-left group"
+          style={{ background: `linear-gradient(135deg, ${albumColor}40, ${albumColor}18, #111)` }}
+        >
+          <div className="relative shrink-0 w-16 h-16 rounded-xl overflow-hidden shadow-lg">
+            {islandAlbumArt ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={islandAlbumArt} alt={musicTitle} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-2xl bg-white/10">♪</div>
+            )}
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <p className="text-white font-semibold text-sm truncate">{musicTitle}</p>
+            <p className="text-white/50 text-xs mt-0.5">
+              {musicMeta?.provider ?? "YouTube"} · Nossa música
+            </p>
+            <div className="flex items-center gap-1.5 mt-2">
+              <div className="h-1 flex-1 rounded-full bg-white/15">
+                <div className="h-1 w-1/3 rounded-full" style={{ background: albumColor }} />
+              </div>
+            </div>
+          </div>
+
+          <div
+            className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-transform group-hover:scale-110"
+            style={{ background: albumColor }}
+          >
+            <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5 translate-x-0.5" aria-hidden="true">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </div>
+
+          <span className="absolute top-2.5 right-3 text-[10px] text-white/35 font-medium tracking-wide">YouTube</span>
+        </button>
+      )}
+
+      {musicEmbed?.type === "youtube" && ytPlaying && (
+        <div className="aspect-video w-full rounded-3xl overflow-hidden">
+          <iframe
+            title="Nossa música"
+            src={musicEmbed.src}
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            allowFullScreen
+            className="w-full h-full block"
+          />
+        </div>
+      )}
+
+      {!musicEmbed && (
+        <a
+          href={musicUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 p-5 rounded-3xl hover:bg-white/5 transition-all"
+          style={{ background: `${albumColor}18` }}
+        >
+          <span className="text-2xl">🎵</span>
+          <span className="text-gray-300 text-sm font-heading">Ouvir nossa música</span>
+        </a>
+      )}
+    </motion.div>
+  );
+}
+
 interface Props { couple: Couple; musicMeta?: MusicMeta | null; }
 
 export default function LovePage({ couple, musicMeta }: Props) {
@@ -462,28 +575,14 @@ export default function LovePage({ couple, musicMeta }: Props) {
 
             {/* ── Music ── */}
             {couple.music_url && (
-              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.5 }}
-                className="rounded-3xl overflow-hidden">
-                {musicEmbed?.type === "spotify" && (
-                  <iframe title="Nossa música" src={musicEmbed.src} width="100%" height="152"
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    className="block rounded-3xl" />
-                )}
-                {musicEmbed?.type === "youtube" && (
-                  <div className="aspect-video w-full">
-                    <iframe title="Nossa música" src={musicEmbed.src}
-                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                      allowFullScreen className="w-full h-full block" />
-                  </div>
-                )}
-                {!musicEmbed && (
-                  <a href={couple.music_url} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-5 glass rounded-3xl hover:bg-white/5 transition-all">
-                    <span className="text-2xl">🎵</span>
-                    <span className="text-gray-300 text-sm font-heading">Ouvir nossa música</span>
-                  </a>
-                )}
-              </motion.div>
+              <MusicCard
+                musicUrl={couple.music_url}
+                musicMeta={musicMeta}
+                musicEmbed={musicEmbed}
+                albumColor={albumColor}
+                islandAlbumArt={islandAlbumArt}
+                musicTitle={musicTitle}
+              />
             )}
 
             {/* ── QR Code ── */}
