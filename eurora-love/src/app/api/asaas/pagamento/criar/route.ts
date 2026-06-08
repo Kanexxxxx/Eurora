@@ -70,6 +70,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Ja pago" }, { status: 409 });
   }
 
+  // Salvar dados do pagador antes de chamar Asaas para não perder pedidos em caso de erro
+  await prisma.couple.update({
+    where: { id: page_id },
+    data: { payer_email: payer.email, payer_name: payer.name, payer_phone: payer.phone },
+  });
+
   try {
     const customer = await createAsaasCustomer({
       ...payer,

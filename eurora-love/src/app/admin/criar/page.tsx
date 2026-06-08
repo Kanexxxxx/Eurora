@@ -3,11 +3,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Plan, Theme } from "@/lib/types";
 
-const THEMES: { id: Theme; name: string; plan: "basic" | "premium" }[] = [
-  { id: "black-luxury", name: "Black Luxury", plan: "basic" },
-  { id: "neon-romance", name: "Neon Romance", plan: "basic" },
-  { id: "minimal-love", name: "Minimal Love", plan: "premium" },
-  { id: "velvet-dark", name: "Velvet Dark", plan: "premium" },
+const THEMES: {
+  id: Theme;
+  name: string;
+  plan: "basic" | "premium";
+  gradientClass: string;
+  activeBorder: string;
+  activeGlow: string;
+}[] = [
+  { id: "black-luxury", name: "Black Luxury", plan: "basic",   gradientClass: "bg-gradient-to-br from-zinc-800 via-zinc-950 to-black",   activeBorder: "border-[#ff2d6a]", activeGlow: "shadow-[0_0_14px_2px_#ff2d6a44]" },
+  { id: "neon-romance",  name: "Neon Romance",  plan: "basic",   gradientClass: "bg-gradient-to-br from-purple-950 via-violet-950 to-black", activeBorder: "border-fuchsia-500", activeGlow: "shadow-[0_0_14px_2px_#d946ef44]" },
+  { id: "minimal-love",  name: "Minimal Love",  plan: "premium", gradientClass: "bg-gradient-to-br from-stone-700 via-stone-900 to-black",   activeBorder: "border-amber-400",   activeGlow: "shadow-[0_0_14px_2px_#f59e0b44]" },
+  { id: "velvet-dark",   name: "Velvet Dark",   plan: "premium", gradientClass: "bg-gradient-to-br from-rose-950 via-red-950 to-black",     activeBorder: "border-rose-400",    activeGlow: "shadow-[0_0_14px_2px_#fb718544]" },
 ];
 
 const EMPTY = {
@@ -211,16 +218,19 @@ export default function AdminCriarPage() {
                     type="button"
                     disabled={locked}
                     onClick={() => update("theme", theme.id)}
-                    className={`rounded-xl border px-3 py-3 text-left text-sm transition-colors ${
+                    className={`rounded-xl border overflow-hidden text-left text-sm transition-all ${
                       active
-                        ? "border-rose-500 bg-rose-500/15 text-white"
+                        ? `${theme.activeBorder} ${theme.activeGlow} text-white`
                         : locked
-                          ? "border-white/5 bg-white/3 text-white/25 cursor-not-allowed"
-                          : "border-white/10 bg-white/5 text-white/55 hover:text-white"
+                          ? "border-white/5 text-white/25 cursor-not-allowed opacity-40"
+                          : "border-white/10 text-white/70 hover:text-white hover:border-white/30"
                     }`}
                   >
-                    <span className="block font-semibold">{theme.name}</span>
-                    <span className="text-[11px] opacity-60">{theme.plan === "premium" ? "Premium" : "Basic"}</span>
+                    <div className={`h-10 w-full ${theme.gradientClass}`} />
+                    <div className="px-3 py-2 bg-white/4">
+                      <span className="block font-semibold text-xs">{theme.name}</span>
+                      <span className="text-[10px] opacity-50">{theme.plan === "premium" ? "Premium" : "Basic"}</span>
+                    </div>
                   </button>
                 );
               })}

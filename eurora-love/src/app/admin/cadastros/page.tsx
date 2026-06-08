@@ -20,6 +20,9 @@ type CadastroDetail = Cadastro & {
   photo_urls: string[];
   qr_code_url: string | null;
   updated_at: string;
+  payer_email: string | null;
+  payer_name: string | null;
+  payer_phone: string | null;
 };
 
 type EditForm = {
@@ -351,6 +354,33 @@ function DetailPanel({
               </div>
             ) : (
               <div className="space-y-4">
+                {(detail.payer_name || detail.payer_email || detail.payer_phone) && (
+                  <div className="bg-emerald-500/8 border border-emerald-500/20 rounded-xl p-4 space-y-2">
+                    <p className="text-emerald-300/70 text-xs uppercase tracking-wider mb-2">Contato do pagador</p>
+                    {detail.payer_name && (
+                      <Row label="Nome">{<span className="text-white/80 text-sm">{detail.payer_name}</span>}</Row>
+                    )}
+                    {detail.payer_email && (
+                      <Row label="E-mail">
+                        <a href={`mailto:${detail.payer_email}`} className="text-rose-400 hover:text-rose-300 text-sm">
+                          {detail.payer_email}
+                        </a>
+                      </Row>
+                    )}
+                    {detail.payer_phone && (
+                      <Row label="Telefone">
+                        <a href={`https://wa.me/55${detail.payer_phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:text-emerald-300 text-sm">
+                          {detail.payer_phone}
+                        </a>
+                      </Row>
+                    )}
+                  </div>
+                )}
+                {!detail.payer_name && !detail.payer_email && !detail.payer_phone && !detail.paid && (
+                  <div className="bg-amber-500/8 border border-amber-500/20 rounded-xl p-3">
+                    <p className="text-amber-300/70 text-xs">Nenhum dado de contato — o pagamento não chegou a ser iniciado.</p>
+                  </div>
+                )}
                 <Row label="Slug">
                   <a
                     href={`/${detail.slug}`}

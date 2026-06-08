@@ -30,6 +30,9 @@ model Couple {
   plan              Plan     @default(basic)
   paid              Boolean  @default(false)
   payment_id        String?
+  payer_email       String?
+  payer_name        String?  @db.VarChar(120)
+  payer_phone       String?  @db.VarChar(20)
   photo_urls        String[]
   qr_code_url       String?
   created_at        DateTime @default(now())
