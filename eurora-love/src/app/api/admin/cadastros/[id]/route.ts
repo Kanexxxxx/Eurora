@@ -68,7 +68,7 @@ export async function PUT(
     return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
   }
 
-  const { person1, person2, message, music_url, relationship_date } = body as Record<string, string>;
+  const { person1, person2, message, music_url, relationship_date, paid } = body as Record<string, unknown>;
 
   if (typeof person1 === "string" && person1.trim().length < 1) {
     return NextResponse.json({ error: "Nome 1 obrigatório" }, { status: 400 });
@@ -86,6 +86,7 @@ export async function PUT(
   if (typeof message === "string") data.message = message;
   if (typeof music_url === "string") data.music_url = music_url || null;
   if (typeof relationship_date === "string") data.relationship_date = relationship_date;
+  if (typeof paid === "boolean") data.paid = paid;
 
   try {
     const updated = await prisma.couple.update({

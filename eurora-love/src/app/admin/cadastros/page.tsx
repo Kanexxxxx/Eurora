@@ -51,8 +51,10 @@ function DetailPanel({
     relationship_date: "",
   });
   const [saving, setSaving] = useState(false);
+  const [activating, setActivating] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -92,6 +94,35 @@ function DetailPanel({
     }
   }
 
+  async function activate() {
+    if (!detail) return;
+    setActivating(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/admin/cadastros/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paid: true }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Erro ao ativar");
+      setDetail((prev) => prev ? { ...prev, paid: true } : prev);
+      onSaved(id, { paid: true });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro");
+    } finally {
+      setActivating(false);
+    }
+  }
+
+  function copyLink() {
+    if (!detail) return;
+    const url = `${window.location.origin}/${detail.slug}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  }
+
   async function doDelete() {
     setDeleting(true);
     setError("");
@@ -120,7 +151,26 @@ function DetailPanel({
           <h2 className="text-white font-semibold">
             {detail ? `${detail.person1} & ${detail.person2}` : "Carregando..."}
           </h2>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {detail && (
+              <button
+                type="button"
+                onClick={copyLink}
+                className="px-3 py-1.5 rounded-lg bg-white/8 text-white/60 text-xs hover:bg-white/12 hover:text-white transition-colors"
+              >
+                {copied ? "✓ Link copiado" : "Copiar link"}
+              </button>
+            )}
+            {detail && !detail.paid && (
+              <button
+                type="button"
+                onClick={activate}
+                disabled={activating}
+                className="px-3 py-1.5 rounded-lg bg-emerald-600/80 text-white text-xs hover:bg-emerald-600 disabled:opacity-60 transition-colors"
+              >
+                {activating ? "Ativando..." : "Ativar página"}
+              </button>
+            )}
             {detail && !editing && (
               <button
                 type="button"
