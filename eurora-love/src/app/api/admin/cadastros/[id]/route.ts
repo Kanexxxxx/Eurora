@@ -4,6 +4,30 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/server/db/prisma";
 import { isAdminRequest } from "@/server/auth/admin";
 import { optionalEnv } from "@/server/env";
+import { asaasRequest } from "@/server/payments/asaas";
+
+async function fetchAndSavePayerFromAsaas(coupleId: string, paymentId: string) {
+  try {
+    const payment = await asaasRequest<{ customer?: string; customerName?: string; customerEmail?: string }>(`/payments/${paymentId}`);
+    const customerId = payment.customer;
+    if (!customerId) return;
+
+    const customer = await asaasRequest<{ name?: string; email?: string; mobilePhone?: string }>(`/customers/${customerId}`);
+    const payer_name = customer.name ?? null;
+    const payer_email = customer.email ?? null;
+    const payer_phone = customer.mobilePhone ?? null;
+
+    if (payer_email || payer_name) {
+      await prisma.couple.update({
+        where: { id: coupleId },
+        data: { payer_name, payer_email, payer_phone },
+      });
+    }
+    return { payer_name, payer_email, payer_phone };
+  } catch {
+    return null;
+  }
+}
 
 function uploadRoot() {
   return optionalEnv("UPLOAD_DIR", path.join(process.cwd(), "uploads"));
@@ -46,6 +70,19 @@ export async function GET(
 
   if (!couple) {
     return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
+  }
+
+  // Se tiver payment_id real (não admin-demo) e não tiver dados do pagador, busca no Asaas
+  if (
+    couple.payment_id &&
+    couple.payment_id !== "admin-demo" &&
+    !couple.payer_email &&
+    !couple.payer_name
+  ) {
+    const asaasData = await fetchAndSavePayerFromAsaas(couple.id, couple.payment_id);
+    if (asaasData) {
+      return NextResponse.json({ ...couple, ...asaasData });
+    }
   }
 
   return NextResponse.json(couple);
