@@ -108,3 +108,14 @@ Este software é proprietário e confidencial. Nenhuma parte deste código pode 
 <div align="center">
   <sub>Feito com amor ♥ no Brasil</sub>
 </div>
+
+
+## Manutenção e implantação
+
+Antes de publicar, execute testes, lint e build em ambiente isolado. O workflow
+`.github/workflows/deploy-vps.yml` atualmente modifica o esquema do banco antes do
+build e não chama a suíte de testes. Revisar a ordem e definir migrações e recuperação
+é uma pendência de manutenção; não dispare o workflow apenas para verificar o projeto.
+Os links e o selo de produção acima são registros da apresentação existente, não
+evidência de disponibilidade atual. Integrações precisam de sandbox ou aprovação
+específica antes de qualquer envio, cobrança ou alteração de produção.
